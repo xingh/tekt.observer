@@ -28,6 +28,15 @@ RM-### — Title
 
 ## New
 
+### RM-018 — Multi-agent CLI platform with command phases
+- Status: new
+- Priority: M
+- Owner: copilot
+- Last updated: 2026-08-01
+- Links: [plan](plans/2026-08-01-multi-agent-cli-platform.md)
+- Next step: Define Phase protocol in `scripts/phases/__init__.py` and scaffold module structure
+- Notes: Six command phases (/explore, /seek, /gather, /organize, /understand, /generate) unify the observation pipeline. GitHub Copilot CLI and Pi CLI integrate as auxiliary tools for specific phases (command generation and reasoning respectively). Existing codex/claude/gemini remain primary providers. Research done; findings in `.manage/6.knowledge.md` ("Multi-agent CLI platform"). Projects defined in `.manage/2.projects.md`.
+
 ### RM-017 — Package tekt.observer as an installable Claude skills plugin
 - Status: new
 - Priority: M
