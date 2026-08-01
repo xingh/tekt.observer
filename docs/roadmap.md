@@ -28,6 +28,15 @@ RM-### — Title
 
 ## New
 
+### RM-017 — Package tekt.observer as an installable Claude skills plugin
+- Status: new
+- Priority: M
+- Owner: copilot
+- Last updated: 2026-08-01
+- Links: [plan](plans/2026-08-01-claude-skills-packaging.md)
+- Next step: Phase 1 — add `scripts/install_skills.sh` and document in README
+- Notes: Two phases: (1) skills-only export via install script, (2) MCP server wrapping `scripts/`. Research done; findings in `.manage/6.knowledge.md` ("Claude skills packaging"). MCP server needs `mcp>=1.0` dep and `pyproject.toml`.
+
 ### RM-016 — Integrate crawl4ai for browser-based source discovery
 - Status: new
 - Priority: M
