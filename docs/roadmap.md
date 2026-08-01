@@ -28,6 +28,15 @@ RM-### — Title
 
 ## New
 
+### RM-016 — Integrate crawl4ai for browser-based source discovery
+- Status: new
+- Priority: M
+- Owner: copilot
+- Last updated: 2026-08-01
+- Links: [plan](plans/2026-08-01-crawl4ai-integration.md)
+- Next step: Phase 1 — add `crawl4ai_browser` discovery mode (`scripts/discover/sources/crawl4ai_browser.py`)
+- Notes: Research done; crawl4ai adds a CSS-selector-based generic browser mode and an opportunity to consolidate cookie-consent boilerplate. LLM extraction deferred. See plan for phases.
+
 ## In progress
 ## Parked
 
