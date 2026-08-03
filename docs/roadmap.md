@@ -28,14 +28,23 @@ RM-### — Title
 
 ## New
 
-### RM-018 — Integrate browser-use as a discovery driver and plugin layer
+### RM-019 — Integrate browser-use as a discovery driver and plugin layer
 - Status: new
 - Priority: M
 - Owner: copilot
 - Last updated: 2026-08-02
 - Links: [plan](plans/2026-08-01-browser-use-integration.md)
 - Next step: Phase 1 — add `scripts/probe_with_browser_use.py` for source-structure reconnaissance
-- Notes: Three phases: (1) browser-use as reconnaissance driver during source setup, feeding CSS selectors into crawl4ai config; (2) optional `browser_use` discovery mode for interactive sources; (3) package tekt.observer as browser-use custom tools. Depends on RM-016 (crawl4ai). Research done; findings in `.manage/6.knowledge.md` ("browser-use — research findings"). Closes #11.
+- Notes: Three phases: (1) browser-use as reconnaissance driver during source setup, feeding CSS selectors into crawl4ai config; (2) optional `browser_use` discovery mode for interactive sources; (3) package tekt.observer as browser-use custom tools. Depends on RM-016 (crawl4ai). Complements RM-018 (`/explore` phase). Research done; findings in `.manage/6.knowledge.md` ("browser-use — research findings"). Closes #11.
+
+### RM-018 — Multi-agent CLI platform with command phases
+- Status: new
+- Priority: M
+- Owner: copilot
+- Last updated: 2026-08-01
+- Links: [plan](plans/2026-08-01-multi-agent-cli-platform.md)
+- Next step: Define Phase protocol in `scripts/phases/__init__.py` and scaffold module structure
+- Notes: Six command phases (/explore, /seek, /gather, /organize, /understand, /generate) unify the observation pipeline. GitHub Copilot CLI and Pi CLI integrate as auxiliary tools for specific phases (command generation and reasoning respectively). Existing codex/claude/gemini remain primary providers. Research done; findings in `.manage/6.knowledge.md` ("Multi-agent CLI platform"). Projects defined in `.manage/2.projects.md`.
 
 ### RM-017 — Package tekt.observer as an installable Claude skills plugin
 - Status: new
