@@ -1,4 +1,37 @@
-# jobwatch
+# tekt.observer
+
+I am extending the work that Jonas van der Heyden did and integrating it with a practice of AI Fleet Management called SignalFlow. It's how we coordinate a series of steps in a process to achieve a goal useful for people. 
+
+Tekt.Observer helps with Explore, Seek, Gather, Organize, Understand, and Generate. 
+
+It's focused on being the best at exploring uncharted territories, creating paths for which seekers can go and get to those destinations ( by generating code or script ), it can execute the process of gathering this data, as well as organizing/categorizing/ annotating it, understanding (in the way that makes sense as it relates to us, our goals), and then generating (digests, reports)
+
+
+Starting points 
+
+## tekt.md 
+Tekt is used as the core tooling engine, and installs all the different agents that we want to use. 
+
+- Claude Desktop/Cowork, Claude Code 
+- Codex CLI, ChatGPT Codex/App (coming soon)
+- OpenClaw, Hermes Agent, ZeroClaw, NanoClaw
+- VSCode, Zed 
+
+It also sets up communications tooling for S3 to communicate with other instanes of Tekt or anyone else syncing on the same buckets. 
+
+## tekt.signalflow 
+We have made a set of prompts for an AI fleet to execute parts of the work and collect / organize data with S3. 
+This is the following process that tekt.observer needs to complement.
+
+- explore - using browser use to understand and generate crawl4ai script for new sources
+- seek - use crawl4ai to execute the crawl4ai script on existing sources
+- gather - run scheduler to seek data from sources and gather it one place
+- organize - organize, categorize, annotate, relate,correlate, index
+- understand - rerank opportunities based on a profile, prioritize for impact
+- generate - create digest that includes a brief of how to move towards success
+
+## jobwatch 
+
 jobwatch helps technical job seekers find relevant roles from direct sources before they are buried on large job boards.
 
 It monitors company career pages and other unaggregated sources you choose, reads the full job description, and matches jobs against your CV and preferences. Instead of noisy keyword alerts, you get a short digest of opportunities that are actually worth your attention.
@@ -11,7 +44,7 @@ Example:
 jobwatch finds the roles. Trackers manage the ones you already found; writers draft applications you haven't decided on yet. This is the step before both.
 -->
 ### Quick start:
-1. `git clone git@github.com:jvdheyden/jobwatch.git && cd "$(basename "$_" .git)"`
+1. `git clone git@github.com:xingh/tekt.observer.git && cd "$(basename "$_" .git)"`
 2. `bash scripts/bootstrap_machine.sh --agent {claude,codex,gemini}`
 3. Optional: run `bash scripts/start_setup_agent.sh --agent {claude,codex,gemini}` only if bootstrap did not start guided setup automatically or was invoked with `--no-start-setup-agent`.
 

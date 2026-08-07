@@ -2,22 +2,29 @@
 
 ```yaml
 SITE_PROFILE:
-  site_name: jobwatch
+  site_name: tekt.observer
   canonical_repository:
     primary: https://github.com/jvdheyden/jobwatch
     current_fork: https://github.com/xingh/tekt.observer
   domain:
     type: repository_local_cli_app
-    public_web_domain: null
-  tagline: "Agent-assisted job-search workflow with deterministic source discovery and ranked digests"
-  purpose:
-    - monitor direct job sources selected per track
-    - filter and rank roles against user profile and track preferences
-    - publish concise local digests, with optional Logseq/email/Telegram delivery
+    public_web_domain: tekt.md
+  tagline: "Agent-assisted {job,opportunity,industry}-search workflow with deterministic source discovery and ranked digests"
+  purpose:    
+    - monitor direct {job,opportunity,industry} sources selected per track
+    - filter and rank {roles,opportunities,interests] against user profile and track preferences
+    - automate data collection through web page browsing,
+    - process that discovers a path, and then builds a repeatable path to the data/knowledge with code
+    - one approach discovers and then generates code, another browses and creates scripts that get translated into code
+    - publish concise local digests, and optional delivery to email/Telegram and sae to Logseq format
   audience:
     primary:
-      - technical job seekers comfortable with CLI tooling
+      - knowledge managers who have to watch and analyze knowledge from various places for their job 
+      - investors who want to know what's happening across their portfolio from their various subscriptions
+      - researchers, writers, professionals who want to look for non profit foundation or government grants 
+      - ai leaders, managers, and architects who want a predictable way to run long running knowledge processes
     secondary:
+      - technical job seekers comfortable with CLI tooling
       - contributors extending source providers and workflow automation
   brand_tokens:
     colors: []
