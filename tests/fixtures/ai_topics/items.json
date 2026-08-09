@@ -1,0 +1,317 @@
+{
+  "note": "Hand-labeled fixture items for ai_topics I1 validation. 30 items covering all topics, content types, and audiences. Every item must pass ai_topics_taxonomy.validate_item.",
+  "items": [
+    {
+      "item_key": "km-01",
+      "title": "Designing durable memory for long-running agents",
+      "url": "https://example.dev/km/durable-agent-memory",
+      "topic": "ai_knowledge_memory",
+      "content_type": "post",
+      "categories": ["ai_knowledge_memory"],
+      "audiences": ["architects", "builders"]
+    },
+    {
+      "item_key": "km-02",
+      "title": "Hybrid vector + graph retrieval: a tradeoff study",
+      "url": "https://example.dev/papers/hybrid-retrieval-2026.pdf",
+      "topic": "ai_knowledge_memory",
+      "content_type": "paper",
+      "categories": ["ai_knowledge_memory", "machine_learning_ai"],
+      "audiences": ["architects"]
+    },
+    {
+      "item_key": "km-03",
+      "title": "Building a context graph for a coding agent",
+      "url": "https://example.dev/km/context-graph-coding-agent",
+      "topic": "ai_knowledge_memory",
+      "content_type": "video",
+      "categories": ["ai_knowledge_memory"],
+      "audiences": ["builders"]
+    },
+    {
+      "item_key": "km-04",
+      "title": "Chunking strategies for RAG evaluated on 5 corpora",
+      "url": "https://example.dev/km/chunking-eval",
+      "topic": "ai_knowledge_memory",
+      "content_type": "post",
+      "categories": ["ai_knowledge_memory"],
+      "audiences": ["builders", "operators"]
+    },
+    {
+      "item_key": "km-05",
+      "title": "Podcast: knowledge graphs vs vector stores at scale",
+      "url": "https://example.dev/podcasts/kg-vs-vectors",
+      "topic": "ai_knowledge_memory",
+      "content_type": "podcast",
+      "categories": ["ai_knowledge_memory"],
+      "audiences": ["architects", "leaders"]
+    },
+    {
+      "item_key": "cap-01",
+      "title": "Document vision benchmarks across 4 open models",
+      "url": "https://example.dev/cap/doc-vision-bench",
+      "topic": "ai_capabilities",
+      "content_type": "post",
+      "categories": ["ai_capabilities"],
+      "audiences": ["builders"]
+    },
+    {
+      "item_key": "cap-02",
+      "title": "Agent fleet management patterns for compliance workflows",
+      "url": "https://example.dev/cap/fleet-mgmt-compliance",
+      "topic": "ai_capabilities",
+      "content_type": "post",
+      "categories": ["ai_capabilities"],
+      "audiences": ["managers", "architects"]
+    },
+    {
+      "item_key": "cap-03",
+      "title": "Vision-language grounding survey (2026)",
+      "url": "https://example.dev/papers/vl-grounding-2026.pdf",
+      "topic": "ai_capabilities",
+      "content_type": "paper",
+      "categories": ["ai_capabilities", "machine_learning_ai"],
+      "audiences": ["architects"]
+    },
+    {
+      "item_key": "cap-04",
+      "title": "Document formulate: reproducible template extraction pipelines",
+      "url": "https://example.dev/resources/doc-formulate-pipelines",
+      "topic": "ai_capabilities",
+      "content_type": "resource",
+      "categories": ["ai_capabilities", "workflows", "patterns"],
+      "audiences": ["builders", "operators"]
+    },
+    {
+      "item_key": "cap-05",
+      "title": "Video: agent fleets at 10k concurrent sessions",
+      "url": "https://example.dev/videos/fleets-10k",
+      "topic": "ai_capabilities",
+      "content_type": "video",
+      "categories": ["ai_capabilities"],
+      "audiences": ["operators"]
+    },
+    {
+      "item_key": "os-01",
+      "title": "Comparing open-source agent harnesses in 2026",
+      "url": "https://example.dev/os/harness-compare-2026",
+      "topic": "open_source_ai",
+      "content_type": "post",
+      "categories": ["open_source_ai"],
+      "audiences": ["builders", "architects"]
+    },
+    {
+      "item_key": "os-02",
+      "title": "OSS applications for retrieval-augmented systems",
+      "url": "https://example.dev/os/oss-rag-apps",
+      "topic": "open_source_ai",
+      "content_type": "resource",
+      "categories": ["open_source_ai", "applications", "harnesses"],
+      "audiences": ["builders"]
+    },
+    {
+      "item_key": "os-03",
+      "title": "Podcast: why open-source model weights still matter",
+      "url": "https://example.dev/podcasts/oss-weights",
+      "topic": "open_source_ai",
+      "content_type": "podcast",
+      "categories": ["open_source_ai"],
+      "audiences": ["leaders", "managers"]
+    },
+    {
+      "item_key": "os-04",
+      "title": "Book: The Open-Source AI Playbook",
+      "url": "https://example.dev/books/open-source-ai-playbook",
+      "topic": "open_source_ai",
+      "content_type": "book",
+      "categories": ["open_source_ai"],
+      "audiences": ["managers", "leaders"]
+    },
+    {
+      "item_key": "mii-01",
+      "title": "Local vs cloud inference: cost curves across workloads",
+      "url": "https://example.dev/mii/local-vs-cloud",
+      "topic": "models_intelligence_inference",
+      "content_type": "post",
+      "categories": ["models_intelligence_inference"],
+      "audiences": ["operators", "architects"]
+    },
+    {
+      "item_key": "mii-02",
+      "title": "Paper: quantized inference on edge devices at 20 tok/s",
+      "url": "https://example.dev/papers/quantized-edge-2026.pdf",
+      "topic": "models_intelligence_inference",
+      "content_type": "paper",
+      "categories": ["models_intelligence_inference", "machine_learning_ai"],
+      "audiences": ["builders", "architects"]
+    },
+    {
+      "item_key": "mii-03",
+      "title": "Video: running a local LLM cluster on 8 consumer GPUs",
+      "url": "https://example.dev/videos/local-cluster-8gpu",
+      "topic": "models_intelligence_inference",
+      "content_type": "video",
+      "categories": ["models_intelligence_inference"],
+      "audiences": ["builders"]
+    },
+    {
+      "item_key": "mii-04",
+      "title": "Inference caching patterns for cost control",
+      "url": "https://example.dev/mii/inference-cache-patterns",
+      "topic": "models_intelligence_inference",
+      "content_type": "resource",
+      "categories": ["models_intelligence_inference", "patterns"],
+      "audiences": ["operators"]
+    },
+    {
+      "item_key": "mis-01",
+      "title": "Fusion inference: routing tokens across model families",
+      "url": "https://example.dev/mis/fusion-routing",
+      "topic": "models_inference_strategy",
+      "content_type": "post",
+      "categories": ["models_inference_strategy"],
+      "audiences": ["architects"]
+    },
+    {
+      "item_key": "mis-02",
+      "title": "Edge inference strategies for regulated industries",
+      "url": "https://example.dev/mis/edge-regulated",
+      "topic": "models_inference_strategy",
+      "content_type": "post",
+      "categories": ["models_inference_strategy"],
+      "audiences": ["architects", "leaders"]
+    },
+    {
+      "item_key": "mis-03",
+      "title": "Podcast: hybrid open+cloud inference at a Fortune-500 bank",
+      "url": "https://example.dev/podcasts/hybrid-bank",
+      "topic": "models_inference_strategy",
+      "content_type": "podcast",
+      "categories": ["models_inference_strategy"],
+      "audiences": ["managers", "leaders"]
+    },
+    {
+      "item_key": "mis-04",
+      "title": "Paper: energy-aware inference scheduling",
+      "url": "https://example.dev/papers/energy-inference-2026.pdf",
+      "topic": "models_inference_strategy",
+      "content_type": "paper",
+      "categories": ["models_inference_strategy", "energy"],
+      "audiences": ["architects", "operators"]
+    },
+    {
+      "item_key": "mf-01",
+      "title": "Foundation vs frontier: capability gaps in 2026",
+      "url": "https://example.dev/models/foundation-vs-frontier-2026",
+      "topic": "models_family",
+      "content_type": "post",
+      "categories": ["models_family"],
+      "audiences": ["leaders", "architects"]
+    },
+    {
+      "item_key": "mf-02",
+      "title": "Open-source model catalogue (curated resource)",
+      "url": "https://example.dev/resources/oss-model-catalog",
+      "topic": "models_family",
+      "content_type": "resource",
+      "categories": ["models_family", "knowledge", "templates"],
+      "audiences": ["builders", "managers"]
+    },
+    {
+      "item_key": "mf-03",
+      "title": "Book: A Practical History of Foundation Models",
+      "url": "https://example.dev/books/foundation-models-history",
+      "topic": "models_family",
+      "content_type": "book",
+      "categories": ["models_family"],
+      "audiences": ["leaders"]
+    },
+    {
+      "item_key": "mf-04",
+      "title": "Paper: benchmarking frontier model reasoning gaps",
+      "url": "https://example.dev/papers/frontier-reasoning-gaps.pdf",
+      "topic": "models_family",
+      "content_type": "paper",
+      "categories": ["models_family", "machine_learning_ai"],
+      "audiences": ["architects", "builders"]
+    },
+    {
+      "item_key": "news-01",
+      "title": "Regulator publishes AI transparency rule draft",
+      "url": "https://example.dev/news/ai-transparency-draft",
+      "topic": "news_ai",
+      "content_type": "post",
+      "categories": ["news_ai"],
+      "audiences": ["leaders", "managers"]
+    },
+    {
+      "item_key": "news-02",
+      "title": "Enterprise LLM adoption report (Q2 2026)",
+      "url": "https://example.dev/news/llm-adoption-q2-2026",
+      "topic": "news_ai",
+      "content_type": "post",
+      "categories": ["news_ai"],
+      "audiences": ["managers", "leaders"]
+    },
+    {
+      "item_key": "news-03",
+      "title": "Video: analyst roundup on the week in AI",
+      "url": "https://example.dev/videos/week-in-ai",
+      "topic": "news_ai",
+      "content_type": "video",
+      "categories": ["news_ai"],
+      "audiences": ["leaders"]
+    },
+    {
+      "item_key": "news-04",
+      "title": "Book: When Machines Reason — annual anthology",
+      "url": "https://example.dev/books/when-machines-reason-2026",
+      "topic": "news_ai",
+      "content_type": "book",
+      "categories": ["news_ai"],
+      "audiences": ["leaders", "managers"]
+    }
+  ],
+  "invalid_regression_items": [
+    {
+      "item_key": "bad-topic-01",
+      "title": "Has a made-up topic id",
+      "topic": "not_a_topic",
+      "content_type": "post",
+      "categories": ["news_ai"],
+      "audiences": ["builders"]
+    },
+    {
+      "item_key": "bad-type-01",
+      "title": "Has a made-up content type",
+      "topic": "news_ai",
+      "content_type": "tweet",
+      "categories": ["news_ai"],
+      "audiences": ["builders"]
+    },
+    {
+      "item_key": "bad-audience-01",
+      "title": "Has an unknown audience",
+      "topic": "news_ai",
+      "content_type": "post",
+      "categories": ["news_ai"],
+      "audiences": ["executives"]
+    },
+    {
+      "item_key": "bad-category-01",
+      "title": "Uses resource-only category on a paper",
+      "topic": "ai_capabilities",
+      "content_type": "paper",
+      "categories": ["ai_capabilities", "harnesses"],
+      "audiences": ["architects"]
+    },
+    {
+      "item_key": "bad-missing-01",
+      "title": "Missing required audiences field",
+      "topic": "news_ai",
+      "content_type": "post",
+      "categories": ["news_ai"],
+      "audiences": []
+    }
+  ]
+}

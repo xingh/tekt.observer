@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "source": ".arkitype/00-topic-tracker.md",
+  "topics": [
+    {"id": "ai_knowledge_memory", "label": "AI Knowledge and Memory", "facets": ["knowledge_storage", "knowledge_graph", "context_graph"]},
+    {"id": "ai_capabilities", "label": "AI Capabilities", "facets": ["vision", "document_vision", "document_formulate", "agent_fleet_management"]},
+    {"id": "open_source_ai", "label": "Open Source AI", "facets": ["applications", "harnesses"]},
+    {"id": "models_intelligence_inference", "label": "Models / Intelligence Inference", "facets": ["open", "local", "cloud"]},
+    {"id": "models_inference_strategy", "label": "Models / Inference Strategy", "facets": ["open", "fusion", "edge", "cloud"]},
+    {"id": "models_family", "label": "Models", "facets": ["open_source", "foundation", "frontier"]},
+    {"id": "news_ai", "label": "News / AI", "facets": []}
+  ],
+  "content_types": [
+    {"id": "post", "label": "Post", "category_groups": ["topics", "post_video_podcast_book_categories"]},
+    {"id": "video", "label": "Video", "category_groups": ["topics", "post_video_podcast_book_categories"]},
+    {"id": "podcast", "label": "Podcast", "category_groups": ["topics", "post_video_podcast_book_categories"]},
+    {"id": "book", "label": "Book", "category_groups": ["topics", "book_paper_categories"]},
+    {"id": "resource", "label": "Resource", "category_groups": ["topics", "resource_categories"]},
+    {"id": "paper", "label": "Paper", "category_groups": ["topics", "book_paper_categories"]}
+  ],
+  "category_groups": {
+    "post_video_podcast_book_categories": {
+      "derived_from_topics": true,
+      "extra": []
+    },
+    "book_paper_categories": {
+      "derived_from_topics": true,
+      "extra": ["energy", "policy", "machine_learning_ai", "quantum", "networking"]
+    },
+    "resource_categories": {
+      "derived_from_topics": true,
+      "extra": [
+        "skills", "tools", "workflows", "connectors", "agents", "patterns",
+        "architectures", "applications", "harnesses", "fleets",
+        "company_harness", "department_harness", "team_harness",
+        "knowledge", "templates", "news"
+      ]
+    }
+  },
+  "audiences": [
+    {"id": "builders", "label": "Builders", "lens": "hands-on implementation, code, prototypes"},
+    {"id": "operators", "label": "Operators", "lens": "reliability, on-call, cost, throughput"},
+    {"id": "managers", "label": "Managers", "lens": "team throughput, roadmap alignment, hiring"},
+    {"id": "architects", "label": "Architects", "lens": "system shape, tradeoffs, invariants across layers"},
+    {"id": "leaders", "label": "Leaders", "lens": "strategy, portfolio bets, external narrative"}
+  ]
+}
