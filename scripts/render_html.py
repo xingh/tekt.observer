@@ -17,11 +17,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from html_viewer import (  # noqa: E402
     Model,
     STYLE_CSS,
+    render_feed,
     render_index,
     render_run,
     render_ranked,
     render_sources,
     render_track_index,
+    render_trends,
 )
 
 
@@ -65,7 +67,18 @@ def render_all(root: Path, out_dir: Path) -> tuple[int, int]:
         for date in dates:
             _write_page(out_dir, f"track/{slug}/{date}.html", render_run(model, slug, date))
             pages += 1
-        for kind, date_list in [("digests", track.digest_dates), ("discovery", track.discovery_dates)]:
+        for date in model.organized_dates(slug):
+            _write_page(out_dir, f"track/{slug}/feed/{date}.html", render_feed(model, slug, date))
+            pages += 1
+        for date in model.trends_dates(slug):
+            _write_page(out_dir, f"track/{slug}/trends/{date}.html", render_trends(model, slug, date))
+            pages += 1
+        for kind, date_list in [
+            ("digests", track.digest_dates),
+            ("discovery", track.discovery_dates),
+            ("organized", model.organized_dates(slug)),
+            ("trends", model.trends_dates(slug)),
+        ]:
             for date in date_list:
                 src = model.raw_path(kind, slug, date)
                 if src is not None:

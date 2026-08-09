@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import html
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -125,6 +126,22 @@ class Model:
             self.root / "artifacts" / "discovery" / slug / f"{date}.json"
         )
 
+    def organized(self, slug: str, date: str) -> dict[str, Any] | None:
+        return self._read_json(
+            self.root / "artifacts" / "organized" / slug / f"{date}.json"
+        )
+
+    def trends(self, slug: str, date: str) -> dict[str, Any] | None:
+        return self._read_json(
+            self.root / "artifacts" / "trends" / slug / f"{date}.json"
+        )
+
+    def organized_dates(self, slug: str) -> list[str]:
+        return self._list_dated_json(self.root / "artifacts" / "organized" / slug)
+
+    def trends_dates(self, slug: str) -> list[str]:
+        return self._list_dated_json(self.root / "artifacts" / "trends" / slug)
+
     def raw_path(self, kind: str, slug: str, date: str) -> Path | None:
         p = self.root / "artifacts" / kind / slug / f"{date}.json"
         return p if p.is_file() else None
@@ -200,6 +217,60 @@ ul { padding-left: 22px; }
 details { margin-top: 12px; }
 details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 .footer { color: var(--muted); font-size: 12px; margin-top: 40px; text-align: center; }
+
+/* Feed */
+.feed-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.feed-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.feed-card .thumb {
+  width: 100%;
+  aspect-ratio: 1.91 / 1;
+  background: linear-gradient(135deg, #dcdcdc 0%, #b8b8b8 100%);
+  background-size: cover;
+  background-position: center;
+  display: block;
+  border-bottom: 1px solid var(--border);
+}
+@media (prefers-color-scheme: dark) {
+  .feed-card .thumb {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+  }
+}
+.feed-card .thumb.placeholder::before {
+  content: attr(data-initials);
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 2px;
+}
+.feed-card .body { padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.feed-card .body .title { font-weight: 600; font-size: 15px; line-height: 1.35; }
+.feed-card .body .title a { color: inherit; text-decoration: none; }
+.feed-card .body .title a:hover { text-decoration: underline; }
+.feed-card .body .desc { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.feed-card .body .meta-row { color: var(--muted); font-size: 12px; margin-top: auto; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+/* Trends */
+.bar-row { display: flex; align-items: center; gap: 10px; margin: 4px 0; font-size: 13px; }
+.bar-row .label { flex: 0 0 200px; color: var(--fg); }
+.bar-row .bar { flex: 1; height: 14px; background: var(--code-bg); border-radius: 3px; overflow: hidden; }
+.bar-row .bar > span { display: block; height: 100%; background: var(--accent); }
+.bar-row .count { flex: 0 0 44px; text-align: right; color: var(--muted); }
+.velocity-up { color: #16a34a; }
+.velocity-down { color: #b91c1c; }
+.velocity-flat { color: var(--muted); }
+.kw-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
+.kw-cloud .kw { background: var(--code-bg); border-radius: 12px; padding: 2px 10px; font-size: 13px; }
 """
 
 
@@ -269,9 +340,18 @@ def render_track_index(model: Model, slug: str) -> str:
             f'<p class="meta">Persona: <a href="/track/{_e(slug)}/sources">'
             f"<code>{_e(t.persona_rel)}</code></a></p>"
         )
-    ranked_link = ""
+    extra_links: list[str] = []
     if t.ranked_jobs:
-        ranked_link = f' &middot; <a href="/track/{_e(slug)}/ranked">Ranked overview</a>'
+        extra_links.append(f'<a href="/track/{_e(slug)}/ranked">Ranked overview</a>')
+    organized_dates = model.organized_dates(slug)
+    if organized_dates:
+        latest_org = organized_dates[0]
+        extra_links.append(f'<a href="/track/{_e(slug)}/feed/{_e(latest_org)}">Feed</a>')
+    trends_dates = model.trends_dates(slug)
+    if trends_dates:
+        latest_tr = trends_dates[0]
+        extra_links.append(f'<a href="/track/{_e(slug)}/trends/{_e(latest_tr)}">Trends</a>')
+    ranked_link = "".join(f" &middot; {l}" for l in extra_links)
     sources_link = f'<a href="/track/{_e(slug)}/sources">Sources &amp; config</a>'
     dates = sorted(set(t.digest_dates) | set(t.discovery_dates), reverse=True)
     if not dates:
@@ -588,10 +668,183 @@ def render_sources(model: Model, slug: str) -> str:
     return _page(f"{t.display_name} sources", crumbs, "".join(parts))
 
 
+def _initials(text: str) -> str:
+    words = re.findall(r"[A-Za-z0-9]+", text or "")
+    if not words:
+        return "??"
+    if len(words) == 1:
+        return words[0][:2].upper()
+    return (words[0][0] + words[1][0]).upper()
+
+
+def _feed_card(item: dict, enrichment: dict) -> str:
+    url = item.get("url", "")
+    title = enrichment.get("og_title") or item.get("title", "") or "(untitled)"
+    desc = enrichment.get("og_description") or item.get("rationale", "") or ""
+    site = enrichment.get("og_site_name") or item.get("source_id", "")
+    img = enrichment.get("og_image") or ""
+    topic = item.get("topic", "")
+    ctype = item.get("content_type", "")
+    audiences = item.get("audiences") or []
+    if img:
+        thumb = f'<a class="thumb" href="{_e(url)}" style="background-image: url(\'{_e(img)}\');"></a>'
+    else:
+        thumb = (
+            f'<a class="thumb placeholder" href="{_e(url)}" '
+            f'data-initials="{_e(_initials(site or title))}"></a>'
+        )
+    aud_badges = " ".join(f'<span class="badge">{_e(a)}</span>' for a in audiences)
+    return (
+        f'<article class="feed-card">'
+        f"{thumb}"
+        f'<div class="body">'
+        f'<div class="title"><a href="{_e(url)}">{_e(title)}</a></div>'
+        + (f'<div class="desc">{_e(desc[:220])}</div>' if desc else "")
+        + f'<div class="meta-row">'
+          f'<span class="badge">{_e(topic)}</span>'
+          f'<span class="badge">{_e(ctype)}</span>'
+          f"{aud_badges}"
+          f'<span>{_e(site)}</span>'
+        f"</div>"
+        f"</div>"
+        f"</article>"
+    )
+
+
+def _lookup_enrichment(discovery: dict | None) -> dict[str, dict]:
+    lookup: dict[str, dict] = {}
+    if not discovery:
+        return lookup
+    for source in discovery.get("sources", []):
+        for cand in source.get("candidates", []):
+            url = cand.get("url") or ""
+            if url and "enrichment" in cand:
+                lookup[url] = cand["enrichment"] or {}
+    return lookup
+
+
+def render_feed(model: Model, slug: str, date: str) -> str:
+    t = model.find_track(slug)
+    if not t:
+        return _not_found(slug)
+    crumbs = [
+        ("Home", "/"),
+        (t.display_name, f"/track/{slug}/"),
+        (f"Feed {date}", ""),
+    ]
+    organized = model.organized(slug, date)
+    if not organized:
+        body = (
+            f"<h1>{_e(t.display_name)} — Feed {_e(date)}</h1>"
+            '<p class="section-empty">No organized artifact for this date.</p>'
+        )
+        return _page(f"{t.display_name} feed {date}", crumbs, body)
+    enrichment_map = _lookup_enrichment(model.discovery(slug, date))
+    items = organized.get("items", [])
+    by_topic: dict[str, list[dict]] = {}
+    for it in items:
+        by_topic.setdefault(it.get("topic", "other"), []).append(it)
+    topic_order = sorted(by_topic.keys(), key=lambda k: -len(by_topic[k]))
+    parts: list[str] = [
+        f"<h1>{_e(t.display_name)} — Feed <span class=\"meta\">{_e(date)}</span></h1>",
+        f'<p class="meta">{len(items)} items across {len(by_topic)} topic(s). '
+        f'Grouped by topic; card image comes from the destination page&apos;s OpenGraph metadata when available.</p>',
+    ]
+    for topic in topic_order:
+        topic_items = by_topic[topic]
+        parts.append(f'<h2>{_e(topic)} <span class="meta">({len(topic_items)})</span></h2>')
+        parts.append('<div class="feed-grid">')
+        for it in topic_items:
+            enr = enrichment_map.get(it.get("url", ""), {})
+            parts.append(_feed_card(it, enr))
+        parts.append("</div>")
+    return _page(f"{t.display_name} feed {date}", crumbs, "".join(parts))
+
+
+def _bar_row(label: str, count: int, total: int) -> str:
+    pct = int((count / total) * 100) if total > 0 else 0
+    return (
+        f'<div class="bar-row"><div class="label">{_e(label)}</div>'
+        f'<div class="bar"><span style="width: {pct}%"></span></div>'
+        f'<div class="count">{count}</div></div>'
+    )
+
+
+def render_trends(model: Model, slug: str, date: str) -> str:
+    t = model.find_track(slug)
+    if not t:
+        return _not_found(slug)
+    crumbs = [
+        ("Home", "/"),
+        (t.display_name, f"/track/{slug}/"),
+        (f"Trends {date}", ""),
+    ]
+    trends = model.trends(slug, date)
+    if not trends:
+        body = (
+            f"<h1>{_e(t.display_name)} — Trends {_e(date)}</h1>"
+            '<p class="section-empty">No trend report for this date.</p>'
+        )
+        return _page(f"{t.display_name} trends {date}", crumbs, body)
+    total = trends.get("total_items", 0)
+    parts: list[str] = [
+        f"<h1>{_e(t.display_name)} — Trends <span class=\"meta\">{_e(date)}</span></h1>",
+        f'<p class="meta">{total} items surfaced. Generated {_e(trends.get("generated_at", ""))}.</p>',
+    ]
+
+    def _section(title: str, rows: list[dict], label_key: str, count_key: str = "count") -> str:
+        if not rows:
+            return f'<h2>{_e(title)}</h2><p class="section-empty">none</p>'
+        max_count = max((r.get(count_key, 0) for r in rows), default=1)
+        body = "".join(_bar_row(r.get(label_key, ""), r.get(count_key, 0), max_count) for r in rows)
+        return f"<h2>{_e(title)}</h2>{body}"
+
+    parts.append(_section("Items per topic", trends.get("items_per_topic", []), "topic"))
+    parts.append(_section("Items per source", trends.get("items_per_source", []), "source_id"))
+    parts.append(_section("Items per content type", trends.get("items_per_content_type", []), "content_type"))
+    parts.append(_section("Items per audience", trends.get("items_per_audience", []), "audience"))
+
+    vel = trends.get("topic_velocity_vs_previous", [])
+    parts.append("<h2>Topic velocity (vs previous day)</h2>")
+    if not vel:
+        parts.append('<p class="section-empty">no prior-day organized artifact to compare against</p>')
+    else:
+        rows = []
+        for v in vel:
+            delta = v.get("delta", 0)
+            cls = "velocity-up" if delta > 0 else ("velocity-down" if delta < 0 else "velocity-flat")
+            arrow = "▲" if delta > 0 else ("▼" if delta < 0 else "▬")
+            rows.append(f'<tr><td>{_e(v.get("topic", ""))}</td><td class="{cls}">{arrow} {delta:+d}</td></tr>')
+        parts.append("<table><tr><th>Topic</th><th>Delta</th></tr>" + "".join(rows) + "</table>")
+
+    cross = trends.get("cross_source_urls", [])
+    parts.append("<h2>URLs surfaced by multiple sources</h2>")
+    if not cross:
+        parts.append('<p class="section-empty">none today</p>')
+    else:
+        rows = []
+        for c in cross:
+            u = c.get("url", "")
+            rows.append(
+                f'<tr><td><a href="{_e(u)}">{_e(u)}</a></td>'
+                f'<td>{_e(", ".join(c.get("sources") or []))}</td></tr>'
+            )
+        parts.append("<table><tr><th>URL</th><th>Sources</th></tr>" + "".join(rows) + "</table>")
+
+    kws = trends.get("top_keywords", [])
+    parts.append("<h2>Top title keywords</h2>")
+    if not kws:
+        parts.append('<p class="section-empty">none</p>')
+    else:
+        cloud = "".join(
+            f'<span class="kw">{_e(k.get("token", ""))} <span class="meta">({k.get("count", 0)})</span></span>'
+            for k in kws
+        )
+        parts.append(f'<div class="kw-cloud">{cloud}</div>')
+
+    return _page(f"{t.display_name} trends {date}", crumbs, "".join(parts))
+
+
 def rewrite_urls_for_static(html_text: str) -> str:
     """Rewrite root-anchored / URLs to relative paths for static output."""
-    # naive but sufficient for our controlled output
-    return (
-        html_text
-        .replace('href="/style.css"', 'href="/style.css"')  # placeholder no-op
-    )
+    return html_text

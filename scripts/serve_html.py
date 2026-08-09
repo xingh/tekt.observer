@@ -16,11 +16,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from html_viewer import (  # noqa: E402
     Model,
     STYLE_CSS,
+    render_feed,
     render_index,
     render_run,
     render_ranked,
     render_sources,
     render_track_index,
+    render_trends,
 )
 
 
@@ -95,6 +97,14 @@ class ViewerHandler(BaseHTTPRequestHandler):
                 # date page: /track/<slug>/<date>
                 if len(tail) == 10 and tail[4] == "-" and tail[7] == "-":
                     self._html(render_run(model, slug, tail))
+                    return
+            if len(segs) == 4 and segs[2] in ("feed", "trends"):
+                date = segs[3]
+                if len(date) == 10 and date[4] == "-" and date[7] == "-":
+                    if segs[2] == "feed":
+                        self._html(render_feed(model, slug, date))
+                    else:
+                        self._html(render_trends(model, slug, date))
                     return
         self._html("<h1>404</h1>", 404)
 

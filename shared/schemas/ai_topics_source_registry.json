@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "note": "No-key AI content sources for the ai_topics track. Kinds: rss (RSS 2.0), atom (Atom 1.0), hn_algolia (Hacker News search JSON API).",
+  "sources": [
+    {
+      "id": "simonwillison_atom",
+      "name": "Simon Willison's Weblog",
+      "kind": "atom",
+      "url": "https://simonwillison.net/atom/entries/",
+      "topic_hints": ["ai_capabilities", "open_source_ai", "ai_knowledge_memory"]
+    },
+    {
+      "id": "sebastianraschka_rss",
+      "name": "Sebastian Raschka's Magazine",
+      "kind": "rss",
+      "url": "https://magazine.sebastianraschka.com/feed",
+      "topic_hints": ["models_family", "ai_capabilities"]
+    },
+    {
+      "id": "latent_space_rss",
+      "name": "Latent Space",
+      "kind": "rss",
+      "url": "https://www.latent.space/feed",
+      "topic_hints": ["ai_capabilities", "models_intelligence_inference", "open_source_ai"]
+    },
+    {
+      "id": "arxiv_cs_lg_rss",
+      "name": "arXiv cs.LG (Machine Learning)",
+      "kind": "rss",
+      "url": "http://export.arxiv.org/rss/cs.LG",
+      "topic_hints": ["models_family", "ai_capabilities"]
+    },
+    {
+      "id": "arxiv_cs_cl_rss",
+      "name": "arXiv cs.CL (Computation and Language)",
+      "kind": "rss",
+      "url": "http://export.arxiv.org/rss/cs.CL",
+      "topic_hints": ["models_family", "ai_knowledge_memory"]
+    },
+    {
+      "id": "lesswrong_rss",
+      "name": "LessWrong",
+      "kind": "rss",
+      "url": "https://www.lesswrong.com/feed.xml?view=curated-rss",
+      "topic_hints": ["news_ai", "ai_capabilities"]
+    },
+    {
+      "id": "hn_algolia_ai",
+      "name": "Hacker News (AI stories)",
+      "kind": "hn_algolia",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=AI&hitsPerPage=30",
+      "topic_hints": ["news_ai", "open_source_ai", "models_family"]
+    }
+  ]
+}

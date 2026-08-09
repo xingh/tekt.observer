@@ -1,12 +1,25 @@
 #!/bin/bash
 set -euo pipefail
 
-# End-to-end deterministic run for the ai_topics track (I1 preview).
+# End-to-end run for the ai_topics track.
 #
-# Sets up a scratch JOB_AGENT_ROOT, points ai_topics at the local HTML
-# fixture, runs discovery -> classify -> synthesize digest -> render markdown.
-# No provider CLI required. Prints artifact paths so scripts/render_html.py
-# can be pointed at the scratch root.
+# Default (fixture) mode: sets up a scratch JOB_AGENT_ROOT, points ai_topics
+# at the local HTML fixture, runs discovery -> classify -> trends ->
+# synthesize digest -> render markdown. No network required.
+#
+# --live mode: replaces fixture discovery with ai_topics_gather.py (RSS/Atom
+# + HN Algolia sources from shared/schemas/ai_topics_source_registry.json),
+# runs ai_topics_enrich.py to add OpenGraph metadata per URL, then continues
+# through classify -> trends -> synthesize -> render.
+#
+# Either way, prints artifact paths so scripts/render_html.py and
+# scripts/serve_html.py can be pointed at the scratch root.
+
+LIVE=0
+if [[ "${1:-}" == "--live" ]]; then
+  LIVE=1
+  shift
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -53,13 +66,24 @@ cp "$ROOT/tracks/$TRACK/source_state.json" "$SCRATCH/tracks/$TRACK/source_state.
 cp "$ROOT/tracks/$TRACK/prefs.md" "$SCRATCH/tracks/$TRACK/prefs.md"
 cp "$ROOT/tracks/$TRACK/AGENTS.md" "$SCRATCH/tracks/$TRACK/AGENTS.md"
 
-# 1. Discover (topic-tracker discovery, not job-search discovery)
+# 1. Discover
 mkdir -p "$SCRATCH/artifacts/discovery/$TRACK"
-"$PYTHON_BIN" "$SCRATCH/scripts/ai_topics_discover.py" \
-  --root "$SCRATCH" --track "$TRACK" --date "$TODAY"
+if [[ "$LIVE" -eq 1 ]]; then
+  "$PYTHON_BIN" "$SCRATCH/scripts/ai_topics_gather.py" \
+    --root "$SCRATCH" --track "$TRACK" --date "$TODAY"
+  # 1a. Enrich each URL with OpenGraph metadata (cached across runs)
+  "$PYTHON_BIN" "$SCRATCH/scripts/ai_topics_enrich.py" \
+    --root "$SCRATCH" --track "$TRACK" --date "$TODAY"
+else
+  "$PYTHON_BIN" "$SCRATCH/scripts/ai_topics_discover.py" \
+    --root "$SCRATCH" --track "$TRACK" --date "$TODAY"
+fi
 
 # 2. Classify
 "$PYTHON_BIN" "$SCRATCH/scripts/ai_topics_classify.py" --root "$SCRATCH" --date "$TODAY"
+
+# 2a. Trends
+"$PYTHON_BIN" "$SCRATCH/scripts/ai_topics_trends.py" --root "$SCRATCH" --date "$TODAY"
 
 # 3. Synthesize digest
 "$PYTHON_BIN" "$SCRATCH/scripts/ai_topics_synthesize_digest.py" \
@@ -74,11 +98,16 @@ mkdir -p "$SCRATCH/tracks/$TRACK/digests"
   --latest-output "$SCRATCH/artifacts/digests/$TRACK/latest.json"
 
 echo
+echo "Mode:              $([[ $LIVE -eq 1 ]] && echo live || echo fixture)"
 echo "Scratch root:      $SCRATCH"
 echo "Discovery:         $SCRATCH/artifacts/discovery/$TRACK/$TODAY.json"
 echo "Organized:         $SCRATCH/artifacts/organized/$TRACK/$TODAY.json"
+echo "Trends:            $SCRATCH/artifacts/trends/$TRACK/$TODAY.json"
 echo "Digest JSON:       $SCRATCH/artifacts/digests/$TRACK/$TODAY.json"
 echo "Digest markdown:   $SCRATCH/tracks/$TRACK/digests/$TODAY.md"
+if [[ "$LIVE" -eq 1 ]]; then
+  echo "Enrichment cache:  $SCRATCH/artifacts/enrichment/$TRACK/urls.json"
+fi
 echo
 echo "Generate site:     $PYTHON_BIN scripts/render_html.py --root $SCRATCH --out site/"
 echo "Serve live:        $PYTHON_BIN scripts/serve_html.py --root $SCRATCH"
