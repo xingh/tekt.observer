@@ -146,6 +146,10 @@ if [[ -f "$SCRATCH/artifacts/organized/$TRACK/$TODAY.json" ]]; then
   echo "[pipeline] rerank per audience (track_rerank)"
   "$PYTHON_BIN" "$SCRATCH/scripts/track_rerank.py" --root "$SCRATCH" --track "$TRACK" --date "$TODAY" || \
     echo "[pipeline] rerank failed (continuing)"
+  echo "[pipeline] per-audience digests (synthesize_audience_digests)"
+  "$PYTHON_BIN" "$SCRATCH/scripts/synthesize_audience_digests.py" \
+    --root "$SCRATCH" --track "$TRACK" --date "$TODAY" || \
+    echo "[pipeline] per-audience synth failed (continuing)"
 fi
 
 # --- 4. Synthesize digest --------------------------------------------------
