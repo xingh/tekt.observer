@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "note": "No-key financial news sources for the market_watch track. Kinds: rss (RSS 2.0), atom (Atom 1.0), hn_algolia (HN search JSON API).",
+  "note": "No-key financial news sources for the market_watch track. Kinds: rss (RSS 2.0), atom (Atom 1.0), hn_algolia (HN search JSON API). Known unfriendly to automated fetchers and therefore omitted: SEC litigation RSS (403), US Treasury press releases (404, path changes often), US BLS release RSS (403).",
   "sources": [
     {
       "id": "fed_press_all_rss",
@@ -17,13 +17,6 @@
       "topic_hints": ["public_equities"]
     },
     {
-      "id": "sec_litigation_rss",
-      "name": "SEC — Litigation Releases",
-      "kind": "rss",
-      "url": "https://www.sec.gov/rss/litigation/litreleases.xml",
-      "topic_hints": ["public_equities"]
-    },
-    {
       "id": "boe_news_rss",
       "name": "Bank of England — News",
       "kind": "rss",
@@ -31,11 +24,32 @@
       "topic_hints": ["fixed_income_macro"]
     },
     {
+      "id": "ecb_press_rss",
+      "name": "European Central Bank — Press Releases",
+      "kind": "rss",
+      "url": "https://www.ecb.europa.eu/rss/press.html",
+      "topic_hints": ["fixed_income_macro"]
+    },
+    {
+      "id": "cnbc_top_rss",
+      "name": "CNBC — Top News",
+      "kind": "rss",
+      "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+      "topic_hints": ["public_equities", "fixed_income_macro"]
+    },
+    {
       "id": "yahoo_finance_rss",
       "name": "Yahoo Finance — Top Stories",
       "kind": "rss",
       "url": "https://finance.yahoo.com/news/rssindex",
       "topic_hints": ["public_equities", "fixed_income_macro"]
+    },
+    {
+      "id": "arstechnica_business_rss",
+      "name": "Ars Technica — Business",
+      "kind": "rss",
+      "url": "https://arstechnica.com/business/feed/",
+      "topic_hints": ["public_equities", "private_equity"]
     },
     {
       "id": "hn_algolia_earnings",
@@ -50,6 +64,34 @@
       "kind": "hn_algolia",
       "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=funding%20round&hitsPerPage=15",
       "topic_hints": ["private_equity"]
+    },
+    {
+      "id": "hn_algolia_ipo",
+      "name": "Hacker News (IPO)",
+      "kind": "hn_algolia",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=IPO&hitsPerPage=15",
+      "topic_hints": ["public_equities", "private_equity"]
+    },
+    {
+      "id": "hn_algolia_rate_hike",
+      "name": "Hacker News (rate hike)",
+      "kind": "hn_algolia",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=rate%20hike&hitsPerPage=15",
+      "topic_hints": ["fixed_income_macro"]
+    },
+    {
+      "id": "hn_algolia_acquisition",
+      "name": "Hacker News (acquisition)",
+      "kind": "hn_algolia",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=acquisition&hitsPerPage=15",
+      "topic_hints": ["private_equity", "public_equities"]
+    },
+    {
+      "id": "hn_algolia_central_bank",
+      "name": "Hacker News (central bank)",
+      "kind": "hn_algolia",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=central%20bank&hitsPerPage=15",
+      "topic_hints": ["fixed_income_macro"]
     }
   ]
 }
