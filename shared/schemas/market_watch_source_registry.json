@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "note": "No-key financial news sources for the market_watch track. Kinds: rss (RSS 2.0), atom (Atom 1.0), hn_algolia (HN search JSON API).",
+  "sources": [
+    {
+      "id": "fed_press_all_rss",
+      "name": "Federal Reserve — Press Releases",
+      "kind": "rss",
+      "url": "https://www.federalreserve.gov/feeds/press_all.xml",
+      "topic_hints": ["fixed_income_macro"]
+    },
+    {
+      "id": "sec_press_rss",
+      "name": "SEC — Press Releases",
+      "kind": "rss",
+      "url": "https://www.sec.gov/news/pressreleases.rss",
+      "topic_hints": ["public_equities"]
+    },
+    {
+      "id": "sec_litigation_rss",
+      "name": "SEC — Litigation Releases",
+      "kind": "rss",
+      "url": "https://www.sec.gov/rss/litigation/litreleases.xml",
+      "topic_hints": ["public_equities"]
+    },
+    {
+      "id": "boe_news_rss",
+      "name": "Bank of England — News",
+      "kind": "rss",
+      "url": "https://www.bankofengland.co.uk/rss/news",
+      "topic_hints": ["fixed_income_macro"]
+    },
+    {
+      "id": "yahoo_finance_rss",
+      "name": "Yahoo Finance — Top Stories",
+      "kind": "rss",
+      "url": "https://finance.yahoo.com/news/rssindex",
+      "topic_hints": ["public_equities", "fixed_income_macro"]
+    },
+    {
+      "id": "hn_algolia_earnings",
+      "name": "Hacker News (earnings)",
+      "kind": "hn_algolia",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=earnings&hitsPerPage=15",
+      "topic_hints": ["public_equities"]
+    },
+    {
+      "id": "hn_algolia_funding",
+      "name": "Hacker News (funding round)",
+      "kind": "hn_algolia",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=funding%20round&hitsPerPage=15",
+      "topic_hints": ["private_equity"]
+    }
+  ]
+}
