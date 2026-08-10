@@ -143,6 +143,9 @@ fi
 if [[ -f "$SCRATCH/artifacts/organized/$TRACK/$TODAY.json" ]]; then
   echo "[pipeline] trends (track_trends)"
   "$PYTHON_BIN" "$SCRATCH/scripts/track_trends.py" --root "$SCRATCH" --track "$TRACK" --date "$TODAY"
+  echo "[pipeline] rerank per audience (track_rerank)"
+  "$PYTHON_BIN" "$SCRATCH/scripts/track_rerank.py" --root "$SCRATCH" --track "$TRACK" --date "$TODAY" || \
+    echo "[pipeline] rerank failed (continuing)"
 fi
 
 # --- 4. Synthesize digest --------------------------------------------------

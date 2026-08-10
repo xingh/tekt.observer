@@ -136,6 +136,21 @@ class Model:
             self.root / "artifacts" / "trends" / slug / f"{date}.json"
         )
 
+    def ranked_audience(self, slug: str, audience: str, date: str) -> dict[str, Any] | None:
+        return self._read_json(
+            self.root / "artifacts" / "ranked_audience" / slug / audience / f"{date}.json"
+        )
+
+    def audiences_for(self, slug: str, date: str) -> list[str]:
+        base = self.root / "artifacts" / "ranked_audience" / slug
+        if not base.is_dir():
+            return []
+        out: list[str] = []
+        for sub in sorted(base.iterdir()):
+            if sub.is_dir() and (sub / f"{date}.json").is_file():
+                out.append(sub.name)
+        return out
+
     def organized_dates(self, slug: str) -> list[str]:
         return self._list_dated_json(self.root / "artifacts" / "organized" / slug)
 
@@ -958,12 +973,16 @@ def _report_feed_card(item: dict, enrichment: dict, why: list[str] | None = None
     )
 
 
-def render_report(model: Model, slug: str, date: str) -> str:
+def render_report(model: Model, slug: str, date: str, audience: str | None = None) -> str:
     """Consolidated single-page daily report.
 
     Combines executive summary + trend highlights + feed cards grouped by
-    topic (with OG images) + digest top-matches (with why bullets) + source
+    topic (with OG images) + top-matches (with why bullets) + source
     coverage into one publishable document.
+
+    When `audience` is given and a matching artifacts/ranked_audience/
+    file exists, the top-matches section is replaced with the top-N
+    items ranked for that audience.
     """
     t = model.find_track(slug)
     if not t:
@@ -974,16 +993,29 @@ def render_report(model: Model, slug: str, date: str) -> str:
     organized = model.organized(slug, date)
     trends = model.trends(slug, date)
     if not organized:
-        # Fall back to the structured digest view for tracks without organize
         return render_run(model, slug, date)
     enrichment_map = _lookup_enrichment(discovery)
     items = organized.get("items", [])
+    available_audiences = model.audiences_for(slug, date)
+
+    # Assemble the top-matches list. If an audience is scoped, use the
+    # per-audience ranked artifact; otherwise use the digest top_matches.
     top_matches_data: list[dict] = []
-    if digest:
-        for run in digest.get("runs", []):
-            for m in run.get("top_matches") or []:
-                top_matches_data.append(m)
-    top_urls = {m.get("listing_url") for m in top_matches_data}
+    top_urls: set[str] = set()
+    audience_topN = 8
+    audience_ranked_items: list[dict] = []
+    if audience and audience in available_audiences:
+        r = model.ranked_audience(slug, audience, date)
+        if r:
+            audience_ranked_items = r.get("ranked", [])[:audience_topN]
+            for it in audience_ranked_items:
+                top_urls.add(it.get("url", ""))
+    else:
+        if digest:
+            for run in digest.get("runs", []):
+                for m in run.get("top_matches") or []:
+                    top_matches_data.append(m)
+        top_urls = {m.get("listing_url") for m in top_matches_data}
 
     header = [
         '<div class="report-hero">',
@@ -992,10 +1024,30 @@ def render_report(model: Model, slug: str, date: str) -> str:
     audience_hint = ""
     if t.persona_rel:
         audience_hint = f' · Persona: <code>{_e(t.persona_rel)}</code>'
+    if audience:
+        audience_hint += f' · Audience lens: <strong>{_e(audience)}</strong>'
     header.append(
         f'<div class="sub">Track <code>{_e(slug)}</code>'
         f'{audience_hint}</div>'
     )
+    # Audience selector links
+    if available_audiences:
+        link_parts = [
+            (
+                f'<a href="/track/{_e(slug)}/{_e(date)}">All</a>'
+                if audience is not None
+                else '<strong>All</strong>'
+            )
+        ]
+        for a in available_audiences:
+            if audience == a:
+                link_parts.append(f'<strong>{_e(a)}</strong>')
+            else:
+                link_parts.append(f'<a href="/track/{_e(slug)}/{_e(date)}/audience/{_e(a)}">{_e(a)}</a>')
+        header.append(
+            f'<div class="sub" style="margin-top:2px;">Audience: '
+            f'{" · ".join(link_parts)}</div>'
+        )
     header.append(
         '<div class="quick-links">'
         f'<a href="/track/{_e(slug)}/feed/{_e(date)}">Full feed grid</a>'
@@ -1041,8 +1093,25 @@ def render_report(model: Model, slug: str, date: str) -> str:
             parts.append(f"<ul>{crows}</ul>")
         parts.append('</div>')
 
-    # Top matches for the persona audience (feed-card style with why bullets)
-    if top_matches_data:
+    # Top matches
+    if audience and audience_ranked_items:
+        parts.append('<div class="report-section">')
+        parts.append(
+            f'<div class="section-head"><h2>Top matches for {_e(audience)}</h2>'
+            f'<span class="count">top {len(audience_ranked_items)} ranked for this audience</span></div>'
+        )
+        parts.append('<div class="feed-grid">')
+        for it in audience_ranked_items:
+            why = [
+                f"audience_score: {it.get('audience_score')}",
+                f"rank: {it.get('rank')}",
+                f"selected: {'yes' if it.get('selected') else 'no (extrapolated)'}",
+                it.get("rationale", ""),
+            ]
+            parts.append(_report_feed_card(it, enrichment_map.get(it.get("url", ""), {}), why))
+        parts.append('</div>')
+        parts.append('</div>')
+    elif top_matches_data:
         parts.append('<div class="report-section">')
         parts.append(
             f'<div class="section-head"><h2>Top matches</h2>'

@@ -53,5 +53,12 @@
   "digest_sections": [
     {"id": "portfolio_alerts", "order": 1, "label": "Portfolio alerts"},
     {"id": "situational_awareness", "order": 2, "label": "Situational awareness"}
+  ],
+  "audiences": [
+    {"id": "investors", "label": "Investors", "lens": "portfolio P&L over 1-5 sessions, capital allocation, risk exposure"},
+    {"id": "portfolio_managers", "label": "Portfolio managers", "lens": "mandate-relative positioning, factor exposures, drawdown control"},
+    {"id": "allocators", "label": "Allocators", "lens": "manager selection, cross-asset allocation, benchmark relative"},
+    {"id": "gps", "label": "GPs", "lens": "private-market pipeline, exit windows, comp sets for portfolio companies"},
+    {"id": "lps", "label": "LPs", "lens": "fund performance drivers, capital call cadence, sector concentration"}
   ]
 }

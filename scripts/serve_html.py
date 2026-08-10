@@ -59,6 +59,12 @@ class ViewerHandler(BaseHTTPRequestHandler):
         parts = urlsplit(self.path)
         path = unquote(parts.path)
         model = Model(self.root)
+        query = {}
+        if parts.query:
+            for pair in parts.query.split("&"):
+                if "=" in pair:
+                    k, v = pair.split("=", 1)
+                    query[k] = unquote(v)
         if path == "/" or path == "/index.html":
             self._html(render_index(model))
             return
@@ -97,7 +103,8 @@ class ViewerHandler(BaseHTTPRequestHandler):
                     return
                 # date page: /track/<slug>/<date> -> full report (with fallback)
                 if len(tail) == 10 and tail[4] == "-" and tail[7] == "-":
-                    self._html(render_report(model, slug, tail))
+                    aud = query.get("audience")
+                    self._html(render_report(model, slug, tail, audience=aud))
                     return
             if len(segs) == 4 and segs[2] in ("feed", "trends"):
                 date = segs[3]
@@ -111,6 +118,13 @@ class ViewerHandler(BaseHTTPRequestHandler):
                 date = segs[2]
                 if len(date) == 10 and date[4] == "-" and date[7] == "-":
                     self._html(render_run(model, slug, date))
+                    return
+            # /track/<slug>/<date>/audience/<aud>
+            if len(segs) == 5 and segs[3] == "audience":
+                date = segs[2]
+                aud = segs[4]
+                if len(date) == 10 and date[4] == "-" and date[7] == "-":
+                    self._html(render_report(model, slug, date, audience=aud))
                     return
         self._html("<h1>404</h1>", 404)
 

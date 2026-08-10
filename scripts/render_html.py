@@ -69,6 +69,13 @@ def render_all(root: Path, out_dir: Path) -> tuple[int, int]:
             _write_page(out_dir, f"track/{slug}/{date}.html", render_report(model, slug, date))
             _write_page(out_dir, f"track/{slug}/{date}/details.html", render_run(model, slug, date))
             pages += 2
+            for aud in model.audiences_for(slug, date):
+                _write_page(
+                    out_dir,
+                    f"track/{slug}/{date}/audience/{aud}.html",
+                    render_report(model, slug, date, audience=aud),
+                )
+                pages += 1
         for date in model.organized_dates(slug):
             _write_page(out_dir, f"track/{slug}/feed/{date}.html", render_feed(model, slug, date))
             pages += 1
