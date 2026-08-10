@@ -18,6 +18,7 @@ from html_viewer import (  # noqa: E402
     STYLE_CSS,
     render_feed,
     render_index,
+    render_report,
     render_run,
     render_ranked,
     render_sources,
@@ -94,9 +95,9 @@ class ViewerHandler(BaseHTTPRequestHandler):
                 if tail == "sources":
                     self._html(render_sources(model, slug))
                     return
-                # date page: /track/<slug>/<date>
+                # date page: /track/<slug>/<date> -> full report (with fallback)
                 if len(tail) == 10 and tail[4] == "-" and tail[7] == "-":
-                    self._html(render_run(model, slug, tail))
+                    self._html(render_report(model, slug, tail))
                     return
             if len(segs) == 4 and segs[2] in ("feed", "trends"):
                 date = segs[3]
@@ -105,6 +106,11 @@ class ViewerHandler(BaseHTTPRequestHandler):
                         self._html(render_feed(model, slug, date))
                     else:
                         self._html(render_trends(model, slug, date))
+                    return
+            if len(segs) == 4 and segs[3] == "details":
+                date = segs[2]
+                if len(date) == 10 and date[4] == "-" and date[7] == "-":
+                    self._html(render_run(model, slug, date))
                     return
         self._html("<h1>404</h1>", 404)
 

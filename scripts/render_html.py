@@ -19,6 +19,7 @@ from html_viewer import (  # noqa: E402
     STYLE_CSS,
     render_feed,
     render_index,
+    render_report,
     render_run,
     render_ranked,
     render_sources,
@@ -65,8 +66,9 @@ def render_all(root: Path, out_dir: Path) -> tuple[int, int]:
             pages += 1
         dates = sorted(set(track.digest_dates) | set(track.discovery_dates), reverse=True)
         for date in dates:
-            _write_page(out_dir, f"track/{slug}/{date}.html", render_run(model, slug, date))
-            pages += 1
+            _write_page(out_dir, f"track/{slug}/{date}.html", render_report(model, slug, date))
+            _write_page(out_dir, f"track/{slug}/{date}/details.html", render_run(model, slug, date))
+            pages += 2
         for date in model.organized_dates(slug):
             _write_page(out_dir, f"track/{slug}/feed/{date}.html", render_feed(model, slug, date))
             pages += 1

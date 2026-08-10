@@ -271,6 +271,58 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 .velocity-flat { color: var(--muted); }
 .kw-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
 .kw-cloud .kw { background: var(--code-bg); border-radius: 12px; padding: 2px 10px; font-size: 13px; }
+
+/* Report */
+.report-hero { padding: 4px 0 12px 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.report-hero h1 { font-size: 30px; margin: 0 0 4px 0; }
+.report-hero .sub { color: var(--muted); font-size: 14px; }
+.report-hero .quick-links { margin-top: 6px; }
+.report-hero .quick-links a { margin-right: 10px; font-size: 13px; }
+.exec-summary {
+  background: var(--card);
+  border-left: 3px solid var(--accent);
+  padding: 12px 16px;
+  border-radius: 0 6px 6px 0;
+  margin: 12px 0;
+  font-size: 15px;
+}
+.stats-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: var(--code-bg);
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 12px 0 20px 0;
+  font-size: 13px;
+}
+.stats-strip .stat { display: flex; flex-direction: column; }
+.stats-strip .stat .num { font-size: 22px; font-weight: 600; color: var(--fg); line-height: 1.1; }
+.stats-strip .stat .lbl { color: var(--muted); font-size: 12px; }
+.pillrow { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.pillrow .pill {
+  background: var(--code-bg);
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 13px;
+  color: var(--fg);
+}
+.pillrow .pill .n { color: var(--muted); margin-left: 4px; }
+.report-section { margin-top: 32px; }
+.report-section .section-head {
+  display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px;
+  border-bottom: 1px solid var(--border); padding-bottom: 4px;
+}
+.report-section .section-head h2 { margin: 0; border: 0; padding: 0; }
+.report-section .section-head .count { color: var(--muted); font-size: 14px; }
+.feed-card .why { font-size: 12.5px; color: var(--muted); margin-top: 4px; padding-left: 16px; }
+.feed-card .why li { margin: 2px 0; }
+@media print {
+  nav.crumbs, .quick-links, details, .report-hero .quick-links { display: none; }
+  body { background: white; color: black; }
+  .card, .feed-card, .stats-strip { background: white; border-color: #ccc; }
+  a { color: black; text-decoration: none; }
+}
 """
 
 
@@ -843,6 +895,231 @@ def render_trends(model: Model, slug: str, date: str) -> str:
         parts.append(f'<div class="kw-cloud">{cloud}</div>')
 
     return _page(f"{t.display_name} trends {date}", crumbs, "".join(parts))
+
+
+def _stats_strip(discovery: dict | None, organized: dict | None, trends: dict | None) -> str:
+    total_items = len(organized.get("items", [])) if organized else 0
+    sources_ok = 0
+    sources_total = 0
+    if discovery:
+        for s in discovery.get("sources", []):
+            sources_total += 1
+            if s.get("status") == "complete":
+                sources_ok += 1
+    topics = len({i.get("topic") for i in (organized.get("items", []) if organized else [])})
+    cross = len(trends.get("cross_source_urls", [])) if trends else 0
+    generated = (trends and trends.get("generated_at")) or (organized and organized.get("generated_at")) or ""
+    parts = [
+        f'<div class="stat"><span class="num">{total_items}</span><span class="lbl">items</span></div>',
+        f'<div class="stat"><span class="num">{sources_ok}/{sources_total}</span><span class="lbl">sources OK</span></div>',
+        f'<div class="stat"><span class="num">{topics}</span><span class="lbl">topics</span></div>',
+        f'<div class="stat"><span class="num">{cross}</span><span class="lbl">cross-source URLs</span></div>',
+    ]
+    if generated:
+        parts.append(f'<div class="stat"><span class="num">{_e(generated[-9:-1])}</span><span class="lbl">generated (UTC)</span></div>')
+    return f'<div class="stats-strip">{"".join(parts)}</div>'
+
+
+def _topic_pills(trends: dict | None) -> str:
+    if not trends:
+        return ""
+    rows = trends.get("items_per_topic", [])
+    if not rows:
+        return ""
+    pills = "".join(
+        f'<span class="pill">{_e(r.get("topic", ""))}<span class="n">{r.get("count", 0)}</span></span>'
+        for r in rows
+    )
+    return f'<div class="pillrow">{pills}</div>'
+
+
+def _keyword_pills(trends: dict | None, limit: int = 12) -> str:
+    if not trends:
+        return ""
+    rows = trends.get("top_keywords", [])[:limit]
+    if not rows:
+        return ""
+    pills = "".join(
+        f'<span class="pill">{_e(r.get("token", ""))}<span class="n">{r.get("count", 0)}</span></span>'
+        for r in rows
+    )
+    return f'<div class="pillrow">{pills}</div>'
+
+
+def _report_feed_card(item: dict, enrichment: dict, why: list[str] | None = None) -> str:
+    card = _feed_card(item, enrichment)
+    if not why:
+        return card
+    why_html = "".join(f"<li>{_e(w)}</li>" for w in why if w)
+    return card.replace(
+        '</div></article>',
+        f'<ul class="why">{why_html}</ul></div></article>',
+        1,
+    )
+
+
+def render_report(model: Model, slug: str, date: str) -> str:
+    """Consolidated single-page daily report.
+
+    Combines executive summary + trend highlights + feed cards grouped by
+    topic (with OG images) + digest top-matches (with why bullets) + source
+    coverage into one publishable document.
+    """
+    t = model.find_track(slug)
+    if not t:
+        return _not_found(slug)
+    crumbs = [("Home", "/"), (t.display_name, f"/track/{slug}/"), (date, "")]
+    digest = model.digest(slug, date)
+    discovery = model.discovery(slug, date)
+    organized = model.organized(slug, date)
+    trends = model.trends(slug, date)
+    if not organized:
+        # Fall back to the structured digest view for tracks without organize
+        return render_run(model, slug, date)
+    enrichment_map = _lookup_enrichment(discovery)
+    items = organized.get("items", [])
+    top_matches_data: list[dict] = []
+    if digest:
+        for run in digest.get("runs", []):
+            for m in run.get("top_matches") or []:
+                top_matches_data.append(m)
+    top_urls = {m.get("listing_url") for m in top_matches_data}
+
+    header = [
+        '<div class="report-hero">',
+        f'<h1>{_e(t.display_name)} — Daily Report <span class="meta">{_e(date)}</span></h1>',
+    ]
+    audience_hint = ""
+    if t.persona_rel:
+        audience_hint = f' · Persona: <code>{_e(t.persona_rel)}</code>'
+    header.append(
+        f'<div class="sub">Track <code>{_e(slug)}</code>'
+        f'{audience_hint}</div>'
+    )
+    header.append(
+        '<div class="quick-links">'
+        f'<a href="/track/{_e(slug)}/feed/{_e(date)}">Full feed grid</a>'
+        f'<a href="/track/{_e(slug)}/trends/{_e(date)}">Trend detail</a>'
+        f'<a href="/track/{_e(slug)}/{_e(date)}/details">Structured digest</a>'
+        f'<a href="/raw/digests/{_e(slug)}/{_e(date)}.json">Digest JSON</a>'
+        '</div>'
+    )
+    header.append("</div>")
+
+    parts: list[str] = ["".join(header)]
+
+    # Executive summary
+    if digest:
+        run = (digest.get("runs") or [{}])[0]
+        exec_summary = run.get("executive_summary") or ""
+        if exec_summary:
+            parts.append(f'<div class="exec-summary">{_e(exec_summary)}</div>')
+
+    # Stats strip
+    parts.append(_stats_strip(discovery, organized, trends))
+
+    # Trend highlights (topics + top keywords)
+    tp = _topic_pills(trends)
+    kw = _keyword_pills(trends)
+    if tp or kw:
+        parts.append('<div class="report-section">')
+        parts.append('<div class="section-head"><h2>Trend highlights</h2></div>')
+        if tp:
+            parts.append('<h3 style="margin-top:8px;">Topics today</h3>')
+            parts.append(tp)
+        if kw:
+            parts.append('<h3>Buzzwords in titles</h3>')
+            parts.append(kw)
+        cross = trends.get("cross_source_urls", []) if trends else []
+        if cross:
+            parts.append('<h3>URLs surfaced by multiple sources</h3>')
+            crows = "".join(
+                f'<li><a href="{_e(c.get("url", ""))}">{_e(c.get("url", ""))}</a> '
+                f'<span class="meta">— {_e(", ".join(c.get("sources") or []))}</span></li>'
+                for c in cross
+            )
+            parts.append(f"<ul>{crows}</ul>")
+        parts.append('</div>')
+
+    # Top matches for the persona audience (feed-card style with why bullets)
+    if top_matches_data:
+        parts.append('<div class="report-section">')
+        parts.append(
+            f'<div class="section-head"><h2>Top matches</h2>'
+            f'<span class="count">{len(top_matches_data)} item(s) picked by the digest ranker</span></div>'
+        )
+        parts.append('<div class="feed-grid">')
+        top_items_by_url = {m.get("listing_url"): m for m in top_matches_data}
+        # Prefer organized items so we get topic + audiences + enrichment matched by url
+        rendered_urls: set[str] = set()
+        for it in items:
+            if it.get("url") in top_items_by_url:
+                m = top_items_by_url[it["url"]]
+                why = m.get("why_match") or []
+                parts.append(_report_feed_card(it, enrichment_map.get(it["url"], {}), why))
+                rendered_urls.add(it["url"])
+        # Fallback: any digest top match without a matching organized item
+        for m in top_matches_data:
+            if m.get("listing_url") in rendered_urls:
+                continue
+            pseudo = {
+                "url": m.get("listing_url", ""),
+                "title": m.get("title", ""),
+                "topic": m.get("team_or_domain", ""),
+                "content_type": "post",
+                "audiences": [],
+                "source_id": m.get("source", ""),
+            }
+            parts.append(_report_feed_card(pseudo, {}, m.get("why_match") or []))
+        parts.append('</div>')
+        parts.append('</div>')
+
+    # Everything else, grouped by topic
+    other_items = [i for i in items if i.get("url") not in top_urls]
+    if other_items:
+        by_topic: dict[str, list[dict]] = {}
+        for it in other_items:
+            by_topic.setdefault(it.get("topic", "other"), []).append(it)
+        parts.append('<div class="report-section">')
+        parts.append(
+            f'<div class="section-head"><h2>All items by topic</h2>'
+            f'<span class="count">{len(other_items)} additional item(s)</span></div>'
+        )
+        for topic in sorted(by_topic.keys(), key=lambda k: -len(by_topic[k])):
+            group = by_topic[topic]
+            parts.append(f'<h3>{_e(topic)} <span class="meta">({len(group)})</span></h3>')
+            parts.append('<div class="feed-grid">')
+            for it in group:
+                parts.append(_feed_card(it, enrichment_map.get(it.get("url", ""), {})))
+            parts.append('</div>')
+        parts.append('</div>')
+
+    # Source coverage
+    if discovery:
+        parts.append('<div class="report-section">')
+        parts.append('<div class="section-head"><h2>Source coverage</h2></div>')
+        parts.append(_render_discovery_block(discovery).replace("<h2>Discovery</h2>", "", 1))
+        parts.append('</div>')
+
+    # Raw downloads
+    parts.append('<div class="report-section">')
+    parts.append('<div class="section-head"><h2>Raw artifacts</h2></div>')
+    raw_links = []
+    for kind, label in [
+        ("digests", "Digest JSON"),
+        ("discovery", "Discovery JSON"),
+        ("organized", "Organized JSON"),
+        ("trends", "Trends JSON"),
+    ]:
+        if model.raw_path(kind, slug, date):
+            raw_links.append(
+                f'<li><a href="/raw/{_e(kind)}/{_e(slug)}/{_e(date)}.json">{_e(label)}</a></li>'
+            )
+    if raw_links:
+        parts.append(f"<ul>{''.join(raw_links)}</ul>")
+    parts.append('</div>')
+
+    return _page(f"{t.display_name} report {date}", crumbs, "".join(parts))
 
 
 def rewrite_urls_for_static(html_text: str) -> str:
