@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "note": "No-key job feeds for the job_watch track focused on AI-enabled roles. Kinds: rss, atom, hn_algolia.",
+  "sources": [
+    {
+      "id": "hnrss_jobs",
+      "name": "Hacker News — Jobs firehose (hnrss)",
+      "kind": "rss",
+      "url": "https://hnrss.org/jobs",
+      "topic_hints": ["ai_augmented_generalist"]
+    },
+    {
+      "id": "hn_algolia_ai_engineer",
+      "name": "Hacker News (AI Engineer)",
+      "kind": "hn_algolia",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=AI%20Engineer%20hiring&hitsPerPage=20",
+      "topic_hints": ["ai_engineer"]
+    },
+    {
+      "id": "hn_algolia_prompt_engineer",
+      "name": "Hacker News (prompt engineer)",
+      "kind": "hn_algolia",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=prompt%20engineer&hitsPerPage=20",
+      "topic_hints": ["prompt_engineer"]
+    },
+    {
+      "id": "hn_algolia_ai_instructor",
+      "name": "Hacker News (AI instructor / trainer)",
+      "kind": "hn_algolia",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=AI%20instructor%20trainer&hitsPerPage=20",
+      "topic_hints": ["ai_instructor"]
+    },
+    {
+      "id": "hn_algolia_ml_engineer",
+      "name": "Hacker News (ML engineer)",
+      "kind": "hn_algolia",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=ML%20engineer%20hiring&hitsPerPage=20",
+      "topic_hints": ["ml_engineer"]
+    },
+    {
+      "id": "hn_algolia_devrel",
+      "name": "Hacker News (AI DevRel / Developer Advocate)",
+      "kind": "hn_algolia",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=developer%20advocate%20AI&hitsPerPage=20",
+      "topic_hints": ["ai_devrel"]
+    },
+    {
+      "id": "ai_jobs_net",
+      "name": "ai-jobs.net",
+      "kind": "rss",
+      "url": "https://ai-jobs.net/feed/",
+      "topic_hints": ["ai_engineer", "ml_engineer", "ai_researcher"]
+    },
+    {
+      "id": "wwr_programming",
+      "name": "We Work Remotely — Programming",
+      "kind": "rss",
+      "url": "https://weworkremotely.com/categories/remote-programming-jobs.rss",
+      "topic_hints": ["ai_engineer", "ml_engineer", "ai_augmented_generalist"]
+    }
+  ]
+}
