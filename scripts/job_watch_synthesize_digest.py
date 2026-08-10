@@ -10,8 +10,10 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from track_common import iso_utc_now, source_notes_block  # noqa: E402
 
 
 def _summary(items: list[dict], remote_count: int) -> str:
@@ -64,21 +66,7 @@ def _to_other(item: dict) -> dict:
     }
 
 
-def _source_notes(discovery: dict) -> list[dict]:
-    out = []
-    for s in discovery.get("sources", []):
-        out.append({
-            "source": s.get("source", ""),
-            "discovery_mode": s.get("discovery_mode", ""),
-            "status": s.get("status", ""),
-            "listing_pages_scanned": s.get("listing_pages_scanned", ""),
-            "search_terms_tried": s.get("search_terms_tried") or [],
-            "result_pages_summary": s.get("result_pages_scanned", ""),
-            "direct_job_pages_opened": s.get("direct_job_pages_opened", 0),
-            "limitations": s.get("limitations") or [],
-            "note": f"Enumerated {s.get('enumerated_jobs', 0)}; matched {s.get('matched_jobs', 0)}.",
-        })
-    return out
+_source_notes = source_notes_block
 
 
 def synthesize(organized: dict, discovery: dict, date: str, max_top: int, disc_relpath: str) -> dict:
@@ -89,7 +77,7 @@ def synthesize(organized: dict, discovery: dict, date: str, max_top: int, disc_r
     rest = items[max_top:]
     run = {
         "kind": "initial",
-        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_at": iso_utc_now(),
         "executive_summary": _summary(items, remote),
         "recommended_actions": [
             f"Review the top {len(top)} AI-enabled posting(s) surfaced today.",

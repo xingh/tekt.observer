@@ -11,15 +11,13 @@ Purpose: prove the pipeline shape and give the HTML viewer something to render.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
-import re
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ai_topics_taxonomy import Taxonomy, load_taxonomy  # noqa: E402
+from track_common import item_key, iso_utc_now, substring_match  # noqa: E402
 
 
 TOPIC_KEYWORDS: dict[str, list[str]] = {
@@ -90,11 +88,6 @@ CONTENT_TYPE_HINTS: list[tuple[str, str]] = [
 ]
 
 
-def _item_key(url: str, title: str) -> str:
-    h = hashlib.sha1(f"{url}|{title}".encode("utf-8")).hexdigest()[:12]
-    return f"ai-{h}"
-
-
 def _classify_content_type(title: str, url: str) -> str:
     hay = f"{url.lower()} {title.lower()}"
     for needle, ctype in CONTENT_TYPE_HINTS:
@@ -104,8 +97,7 @@ def _classify_content_type(title: str, url: str) -> str:
 
 
 def _matches(title: str, keywords: list[str]) -> list[str]:
-    lo = title.lower()
-    return [k for k in keywords if k in lo]
+    return [k for k in keywords if substring_match(title, k)]
 
 
 def _classify_topic(title: str) -> tuple[str, list[str]]:
@@ -144,7 +136,7 @@ def classify_candidates(discovery: dict, taxonomy: Taxonomy, date: str) -> dict:
             categories = [topic]
             confidence = min(1.0, 0.4 + 0.2 * len(topic_hits) + 0.1 * len(aud_hits))
             item = {
-                "item_key": _item_key(url, title),
+                "item_key": item_key("ai", url, title),
                 "source_id": source_id,
                 "url": url,
                 "title": title,
@@ -163,7 +155,7 @@ def classify_candidates(discovery: dict, taxonomy: Taxonomy, date: str) -> dict:
         "schema_version": 1,
         "track": "ai_topics",
         "date": date,
-        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_at": iso_utc_now(),
         "items": items,
     }
 

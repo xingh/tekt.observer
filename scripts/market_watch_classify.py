@@ -21,12 +21,18 @@ the badge.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import re
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from track_common import (  # noqa: E402
+    item_key,
+    iso_utc_now,
+    substring_match,
+    word_boundary_match,
+)
 
 
 DEFAULT_TAXONOMY = Path(__file__).resolve().parents[1] / "shared" / "schemas" / "market_watch_taxonomy.json"
@@ -61,22 +67,9 @@ DEFAULT_WATCHLIST: dict = {
 }
 
 
-def _item_key(url: str, title: str) -> str:
-    h = hashlib.sha1(f"{url}|{title}".encode("utf-8")).hexdigest()[:12]
-    return f"mw-{h}"
-
-
-def _match_word_boundary(text: str, needle: str) -> bool:
-    if not needle:
-        return False
-    # Use case-insensitive word-boundary match. For tickers with punctuation
-    # (e.g. BRK.B) escape the dot.
-    pat = re.compile(r"\b" + re.escape(needle) + r"\b", re.IGNORECASE)
-    return bool(pat.search(text))
-
-
-def _match_substring(text: str, needle: str) -> bool:
-    return needle.lower() in text.lower()
+# Re-exported for readability at call sites.
+_match_word_boundary = word_boundary_match
+_match_substring = substring_match
 
 
 def _watchlist_hits(title: str, watchlist: dict) -> tuple[list[str], list[str]]:
@@ -215,7 +208,7 @@ def classify_candidates(discovery: dict, taxonomy: dict, watchlist: dict, date: 
             if asset_class == "fixed_income_macro":
                 audiences.append("allocators")
             items.append({
-                "item_key": _item_key(url, title),
+                "item_key": item_key("mw", url, title),
                 "source_id": source_id,
                 "url": url,
                 "title": title,
@@ -240,7 +233,7 @@ def classify_candidates(discovery: dict, taxonomy: dict, watchlist: dict, date: 
         "schema_version": 1,
         "track": "market_watch",
         "date": date,
-        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_at": iso_utc_now(),
         "items": items,
     }
 

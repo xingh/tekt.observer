@@ -16,12 +16,13 @@ shared viewer renders unchanged.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import re
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from track_common import item_key, iso_utc_now, substring_match  # noqa: E402
 
 DEFAULT_TAXONOMY = Path(__file__).resolve().parents[1] / "shared" / "schemas" / "job_watch_taxonomy.json"
 
@@ -29,13 +30,7 @@ DEFAULT_TAXONOMY = Path(__file__).resolve().parents[1] / "shared" / "schemas" / 
 COMPANY_HINT_RE = re.compile(r"^(?P<co>[A-Z][\w &.-]{1,40}?)\s*(?:\||:| is |,)")
 
 
-def _item_key(url: str, title: str) -> str:
-    h = hashlib.sha1(f"{url}|{title}".encode("utf-8")).hexdigest()[:12]
-    return f"jw-{h}"
-
-
-def _matches(text: str, needle: str) -> bool:
-    return needle.lower() in text.lower()
+_matches = substring_match
 
 
 def _role_type(title: str, description: str, taxonomy: dict) -> tuple[str, list[str]]:
@@ -95,7 +90,7 @@ def classify_candidates(discovery: dict, taxonomy: dict, date: str) -> dict:
                 audiences.append("instructor")
             confidence = min(1.0, 0.4 + 0.15 * len(role_hits) + 0.1 * len(sen_hits) + (0.1 if remote else 0))
             items.append({
-                "item_key": _item_key(url, title),
+                "item_key": item_key("jw", url, title),
                 "source_id": source_id,
                 "url": url,
                 "title": title,
@@ -119,7 +114,7 @@ def classify_candidates(discovery: dict, taxonomy: dict, date: str) -> dict:
         "schema_version": 1,
         "track": "job_watch",
         "date": date,
-        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_at": iso_utc_now(),
         "items": items,
     }
 
