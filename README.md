@@ -324,4 +324,6 @@ bash scripts/test.sh
 
 ## Contributing
 
-For an architecture overview see [`docs/architecture.md`](./docs/architecture.md). For the fork-and-PR workflow see [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+For an architecture overview see [`docs/architecture.md`](./docs/architecture.md).
+For the shared six-stage pipeline (discover → enrich → classify → trends → synthesize → render) used by jobwatch, ai_topics, and market_watch tracks, see [`docs/tracks_pipeline.md`](./docs/tracks_pipeline.md).
+For the fork-and-PR workflow see [`CONTRIBUTING.md`](./CONTRIBUTING.md).

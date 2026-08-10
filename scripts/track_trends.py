@@ -1,13 +1,19 @@
-"""Trend aggregation for the ai_topics track.
+"""Trend aggregation for any track that produces an organized artifact.
 
-Reads today's organized artifact and (if present) yesterday's, computes:
+Reads today's artifacts/organized/<track>/<date>.json and (if present)
+yesterday's, computes:
 - items_per_topic today
 - items_per_source today
+- items_per_content_type today
+- items_per_audience today
 - topic_velocity (delta vs previous run)
 - cross_source_urls (same URL/canonical appearing across multiple sources)
-- keyword_counts (frequent significant tokens in titles)
+- top_keywords (frequent significant title tokens)
 
-Writes artifacts/trends/ai_topics/<date>.json for the viewer to render.
+Writes artifacts/trends/<track>/<date>.json for the viewer to render.
+
+Used by ai_topics and market_watch today; any jobwatch-style track that
+first produces an organized artifact can reuse this unchanged.
 """
 
 from __future__ import annotations

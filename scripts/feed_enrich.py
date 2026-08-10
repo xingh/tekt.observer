@@ -1,11 +1,14 @@
-"""Per-URL metadata enrichment for the ai_topics discovery artifact.
+"""Per-URL metadata enrichment for any track's discovery artifact.
 
-For each candidate URL in the discovery artifact, fetches the page (HEAD-like
-GET with a Range header when possible) and extracts OpenGraph / Twitter /
-canonical / description meta tags plus published_time. Writes the enrichment
-map to artifacts/enrichment/ai_topics/urls.json so subsequent runs skip
-already-fetched URLs. Also patches the discovery artifact in place, adding an
-`enrichment` key to each candidate.
+For each candidate URL in artifacts/discovery/<track>/<date>.json, fetches
+the page (HEAD-like GET with a Range header when possible) and extracts
+OpenGraph / Twitter / canonical / description meta tags plus published_time.
+Writes the enrichment map to artifacts/enrichment/<track>/urls.json so
+subsequent runs skip already-fetched URLs. Also patches the discovery
+artifact in place, adding an `enrichment` key to each candidate.
+
+Used by ai_topics, market_watch, and any jobwatch-style track that wants
+OG images on its listings.
 """
 
 from __future__ import annotations
@@ -22,7 +25,7 @@ from pathlib import Path
 from urllib.error import URLError, HTTPError
 from urllib.request import Request, urlopen
 
-USER_AGENT = "tekt.observer/ai_topics-enrich (github.com/xingh/tekt.observer)"
+USER_AGENT = "tekt.observer/feed-enrich (github.com/xingh/tekt.observer)"
 FETCH_TIMEOUT = 12
 MAX_BYTES = 200_000  # only need the <head>
 MAX_URLS = 60

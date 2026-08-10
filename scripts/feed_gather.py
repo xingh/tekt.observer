@@ -1,12 +1,13 @@
-"""Real-source gather step for the ai_topics track (I2/I3 preview).
+"""Feed-based discovery step, shared across topic-tracker-style tracks.
 
-Reads shared/schemas/ai_topics_source_registry.json, fetches each source
-according to its `kind` (rss/atom/hn_algolia), normalises entries into the
-same discovery artifact schema used by ai_topics_discover.py, and writes
-artifacts/discovery/ai_topics/<date>.json.
+Reads a source registry JSON (defaults to ai_topics; override with --registry),
+fetches each source according to its `kind` (rss/atom/hn_algolia), normalises
+entries into the discovery artifact schema, and writes
+artifacts/discovery/<track>/<date>.json.
 
-Stdlib only. Degrades per-source: if a source fails, its entry lands with
-status "failed" and empty candidates rather than crashing the whole run.
+Used by ai_topics, market_watch, and any future feed-driven track. Stdlib
+only. Degrades per-source: if a source fails, its entry lands with status
+"failed" and empty candidates rather than crashing the whole run.
 """
 
 from __future__ import annotations
@@ -23,7 +24,7 @@ from pathlib import Path
 from urllib.error import URLError, HTTPError
 from urllib.request import Request, urlopen
 
-USER_AGENT = "tekt.observer/ai_topics-gather (github.com/xingh/tekt.observer)"
+USER_AGENT = "tekt.observer/feed-gather (github.com/xingh/tekt.observer)"
 DEFAULT_TIMEOUT = 15
 MAX_PER_SOURCE = 20
 
