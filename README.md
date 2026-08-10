@@ -50,6 +50,87 @@ jobwatch finds the roles. Trackers manage the ones you already found; writers dr
 
 For a more detailed set-up guide, see [New User Setup](#new-user-setup).
 
+## Quick start — the three example tracks
+
+The repo ships three example tracks that share the same six-stage pipeline (`docs/tracks_pipeline.md`):
+
+- **`ai_topics`** — AI content tracker (posts, papers, videos, podcasts) for an Architect audience
+- **`market_watch`** — investor market-news tracker with a watchlist-driven portfolio-alert digest
+- **`job_watch`** — AI-enabled engineering roles (AI Engineer, prompt engineer, AI instructor / trainer, DevRel)
+
+Each runs end-to-end without any API keys or provider CLI. Bootstrap once, then run any track.
+
+```bash
+# One-time: create the repo-local virtualenv (~30 s; skip Chromium for the feed pipeline)
+bash scripts/bootstrap_venv.sh --no-chromium
+
+# Live run: fetches real sources, enriches with OpenGraph metadata,
+# classifies, computes trends, reranks per audience, synthesizes per-audience digests.
+bash scripts/run_pipeline.sh --track ai_topics    --live
+bash scripts/run_pipeline.sh --track market_watch --live
+bash scripts/run_pipeline.sh --track job_watch    --live
+
+# Fixture / offline mode (omit --live). ai_topics reads a shipped HTML fixture;
+# market_watch and job_watch produce empty discovery to exercise the pipeline shape.
+bash scripts/run_pipeline.sh --track ai_topics
+```
+
+Each run writes into `tests/tmp/<track>/`, mirroring `scripts/test_track_workflow.sh` so the tracked working tree stays clean.
+
+### Review each step
+
+For any track, the pipeline puts each stage's output in a predictable place. After a run:
+
+```bash
+TRACK=ai_topics DATE=$(date +%F)
+tree tests/tmp/$TRACK/artifacts | head -30
+
+# Concrete files:
+tests/tmp/$TRACK/artifacts/discovery/$TRACK/$DATE.json         # 1. gather
+tests/tmp/$TRACK/artifacts/enrichment/$TRACK/urls.json         # 2. enrich (cached across runs)
+tests/tmp/$TRACK/artifacts/organized/$TRACK/$DATE.json         # 3. classify
+tests/tmp/$TRACK/artifacts/trends/$TRACK/$DATE.json            # 4. trends
+tests/tmp/$TRACK/artifacts/ranked_audience/$TRACK/*/$DATE.json # 5. rerank (per audience)
+tests/tmp/$TRACK/artifacts/digests/$TRACK/$DATE.json           # 6. synthesize (default)
+tests/tmp/$TRACK/artifacts/digests/$TRACK/*/$DATE.json         # 6. synthesize (per audience, I7)
+tests/tmp/$TRACK/tracks/$TRACK/digests/$DATE.md                # 6. rendered markdown
+```
+
+### View the result
+
+Two ways: a live server (auto-reloads on refresh) or a publishable static site.
+
+```bash
+# Live viewer (loopback only, defaults to 127.0.0.1:8765)
+./.venv/bin/python scripts/serve_html.py --root tests/tmp/ai_topics
+
+# Then open any of these in a browser:
+#   http://127.0.0.1:8765/                                              — track index
+#   http://127.0.0.1:8765/track/ai_topics/<YYYY-MM-DD>                  — consolidated daily report
+#   http://127.0.0.1:8765/track/ai_topics/<YYYY-MM-DD>?audience=builders — same report scoped to an audience
+#   http://127.0.0.1:8765/track/ai_topics/feed/<YYYY-MM-DD>             — social-feed grid with OG images
+#   http://127.0.0.1:8765/track/ai_topics/trends/<YYYY-MM-DD>           — trend charts + keyword cloud
+#   http://127.0.0.1:8765/track/ai_topics/<YYYY-MM-DD>/details          — structured digest tables
+#   http://127.0.0.1:8765/track/ai_topics/sources                       — sources + persona
+#   http://127.0.0.1:8765/raw/digests/ai_topics/<YYYY-MM-DD>.json       — raw digest JSON
+
+# Publishable static site
+./.venv/bin/python scripts/render_html.py --root tests/tmp/ai_topics --out site/
+# then open file://.../site/index.html or upload the site/ directory anywhere
+```
+
+### Audience switching
+
+Each track's arkitype spec declares an audience list (see `.arkitype/00-*.md`). The rerank stage
+scores every item for every audience; the report swaps top-matches for the requested audience.
+
+- ai_topics: `builders · operators · managers · architects · leaders`
+- market_watch: `investors · portfolio_managers · allocators · gps · lps`
+- job_watch: `individual_contributor · senior_ic · tech_lead · manager · instructor`
+
+The report hero has a link row for one-click switching; the URL forms are
+`/track/<track>/<date>?audience=<id>` (live) and `/track/<track>/<date>/audience/<id>` (both).
+
 ## Why use it?
 
 - **Find roles earlier:** track company pages and other direct sources, not just aggregators.
