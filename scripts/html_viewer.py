@@ -287,6 +287,22 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 .kw-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
 .kw-cloud .kw { background: var(--code-bg); border-radius: 12px; padding: 2px 10px; font-size: 13px; }
 
+/* Feedback buttons */
+.fb-row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.fb-btn {
+  font: 11px/1.4 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  padding: 2px 8px;
+  background: var(--code-bg);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.fb-btn:hover { background: var(--border); color: var(--fg); }
+.fb-btn.done  { background: #16a34a; color: #fff; border-color: #16a34a; }
+.fb-btn.error { background: #b91c1c; color: #fff; border-color: #b91c1c; }
+.fb-btn.dead  { opacity: 0.4; cursor: not-allowed; }
+
 /* Report */
 .report-hero { padding: 4px 0 12px 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
 .report-hero h1 { font-size: 30px; margin: 0 0 4px 0; }
@@ -735,6 +751,49 @@ def render_sources(model: Model, slug: str) -> str:
     return _page(f"{t.display_name} sources", crumbs, "".join(parts))
 
 
+_FEEDBACK_SCRIPT = """
+<script>
+(function(){
+  function findBase(){
+    // Detect the site prefix that render_html rewrote (e.g. "../../"), so
+    // /feedback POSTs still work when the page was opened via file:// AND
+    // pass through to the live server when hosted under /.
+    var link = document.querySelector('link[rel=stylesheet]');
+    if(!link) return '/feedback';
+    var href = link.getAttribute('href');
+    if(href && href.indexOf('/') === 0) return '/feedback';
+    // Strip trailing 'style.css' to keep the relative prefix.
+    return href.replace(/style\\.css$/, '') + 'feedback';
+  }
+  var endpoint = findBase();
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest && e.target.closest('.fb-btn');
+    if(!btn || btn.classList.contains('dead')) return;
+    e.preventDefault();
+    var body = {
+      track:    btn.dataset.track,
+      audience: btn.dataset.audience,
+      item_key: btn.dataset.item,
+      action:   btn.dataset.action,
+      url:      btn.dataset.url || ''
+    };
+    fetch(endpoint, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    }).then(function(r){
+      if(r.ok){ btn.textContent = '✓ ' + body.action; btn.classList.add('done'); btn.disabled = true; }
+      else { btn.textContent = 'err'; btn.classList.add('error'); }
+    }).catch(function(){
+      btn.textContent = 'live only';
+      btn.classList.add('dead');
+    });
+  });
+})();
+</script>
+"""
+
+
 def _initials(text: str) -> str:
     words = re.findall(r"[A-Za-z0-9]+", text or "")
     if not words:
@@ -744,7 +803,7 @@ def _initials(text: str) -> str:
     return (words[0][0] + words[1][0]).upper()
 
 
-def _feed_card(item: dict, enrichment: dict) -> str:
+def _feed_card(item: dict, enrichment: dict, feedback_ctx: dict | None = None) -> str:
     url = item.get("url", "")
     title = enrichment.get("og_title") or item.get("title", "") or "(untitled)"
     desc = enrichment.get("og_description") or item.get("rationale", "") or ""
@@ -761,6 +820,21 @@ def _feed_card(item: dict, enrichment: dict) -> str:
             f'data-initials="{_e(_initials(site or title))}"></a>'
         )
     aud_badges = " ".join(f'<span class="badge">{_e(a)}</span>' for a in audiences)
+    feedback_row = ""
+    if feedback_ctx and item.get("item_key"):
+        common = (
+            f'data-item="{_e(item["item_key"])}" '
+            f'data-track="{_e(feedback_ctx.get("track", ""))}" '
+            f'data-audience="{_e(feedback_ctx.get("audience", "all"))}" '
+            f'data-url="{_e(url)}"'
+        )
+        feedback_row = (
+            '<div class="fb-row">'
+            f'<button class="fb-btn" data-action="save" {common}>save</button>'
+            f'<button class="fb-btn" data-action="hide" {common}>hide</button>'
+            f'<button class="fb-btn" data-action="click" {common}>click</button>'
+            "</div>"
+        )
     return (
         f'<article class="feed-card">'
         f"{thumb}"
@@ -773,6 +847,7 @@ def _feed_card(item: dict, enrichment: dict) -> str:
           f"{aud_badges}"
           f'<span>{_e(site)}</span>'
         f"</div>"
+        f"{feedback_row}"
         f"</div>"
         f"</article>"
     )
@@ -812,6 +887,7 @@ def render_feed(model: Model, slug: str, date: str) -> str:
     for it in items:
         by_topic.setdefault(it.get("topic", "other"), []).append(it)
     topic_order = sorted(by_topic.keys(), key=lambda k: -len(by_topic[k]))
+    fb_ctx = {"track": slug, "audience": "all"}
     parts: list[str] = [
         f"<h1>{_e(t.display_name)} — Feed <span class=\"meta\">{_e(date)}</span></h1>",
         f'<p class="meta">{len(items)} items across {len(by_topic)} topic(s). '
@@ -823,8 +899,9 @@ def render_feed(model: Model, slug: str, date: str) -> str:
         parts.append('<div class="feed-grid">')
         for it in topic_items:
             enr = enrichment_map.get(it.get("url", ""), {})
-            parts.append(_feed_card(it, enr))
+            parts.append(_feed_card(it, enr, feedback_ctx=fb_ctx))
         parts.append("</div>")
+    parts.append(_FEEDBACK_SCRIPT)
     return _page(f"{t.display_name} feed {date}", crumbs, "".join(parts))
 
 
@@ -961,8 +1038,13 @@ def _keyword_pills(trends: dict | None, limit: int = 12) -> str:
     return f'<div class="pillrow">{pills}</div>'
 
 
-def _report_feed_card(item: dict, enrichment: dict, why: list[str] | None = None) -> str:
-    card = _feed_card(item, enrichment)
+def _report_feed_card(
+    item: dict,
+    enrichment: dict,
+    why: list[str] | None = None,
+    feedback_ctx: dict | None = None,
+) -> str:
+    card = _feed_card(item, enrichment, feedback_ctx=feedback_ctx)
     if not why:
         return card
     why_html = "".join(f"<li>{_e(w)}</li>" for w in why if w)
@@ -1094,6 +1176,7 @@ def render_report(model: Model, slug: str, date: str, audience: str | None = Non
         parts.append('</div>')
 
     # Top matches
+    fb_ctx = {"track": slug, "audience": audience or "all"}
     if audience and audience_ranked_items:
         parts.append('<div class="report-section">')
         parts.append(
@@ -1108,7 +1191,7 @@ def render_report(model: Model, slug: str, date: str, audience: str | None = Non
                 f"selected: {'yes' if it.get('selected') else 'no (extrapolated)'}",
                 it.get("rationale", ""),
             ]
-            parts.append(_report_feed_card(it, enrichment_map.get(it.get("url", ""), {}), why))
+            parts.append(_report_feed_card(it, enrichment_map.get(it.get("url", ""), {}), why, feedback_ctx=fb_ctx))
         parts.append('</div>')
         parts.append('</div>')
     elif top_matches_data:
@@ -1125,7 +1208,7 @@ def render_report(model: Model, slug: str, date: str, audience: str | None = Non
             if it.get("url") in top_items_by_url:
                 m = top_items_by_url[it["url"]]
                 why = m.get("why_match") or []
-                parts.append(_report_feed_card(it, enrichment_map.get(it["url"], {}), why))
+                parts.append(_report_feed_card(it, enrichment_map.get(it["url"], {}), why, feedback_ctx=fb_ctx))
                 rendered_urls.add(it["url"])
         # Fallback: any digest top match without a matching organized item
         for m in top_matches_data:
@@ -1138,8 +1221,9 @@ def render_report(model: Model, slug: str, date: str, audience: str | None = Non
                 "content_type": "post",
                 "audiences": [],
                 "source_id": m.get("source", ""),
+                "item_key": m.get("job_key"),
             }
-            parts.append(_report_feed_card(pseudo, {}, m.get("why_match") or []))
+            parts.append(_report_feed_card(pseudo, {}, m.get("why_match") or [], feedback_ctx=fb_ctx))
         parts.append('</div>')
         parts.append('</div>')
 
@@ -1159,7 +1243,7 @@ def render_report(model: Model, slug: str, date: str, audience: str | None = Non
             parts.append(f'<h3>{_e(topic)} <span class="meta">({len(group)})</span></h3>')
             parts.append('<div class="feed-grid">')
             for it in group:
-                parts.append(_feed_card(it, enrichment_map.get(it.get("url", ""), {})))
+                parts.append(_feed_card(it, enrichment_map.get(it.get("url", ""), {}), feedback_ctx=fb_ctx))
             parts.append('</div>')
         parts.append('</div>')
 
@@ -1188,6 +1272,7 @@ def render_report(model: Model, slug: str, date: str, audience: str | None = Non
         parts.append(f"<ul>{''.join(raw_links)}</ul>")
     parts.append('</div>')
 
+    parts.append(_FEEDBACK_SCRIPT)
     return _page(f"{t.display_name} report {date}", crumbs, "".join(parts))
 
 

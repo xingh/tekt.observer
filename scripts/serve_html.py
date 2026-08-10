@@ -13,6 +13,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import json  # noqa: E402
 from html_viewer import (  # noqa: E402
     Model,
     STYLE_CSS,
@@ -25,6 +26,7 @@ from html_viewer import (  # noqa: E402
     render_track_index,
     render_trends,
 )
+from track_feedback import append_event  # noqa: E402
 
 
 class ViewerHandler(BaseHTTPRequestHandler):
@@ -54,6 +56,27 @@ class ViewerHandler(BaseHTTPRequestHandler):
             return
         data = path.read_bytes()
         self._write(200, data, "application/json")
+
+    def do_POST(self) -> None:  # noqa: N802
+        parts = urlsplit(self.path)
+        path = unquote(parts.path)
+        if path != "/feedback":
+            self._html("<h1>404</h1>", 404)
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            body = self.rfile.read(length) if length else b"{}"
+            event = json.loads(body.decode("utf-8"))
+        except (ValueError, json.JSONDecodeError) as exc:
+            self._write(400, f'{{"error": "{exc}"}}'.encode("utf-8"), "application/json")
+            return
+        try:
+            path_written = append_event(self.root, event)
+        except ValueError as exc:
+            self._write(400, f'{{"error": "{exc}"}}'.encode("utf-8"), "application/json")
+            return
+        payload = json.dumps({"ok": True, "wrote": str(path_written)}).encode("utf-8")
+        self._write(200, payload, "application/json")
 
     def do_GET(self) -> None:  # noqa: N802
         parts = urlsplit(self.path)

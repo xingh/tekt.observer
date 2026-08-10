@@ -38,11 +38,14 @@ each stage conditionally.
 |---|---|---|
 | Discover / gather | `scripts/feed_gather.py` (RSS / Atom / HN Algolia, `--registry`) | `scripts/discover_jobs.py` (jobwatch), `scripts/ai_topics_discover.py` (local HTML fixture) |
 | Enrich | `scripts/feed_enrich.py` (per-URL OpenGraph / Twitter / canonical, cached) | — |
-| Classify | — | `scripts/ai_topics_classify.py`, `scripts/market_watch_classify.py` |
+| Classify | — | `scripts/ai_topics_classify.py`, `scripts/market_watch_classify.py`, `scripts/job_watch_classify.py` |
 | Trends | `scripts/track_trends.py` (topic/source/audience counts, velocity, cross-source URLs, keyword cloud) | — |
-| Synthesize digest | — | `scripts/ai_topics_synthesize_digest.py`, `scripts/market_watch_synthesize_digest.py`. jobwatch tracks write the digest via the provider LLM agent instead. |
+| Rerank per audience (I6) | `scripts/track_rerank.py` (reads `<track>_taxonomy.json` audiences; supports `--with-feedback` from I8) | — |
+| Synthesize digest — persona | — | `scripts/ai_topics_synthesize_digest.py`, `scripts/market_watch_synthesize_digest.py`, `scripts/job_watch_synthesize_digest.py`. jobwatch's own `test_workflow` track uses the provider LLM agent instead. |
+| Synthesize digest — per audience (I7) | `scripts/synthesize_audience_digests.py` (one digest JSON + markdown per audience declared in `<track>_taxonomy.json`) | — |
 | Render (markdown) | `scripts/render_digest.py` | — |
 | Render (HTML site) | `scripts/render_html.py` (static) and `scripts/serve_html.py` (live) — shared `scripts/html_viewer.py` | — |
+| Feedback (I8) | `scripts/track_feedback.py` (event append + rerank boosts). `serve_html.py` exposes `POST /feedback`; feed cards show save/hide/click buttons. `track_rerank.py --with-feedback` applies boosts on the next run. | — |
 
 ## Config that lives in JSON
 
@@ -137,18 +140,47 @@ invoke `run_pipeline.sh --track <slug>`.
 
 ```
 artifacts/
-    discovery/<track>/<date>.json     -- gather / discover output
-    discovery/<track>/latest.json     -- symlink-like copy of the most recent
-    enrichment/<track>/urls.json      -- per-URL OG cache
-    organized/<track>/<date>.json     -- classifier output
-    trends/<track>/<date>.json        -- trend aggregation
-    digests/<track>/<date>.json       -- structured digest (source of truth for the digest)
-    digests/<track>/latest.json       -- latest copy
-tracks/<track>/digests/<date>.md      -- rendered markdown digest
-site/                                 -- rendered HTML site (from render_html.py)
+    discovery/<track>/<date>.json                     -- gather / discover output
+    discovery/<track>/latest.json                     -- latest copy
+    enrichment/<track>/urls.json                      -- per-URL OG cache
+    organized/<track>/<date>.json                     -- classifier output
+    trends/<track>/<date>.json                        -- trend aggregation
+    ranked_audience/<track>/<audience>/<date>.json    -- I6 per-audience rerank
+    digests/<track>/<date>.json                       -- persona digest (source of truth)
+    digests/<track>/<audience>/<date>.json            -- I7 per-audience digest
+    digests/<track>/latest.json                       -- latest persona digest copy
+    feedback/<track>/<audience>/events.jsonl          -- I8 append-only feedback log
+tracks/<track>/digests/<date>.md                      -- rendered markdown persona digest
+tracks/<track>/digests/<audience>/<date>.md           -- I7 per-audience markdown
+site/                                                 -- rendered HTML site (render_html.py)
 ```
 
 The HTML viewer reads all of these and renders a single consolidated
-report at `site/track/<track>/<date>.html`. See
+report at `site/track/<track>/<date>.html`, plus per-audience variants
+at `site/track/<track>/<date>/audience/<aud>.html`. See
 [`../scripts/html_viewer.py`](../scripts/html_viewer.py) for the page
 structure.
+
+## Feedback loop (I8)
+
+Feed cards in the report and feed pages carry `save` / `hide` / `click`
+buttons. On the live server (`scripts/serve_html.py`), each click posts a
+one-line JSON event to `artifacts/feedback/<track>/<audience>/events.jsonl`.
+
+On the next pipeline run, `track_rerank.py --with-feedback` reads those
+events and applies per-item boosts (`save +0.20`, `click +0.05`,
+`note +0.10`, `hide −0.35`) to the audience_score. The most recent event
+per item wins when it is a stronger signal.
+
+CLI equivalents for scripted use:
+
+```bash
+./.venv/bin/python scripts/track_feedback.py --root tests/tmp/ai_topics \
+  append --track ai_topics --audience builders --item-key ai-abc123... --action save
+
+./.venv/bin/python scripts/track_feedback.py --root tests/tmp/ai_topics \
+  summary --track ai_topics --audience builders
+```
+
+On a static site opened via `file://`, the buttons render but each click
+gracefully turns into a "live only" state — no server to accept the POST.
