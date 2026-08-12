@@ -1,60 +1,59 @@
 # tekt.observer
 
-I am extending the work that Jonas van der Heyden did and integrating it with a practice of AI Fleet Management called SignalFlow. It's how we coordinate a series of steps in a process to achieve a goal useful for people. 
+**Watch the sources you care about, and get one briefing a day that's actually worth reading.**
 
-Tekt.Observer helps with Explore, Seek, Gather, Organize, Understand, and Generate. 
+Give tekt.observer a question — *what's happening in AI?*, *what moved my
+portfolio?*, *who is hiring for AI-enabled engineering?* — and it watches the
+sources directly, classifies what it finds against a taxonomy you declare, ranks
+it for the audience you're writing for, and hands you a digest in your browser,
+your inbox, or Telegram.
 
-It's focused on being the best at exploring uncharted territories, creating paths for which seekers can go and get to those destinations ( by generating code or script ), it can execute the process of gathering this data, as well as organizing/categorizing/ annotating it, understanding (in the way that makes sense as it relates to us, our goals), and then generating (digests, reports)
+No aggregator deciding what matters. No keyword alerts you learn to ignore.
 
+![Example daily digest email showing ranked matches.](docs/images/digest_email.png)
 
-Starting points 
+### Try it in 60 seconds
 
-## tekt.md 
-Tekt is used as the core tooling engine, and installs all the different agents that we want to use. 
+No API keys. No agent CLI. No account. Just Python.
 
-- Claude Desktop/Cowork, Claude Code 
-- Codex CLI, ChatGPT Codex/App (coming soon)
-- OpenClaw, Hermes Agent, ZeroClaw, NanoClaw
-- VSCode, Zed 
+```bash
+git clone git@github.com:xingh/tekt.observer.git && cd tekt.observer
+bash scripts/bootstrap_venv.sh --no-chromium              # ~30s, once
+bash scripts/run_pipeline.sh --track ai_topics --live     # fetch → classify → rank → digest
+./.venv/bin/python scripts/serve_html.py --root tests/tmp/ai_topics
+# open http://127.0.0.1:8765/
+```
 
-It also sets up communications tooling for S3 to communicate with other instanes of Tekt or anyone else syncing on the same buckets. 
+That's a real run against 7 live feeds: link enrichment, topic classification,
+trend detection, a rerank for each of 5 audiences, and per-audience digests —
+rendered as a browsable report whose save/hide/click buttons make the *next* run
+smarter.
 
-## tekt.signalflow 
-We have made a set of prompts for an AI fleet to execute parts of the work and collect / organize data with S3. 
-This is the following process that tekt.observer needs to complement.
+### What it can do today
 
-- explore - using browser use to understand and generate crawl4ai script for new sources
-- seek - use crawl4ai to execute the crawl4ai script on existing sources
-- gather - run scheduler to seek data from sources and gather it one place
-- organize - organize, categorize, annotate, relate,correlate, index
-- understand - rerank opportunities based on a profile, prioritize for impact
-- generate - create digest that includes a brief of how to move towards success
+- **Watch sources directly** — 60 discovery-mode adapters for career pages and job APIs, plus a keyless reader for RSS, Atom, and Hacker News
+- **Classify against your taxonomy** — topics, content types, audiences, and per-track extras like watchlist matches or role seniority
+- **Spot trends** — day-over-day velocity, cross-source stories, keyword clouds
+- **Rank per audience** — one pass scores every item for every audience your track declares
+- **Explain itself** — a browsable report, a social-style feed, trend charts, and the raw JSON behind all of it
+- **Learn from you** — save/hide/click events feed back into the next run's ranking
+- **Deliver and schedule** — email, Telegram, or Logseq, daily/weekly/monthly, per track
+- **Heal its own sources** — when a source breaks, an eval agent writes a ticket and a coding agent fixes the adapter
 
-## jobwatch 
+The daily loop is deterministic Python and makes **no LLM calls** — it's free and
+reproducible. Agents are used where judgment helps: setting up a track and
+repairing sources.
 
-jobwatch helps technical job seekers find relevant roles from direct sources before they are buried on large job boards.
-
-It monitors company career pages and other unaggregated sources you choose, reads the full job description, and matches jobs against your CV and preferences. Instead of noisy keyword alerts, you get a short digest of opportunities that are actually worth your attention.
-
-Example:
-
-![Example daily digest email showing ranked job matches.](docs/images/digest_email.png)
-
-<!--
-jobwatch finds the roles. Trackers manage the ones you already found; writers draft applications you haven't decided on yet. This is the step before both.
--->
-### Quick start:
-1. `git clone git@github.com:xingh/tekt.observer.git && cd "$(basename "$_" .git)"`
-2. `bash scripts/bootstrap_machine.sh --agent {claude,codex,gemini}`
-3. Optional: run `bash scripts/start_setup_agent.sh --agent {claude,codex,gemini}` only if bootstrap did not start guided setup automatically or was invoked with `--no-start-setup-agent`.
-
-For a more detailed set-up guide, see [New User Setup](#new-user-setup).
+👉 **[Full capability tour → `docs/capabilities.md`](./docs/capabilities.md)** —
+what works, how it's built, iteration status, and an honest list of gaps.
+Presenting this to someone? Start at
+[`docs/presentation-kit.md`](./docs/presentation-kit.md).
 
 ## Quick start — the three example tracks
 
 The repo ships three example tracks that share the same six-stage pipeline (`docs/tracks_pipeline.md`):
 
-- **`ai_topics`** — AI content tracker (posts, papers, videos, podcasts) for an Architect audience
+- **`ai_topics`** — AI content tracker (posts, papers, videos, podcasts) for a builder-to-leader audience spread
 - **`market_watch`** — investor market-news tracker with a watchlist-driven portfolio-alert digest
 - **`job_watch`** — AI-enabled engineering roles (AI Engineer, prompt engineer, AI instructor / trainer, DevRel)
 
@@ -131,24 +130,68 @@ scores every item for every audience; the report swaps top-matches for the reque
 The report hero has a link row for one-click switching; the URL forms are
 `/track/<track>/<date>?audience=<id>` (live) and `/track/<track>/<date>/audience/<id>` (both).
 
+### The feedback loop
+
+Every card in the report and the feed carries **save**, **hide**, and **click**
+buttons. On the live server each click appends one JSON line to
+`artifacts/feedback/<track>/<audience>/events.jsonl`. On the next run,
+`track_rerank.py --with-feedback` turns those events into per-item boosts
+(`save +0.20`, `note +0.10`, `click +0.05`, `hide −0.35`) applied to the audience
+score — so the thing you saved today ranks higher tomorrow. Details in
+[`docs/tracks_pipeline.md`](./docs/tracks_pipeline.md#feedback-loop-i8).
+
 ## Why use it?
 
-- **Find roles earlier:** track company pages and other direct sources, not just aggregators.
-- **Better matching:** evaluate the full job description against your CV and preferences, not just keywords.
-- **Stay focused:** get a concise digest by email, Telegram, or as Markdown.
+- **See it earlier:** watch primary sources — company career pages, central-bank
+  press rooms, arXiv, Hacker News — instead of waiting for an aggregator.
+- **Better matching:** items are classified against a taxonomy you declare and
+  scored against your profile and preferences, not just keyword-matched.
+- **One briefing, not a firehose:** a concise digest per audience, by email,
+  Telegram, Logseq, Markdown, or a browsable site.
+- **It gets better as you use it:** save/hide/click feedback changes tomorrow's ranking.
+- **Cheap and reproducible:** the daily loop is deterministic Python with no LLM calls.
 
 ## Who is it for?
 
-jobwatch is a good fit if you:
+tekt.observer is a good fit if you:
 
 - are comfortable using the command line
-- want more control than standard job alerts provide
+- want more control than standard alerts and newsletters provide
+- have a recurring question worth watching sources for, daily or weekly
 
 It is probably **not** a good fit if you:
 
-- do not have access to a supported coding-agent CLI account or API key
 - do not want to use a CLI tool
-- are on Windows (we support MacOS and most Linux distributions)
+- are on Windows (we support macOS and most Linux distributions)
+
+Note that the three example tracks run without any agent CLI or API key. A
+supported coding-agent CLI (Claude Code, Codex, or Gemini) is only needed for
+agent-assisted track setup, source integration, and LLM-written digests.
+
+## How it fits: Tekt and SignalFlow
+
+tekt.observer is the observation half of a larger toolkit. It extends the
+original jobwatch work by Jonas van der Heyden and integrates it with an AI Fleet
+Management practice called **SignalFlow** — a way of coordinating a series of
+steps so a fleet of agents can pursue a goal that's useful to people.
+
+**tekt** is the core tooling engine. It installs the agents you want to use —
+Claude Desktop/Cowork and Claude Code; Codex CLI and ChatGPT Codex/App (coming
+soon); OpenClaw, Hermes Agent, ZeroClaw, NanoClaw; VS Code and Zed — and sets up
+S3-backed communication so instances of Tekt can sync with each other or with
+anyone else sharing the same buckets.
+
+**tekt.signalflow** is the prompt set that drives an AI fleet through six phases.
+tekt.observer implements them:
+
+| Phase | What it means | In this repo |
+|---|---|---|
+| explore | understand a new source and generate a script to crawl it | `discover-sources` skill, source probing |
+| seek | run that script against known sources | `scripts/discover_jobs.py`, provider adapters |
+| gather | schedule the fetching and collect it in one place | `scripts/feed_gather.py`, the scheduler |
+| organize | classify, categorize, annotate, relate, index | `scripts/<track>_classify.py`, `track_trends.py` |
+| understand | rerank against a profile, prioritize for impact | `scripts/track_rerank.py` |
+| generate | produce a digest and a brief on how to act on it | `synthesize_audience_digests.py`, `render_digest.py`, `render_html.py` |
 
 <!-- 
 *How much will this cost me in tokens?*
@@ -157,7 +200,13 @@ Since most of the functionality is deterministic code, the daily checks will be 
 -->
 ## New User Setup
 
-This repository runs an agent-assisted job-search workflow with per-track discovery, ranking, digest generation, and optional delivery to Logseq, email, or Telegram. Scheduled automation supports Codex CLI, Claude Code CLI, and Gemini CLI.
+Follow this when you want your **own** track — your sources, your profile, your
+schedule, delivered where you read things. (To just try the shipped tracks, the
+60-second quick start above is enough.)
+
+Setup is agent-assisted: a guided agent interviews you, scaffolds the track,
+finds and validates candidate sources, and runs your first digest. Scheduled
+automation supports Codex CLI, Claude Code CLI, and Gemini CLI.
 
 Each track run produces local JSON and Markdown artifacts first. Delivery is a separate opt-in step.
 
@@ -403,8 +452,14 @@ To run the repo test suite:
 bash scripts/test.sh
 ```
 
-## Contributing
+## Where to read next
 
-For an architecture overview see [`docs/architecture.md`](./docs/architecture.md).
-For the shared six-stage pipeline (discover → enrich → classify → trends → synthesize → render) used by jobwatch, ai_topics, and market_watch tracks, see [`docs/tracks_pipeline.md`](./docs/tracks_pipeline.md).
-For the fork-and-PR workflow see [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+| Doc | What's in it |
+|---|---|
+| [`docs/capabilities.md`](./docs/capabilities.md) | What the tool can do today — capability matrix, per-track iteration status, honest gaps |
+| [`docs/presentation-kit.md`](./docs/presentation-kit.md) | Slide outline, demo script, and reusable diagrams for presenting tekt.observer |
+| [`docs/tracks_pipeline.md`](./docs/tracks_pipeline.md) | The six-stage pipeline script by script, artifact layout, and how to add a track |
+| [`docs/architecture.md`](./docs/architecture.md) | Component map, scheduled-run sequence, source-integration loop |
+| [`shared/discovery_modes.md`](./shared/discovery_modes.md) | Generated catalog of all 60 discovery-mode adapters |
+| [`docs/roadmap.md`](./docs/roadmap.md) | What's queued next |
+| [`CONTRIBUTING.md`](./CONTRIBUTING.md) | Fork-and-PR workflow |

@@ -1,10 +1,16 @@
 # Architecture Overview
 
-This repo runs an agent-assisted job-search workflow. Each track combines deterministic Python helpers under `scripts/` with agent-driven skills under `.agents/skills/`. This page is the high-level map; per-source detail lives in the auto-generated [`shared/discovery_modes.md`](../shared/discovery_modes.md).
+This repo runs agent-assisted observation tracks — AI content, market news, job
+postings, or whatever question you scaffold next. Each track combines
+deterministic Python helpers under `scripts/` with agent-driven skills under
+`.agents/skills/`. This page is the high-level map; for *what the system can do
+today* start at [`capabilities.md`](./capabilities.md), for the stage-by-stage
+data flow see [`tracks_pipeline.md`](./tracks_pipeline.md), and per-source detail
+lives in the auto-generated [`shared/discovery_modes.md`](../shared/discovery_modes.md).
 
 ## Work modes
 
-[`AGENTS.md`](../AGENTS.md) routes every prompt to one of four modes:
+[`AGENTS.md`](../AGENTS.md) routes every prompt to one of five modes:
 
 | Mode | Trigger | Lives in |
 | --- | --- | --- |
@@ -12,10 +18,11 @@ This repo runs an agent-assisted job-search workflow. Each track combines determ
 | Track setup | Prompt to create/scaffold a new search track | `set-up` skill |
 | Existing-track source curation | Prompt to add/evaluate a single named employer or source for an existing track | `existing-source-curation` skill, `tracks/<track>/sources.json`, `scripts/render_sources_md.py` |
 | Repo development | Prompt to change code, tests, skills, or docs | `coding` skill, `scripts/`, `tests/` |
+| Non-interactive / harness-launched | Any single-shot automation with no human in the loop | the prompt itself is the contract |
 
 ## Component map
 
-The flowchart shows how the agent skills, deterministic scripts, and on-disk artifacts interact across all four modes. Solid arrows are direct calls or invocations; dashed arrows are read/write of artifacts.
+The flowchart shows how the agent skills, deterministic scripts, and on-disk artifacts interact across the interactive modes. Solid arrows are direct calls or invocations; dashed arrows are read/write of artifacts.
 
 ```mermaid
 flowchart LR
@@ -213,6 +220,9 @@ When an integration lands a working fix, push the branch from your fork and open
 
 ## Where to read next
 
+- [`capabilities.md`](./capabilities.md) — what the system can do today, iteration status, known gaps.
+- [`tracks_pipeline.md`](./tracks_pipeline.md) — the six-stage feed pipeline shared by every track.
+- [`presentation-kit.md`](./presentation-kit.md) — outline and demo script for presenting the project.
 - [`AGENTS.md`](../AGENTS.md) — mode routing rules.
 - [`README.md`](../README.md) — user-facing setup, manual runs, scheduling, delivery.
 - [`shared/discovery_modes.md`](../shared/discovery_modes.md) — auto-generated catalog of every supported provider.

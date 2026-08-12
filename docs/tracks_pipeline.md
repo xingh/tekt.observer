@@ -52,7 +52,10 @@ each stage conditionally.
 - **Source registry** — one per feed-driven track:
   `shared/schemas/<track>_source_registry.json`
 - **Taxonomy** — machine-readable form of the arkitype spec:
-  `shared/schemas/<track>_taxonomy.json` (present for ai_topics + market_watch)
+  `shared/schemas/<track>_taxonomy.json` (present for all three shipped tracks).
+  Declaring `audiences` here is what turns on per-audience rerank (I6),
+  per-audience digests (I7), and the feedback loop (I8) — those three stages are
+  track-generic and need no per-track code.
 
 ## Config that lives in Python
 
@@ -68,7 +71,7 @@ JSON:
 
 ### jobwatch-style tracks (e.g. `test_workflow`)
 
-- **Discover:** `scripts/discover_jobs.py` (60+ registered discovery modes for career pages / job APIs)
+- **Discover:** `scripts/discover_jobs.py` (60 registered discovery modes for career pages / job APIs — see [`../shared/discovery_modes.md`](../shared/discovery_modes.md))
 - **Enrich:** optional; `scripts/feed_enrich.py --track test_workflow` would work today
 - **Classify:** the provider LLM agent writes the digest directly (no separate classify)
 - **Trends:** would require adding an organized artifact first
@@ -86,12 +89,27 @@ JSON:
 
 ### market_watch
 
-- **Discover:** `scripts/feed_gather.py` with `shared/schemas/market_watch_source_registry.json` (Fed press, SEC press, BoE, Yahoo Finance, HN Algolia earnings + funding)
+- **Discover:** `scripts/feed_gather.py` with `shared/schemas/market_watch_source_registry.json` (13 sources: Fed press, SEC press, BoE, ECB, CNBC, Yahoo Finance, Ars Technica business, and 6 HN Algolia queries for earnings / funding / IPO / rate hikes / acquisitions / central banks)
 - **Enrich:** `scripts/feed_enrich.py`
 - **Classify:** `scripts/market_watch_classify.py` — asset-class + event-type keywords, watchlist matching for portfolio alerts
 - **Trends:** `scripts/track_trends.py`
 - **Synthesize:** `scripts/market_watch_synthesize_digest.py` — `is_portfolio_alert` → `top_matches`
 - **Render:** shared
+
+### job_watch
+
+- **Discover:** `scripts/feed_gather.py` with `shared/schemas/job_watch_source_registry.json` (8 sources: HN Jobs firehose, 5 HN Algolia role queries, ai-jobs.net, We Work Remotely). The ATS adapters under `scripts/discover/sources/` are available via `scripts/discover_jobs.py` but no curated employer list is wired into the track yet.
+- **Enrich:** `scripts/feed_enrich.py`
+- **Classify:** `scripts/job_watch_classify.py` — role_type + seniority audience + remote-friendliness from keyword sets
+- **Trends:** `scripts/track_trends.py`
+- **Synthesize:** `scripts/job_watch_synthesize_digest.py`, plus the generic per-audience digests
+- **Render:** shared
+
+### Where each track stands
+
+Which iteration (`I0`–`I8`) each track has actually reached, plus the known
+gaps, is tracked in [`capabilities.md`](./capabilities.md#iteration-status).
+The iteration plans themselves live in `.arkitype/00-<name>.md`.
 
 ## Running the pipeline
 
