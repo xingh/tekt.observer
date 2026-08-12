@@ -2,7 +2,7 @@
 
 Status: planned
 Owner: copilot; agent_id: unknown
-Last updated: 2026-08-01 23:30 UTC
+Last updated: 2026-08-12
 
 ## Goal
 
@@ -50,7 +50,7 @@ Evolve tekt.observer from a single-domain observation tool into a generalized pl
 - [ ] Implement `scripts/phases/organize.py` — schema mapping (from digest_json patterns)
 - [ ] Implement `scripts/phases/understand.py` — agent orchestration (from rank-jobs pattern)
 - [ ] Implement `scripts/phases/generate.py` — output rendering + delivery
-- [ ] Add CLI entry point: `scripts/tekt.py <phase> [args]`
+- [ ] Add CLI entry point: `tekt.observer <phase> [args]` (`tekt` is reserved and must not be used as the executable name)
 - [ ] Verify `run_track.sh` can be expressed as gather→organize→understand→generate chain
 
 ### Layer 2 — Auxiliary CLI integration
@@ -99,11 +99,11 @@ Evolve tekt.observer from a single-domain observation tool into a generalized pl
   - Human-readable format with comments
   - Schema validation on save
   - Optional sensor definition inline
-- [ ] Add `scripts/tekt.py sources` subcommand:
-  - `tekt sources list` — show configured sources with status
-  - `tekt sources add <url>` — auto-detect and generate sensor
-  - `tekt sources edit <name>` — open in $EDITOR
-  - `tekt sources validate` — schema + canary check all sources
+- [ ] Add `tekt.observer sources` subcommand:
+  - `tekt.observer sources list` — show configured sources with status
+  - `tekt.observer sources add <url>` — auto-detect and generate sensor
+  - `tekt.observer sources edit <name>` — open in $EDITOR
+  - `tekt.observer sources validate` — schema + canary check all sources
 - [ ] Future: web-based UI (Notion-like)
   - Read/write the same `sources.json` backing file
   - Backed by MCP server (RM-017 Phase 2) or standalone web app
@@ -112,6 +112,8 @@ Evolve tekt.observer from a single-domain observation tool into a generalized pl
 ## Progress Log
 
 - 2026-08-01 23:30 — Plan created. Knowledge entries for GitHub Copilot CLI and Pi CLI added to `.manage/6.knowledge.md`. Project entries added to `.manage/2.projects.md`. Process definitions for all six phases added to `.manage/3.processes.md`. Roadmap item RM-018 added.
+- 2026-08-12 — Renamed the planned CLI from `tekt` to `tekt.observer` because `tekt` is reserved; updated command examples, verification criteria, roadmap notes, and internal planning documentation.
+- 2026-08-12 — Bootstrapped the repo-local virtualenv and ran `bash scripts/test.sh`: 616 passed, 28 skipped. An initial sandboxed run had two environment-only multiprocessing failures because Unix-socket creation was denied; the unrestricted rerun passed.
 
 ## Handoff Notes
 
@@ -121,18 +123,21 @@ This plan depends on:
 
 The phase abstraction (Layer 1) can proceed independently. Start there.
 
+Documentation-only update on 2026-08-12: no implementation files changed. `scripts/test.sh` passed with 616 tests passed and 28 skipped after rerunning outside the sandbox. The next concrete step remains defining the Phase protocol and scaffolding the module structure, using `tekt.observer` for the executable.
+
 Key architectural decisions:
 - Auxiliary CLIs are helpers, not providers — they don't replace the codex/claude/gemini model
 - Phases are composable — any phase can be run alone or chained
 - Sensor definitions are declarative — the system generates code from them, not vice versa
 - Source management is file-first — the web UI reads/writes the same JSON/YAML files
+- The CLI executable is `tekt.observer`; the shorter `tekt` name is reserved
 
 ## Verification
 
 - [ ] `scripts/phases/__init__.py` defines Phase protocol with type hints
 - [ ] Each phase module can be imported and run independently with test fixtures
-- [ ] `tekt explore <url>` produces an exploration artifact for a known working URL
-- [ ] `tekt sources add <url>` generates a sensor definition for a simple career page
+- [ ] `tekt.observer explore <url>` produces an exploration artifact for a known working URL
+- [ ] `tekt.observer sources add <url>` generates a sensor definition for a simple career page
 - [ ] `bash scripts/test.sh` passes after all changes
 
 ## Caveats
