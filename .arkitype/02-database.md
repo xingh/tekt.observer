@@ -1,5 +1,9 @@
 # Database
 
+## I9–I14 private file model
+
+`profile/interests.json` stores global interests; `profile/portfolios.json` stores named ordered track/interest collections and one default; `tracks/<slug>/track.json` stores display/lifecycle/default-audience/mapping metadata; `tracks/<slug>/taxonomy.json` stores editable topics and audiences; and `logs/portfolio-operations.json` stores bounded operation history. IDs are immutable validated slugs. Sidecar flock plus atomic rename protects writes. Dangling references and orphaned mappings are rejected. Missing files yield an implicit All Tracks projection and never cause automatic migration.
+
 ```yaml
 DATABASE:
   architecture:

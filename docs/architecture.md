@@ -1,5 +1,9 @@
 # Architecture Overview
 
+## Local portfolio management (I9–I14)
+
+The loopback viewer is also a server-rendered local portfolio application. `portfolio_state.py` validates and atomically persists private interests, portfolios, track metadata, and taxonomy overrides. Missing metadata is projected in memory. `serve_html.py` adapts immutable pipeline artifacts into unified `<track>:<item_key>` records and exposes `/api/v1`; `portfolio_operations.py` runs bounded pollable subprocesses with one active operation per track. Non-loopback bindings and static output are read-only.
+
 This repo runs agent-assisted observation tracks — AI content, market news, job
 postings, or whatever question you scaffold next. Each track combines
 deterministic Python helpers under `scripts/` with agent-driven skills under

@@ -1,5 +1,9 @@
 # Interface
 
+## I9–I14 browser and JSON interfaces
+
+The live `/` route is a responsive named-portfolio dashboard with track health and a unified signal inbox. Filters cover portfolio, track, audience, topic, date/text; items expose source provenance and normalized 0–100 scores. Existing report/feed/trend/source/raw routes remain. `/api/v1` exposes portfolio and interest CRUD, track metadata/taxonomy, item queries, feedback, and pollable operations. Guided setup shares the operation state model and activates a track only after validation and a viewable first artifact.
+
 ```yaml
 INTERFACE:
   interface_type: cli_first_with_generated_markdown_outputs

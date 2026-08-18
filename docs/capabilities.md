@@ -1,5 +1,14 @@
 # What tekt.observer Can Do Today
 
+## Local portfolio workspace (I9–I14)
+
+- Named portfolios organize tracks and reusable interests; legacy tracks appear in an implicit All Tracks portfolio.
+- The live dashboard combines organized, ranked, digest, and discovery artifacts without modifying them.
+- Save, hide, click, and note signals reuse audience-specific append-only feedback.
+- Track metadata and taxonomy overrides enforce reference integrity and overlay shipped schemas.
+- Management APIs enforce JSON, size, origin, CSRF, stable-ID, and loopback-write constraints.
+- Run/source-validation work is pollable and limited to one active operation per track; static sites stay read-only.
+
 _Point-in-time status of `master` as of 2026-08-11. This page is the fact source
 for [`presentation-kit.md`](./presentation-kit.md) — update it when an iteration
 lands and the deck outline stays valid._

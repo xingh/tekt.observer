@@ -44,7 +44,16 @@ RM-### — Title
 - Last updated: 2026-08-12
 - Links: [plan](plans/2026-08-01-multi-agent-cli-platform.md)
 - Next step: Define Phase protocol in `scripts/phases/__init__.py` and scaffold module structure
-- Notes: Six command phases (/explore, /seek, /gather, /organize, /understand, /generate) unify the observation pipeline under the `tekt.observer` CLI name; `tekt` is reserved and must not be used as the executable name. GitHub Copilot CLI and Pi CLI integrate as auxiliary tools for specific phases (command generation and reasoning respectively). Existing codex/claude/gemini remain primary providers. Research done; findings in `.manage/6.knowledge.md` ("Multi-agent CLI platform"). Projects defined in `.manage/2.projects.md`.
+- Notes: Six command phases (/explore, /seek, /gather, /organize, /understand, /generate) unify the observation pipeline under the `tekt.observer` CLI name; `tekt` is reserved and must not be used as the executable name. GitHub Copilot CLI and Pi CLI integrate as auxiliary tools for specific phases (command generation and reasoning respectively). Existing codex/claude/gemini remain primary providers. Research done; findings in `.manage/6.knowledge.md` ("Multi-agent CLI platform"). Projects defined in `.manage/2.projects.md`. Its overlapping browser-management UI is superseded by RM-020; the phase/CLI work remains in scope.
+
+### RM-020 — Local portfolio management UI
+- Status: in progress
+- Priority: H
+- Owner: Codex
+- Last updated: 2026-08-18
+- Links: [plan](plans/2026-08-18-local-portfolio-ui.md)
+- Next step: finish I9–I14 verification and documentation
+- Notes: Named portfolios, reusable interests, track-local metadata/taxonomy, a unified inbox, curation, and bounded local operations. Local files stay canonical and static output stays read-only.
 
 ### RM-017 — Package tekt.observer as an installable Claude skills plugin
 - Status: new

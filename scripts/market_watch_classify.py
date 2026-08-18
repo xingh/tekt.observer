@@ -259,7 +259,8 @@ def main() -> None:
     disc_path = root / "artifacts" / "discovery" / args.track / f"{args.date}.json"
     if not disc_path.is_file():
         sys.exit(f"missing discovery artifact: {disc_path}")
-    taxonomy = json.loads(Path(args.taxonomy).read_text())
+    taxonomy = (json.loads(Path(args.taxonomy).read_text()) if args.taxonomy != str(DEFAULT_TAXONOMY)
+                else resolved_classifier_taxonomy(root, args.track))
     watchlist = _load_watchlist(Path(args.watchlist) if args.watchlist else None)
     discovery = json.loads(disc_path.read_text())
     organized = classify_candidates(discovery, taxonomy, watchlist, args.date)
@@ -272,3 +273,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+from portfolio_state import resolved_classifier_taxonomy

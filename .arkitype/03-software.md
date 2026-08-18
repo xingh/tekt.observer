@@ -1,5 +1,9 @@
 # Software
 
+## I9–I14 application services
+
+`portfolio_state.py` owns validation, reference integrity, explicit initialization, taxonomy precedence, and unified item adaptation. `serve_html.py` owns server-rendered portfolio views and `/api/v1` policy. `portfolio_operations.py` owns queued/running/needs_input/validating/first_run/ready/failed/cancelled state with bounded logs. Existing deterministic pipeline and CLI entrypoints remain canonical.
+
 ```yaml
 SOFTWARE:
   execution_model:

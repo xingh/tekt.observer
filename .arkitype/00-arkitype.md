@@ -1,5 +1,9 @@
 # Identity & Site Profile
 
+## I9–I14 product identity
+
+tekt.observer is a local-first single-user portfolio of observation tracks. Portfolios are named ordered collections of tracks and global reusable interests; topics and audiences belong to tracks. The product centers on a unified scored signal inbox, then curation, configuration, guided setup, and operational controls. Local files remain canonical. Databases, accounts, hosted tenancy, remote writes, and client frameworks are out of scope. Legacy tracks must work without migration and static output remains read-only.
+
 ```yaml
 SITE_PROFILE:
   site_name: tekt.observer

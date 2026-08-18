@@ -37,6 +37,10 @@ class Taxonomy:
 
 def load_taxonomy(path: Path = DEFAULT_TAXONOMY_PATH) -> Taxonomy:
     data = json.loads(path.read_text())
+    return taxonomy_from_dict(data)
+
+
+def taxonomy_from_dict(data: dict[str, Any]) -> Taxonomy:
     topic_ids = frozenset(t["id"] for t in data["topics"])
     content_types = data["content_types"]
     audience_ids = frozenset(a["id"] for a in data["audiences"])

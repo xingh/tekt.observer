@@ -1,5 +1,9 @@
 # Infrastructure
 
+## I9–I14 local serving boundary
+
+The live application uses the threaded Python loopback server and vanilla JavaScript. Mutations require loopback binding, JSON, same-origin validation, a per-process CSRF token, and a 256 KiB limit. Non-loopback serving and static sites are read-only. Background commands use argument arrays, bounded logs, validated IDs, one active operation per track, and pollable state.
+
 ```yaml
 INFRASTRUCTURE:
   runtime_stack:

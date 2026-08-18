@@ -16,7 +16,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ai_topics_taxonomy import Taxonomy, load_taxonomy  # noqa: E402
+from ai_topics_taxonomy import Taxonomy, taxonomy_from_dict  # noqa: E402
+from portfolio_state import resolved_classifier_taxonomy  # noqa: E402
 from track_common import item_key, iso_utc_now, substring_match  # noqa: E402
 
 
@@ -171,7 +172,7 @@ def main() -> None:
     if not discovery_path.is_file():
         sys.exit(f"missing discovery artifact: {discovery_path}")
     discovery = json.loads(discovery_path.read_text())
-    taxonomy = load_taxonomy()
+    taxonomy = taxonomy_from_dict(resolved_classifier_taxonomy(root, args.track))
     organized = classify_candidates(discovery, taxonomy, args.date)
     out_path = root / "artifacts" / "organized" / args.track / f"{args.date}.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)

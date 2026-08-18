@@ -127,7 +127,10 @@ Two ways to see the output:
 ```
 
 Live-server routes:
-- `/` — track index
+- `/` — named-portfolio dashboard and cross-track signal inbox
+- `/api/v1/state`, `/api/v1/items` — portfolio state and unified items
+- `/api/v1/portfolios`, `/api/v1/interests`, `/api/v1/tracks/<track>` — management APIs
+- `/api/v1/operations` — pollable local operations
 - `/track/<track>/<date>` — consolidated daily report
 - `/track/<track>/<date>?audience=<id>` — same report scoped to an audience
 - `/track/<track>/feed/<date>` — social-feed grid with OG images
@@ -135,6 +138,8 @@ Live-server routes:
 - `/track/<track>/<date>/details` — structured digest tables
 - `/track/<track>/sources` — sources + persona
 - `/raw/digests/<track>/<date>.json` — raw digest JSON
+
+Initialize explicit private portfolio files with `./.venv/bin/python scripts/portfolio_state.py init`. Without initialization, legacy tracks appear in an implicit **All Tracks** portfolio and no existing files are rewritten. Writes are loopback-only and require same-origin JSON plus the server CSRF token; static exports contain no controls.
 
 **Audience switching** — audience list per track (from `.arkitype/00-*.md`):
 - ai_topics: `builders · operators · managers · architects · leaders`
