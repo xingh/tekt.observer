@@ -20,8 +20,10 @@ import ssl
 import sys
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.error import URLError, HTTPError
+from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 from urllib.request import Request, urlopen
 
 USER_AGENT = "tekt.observer/feed-gather (github.com/xingh/tekt.observer)"
@@ -40,6 +42,67 @@ def _fetch(url: str, timeout: int = DEFAULT_TIMEOUT) -> bytes:
     ctx = ssl.create_default_context()
     with urlopen(req, timeout=timeout, context=ctx) as resp:
         return resp.read()
+
+
+def _date_window(for_date: str | None) -> tuple[int, int] | None:
+    """Return (start_epoch, end_epoch) inclusive UTC window for a YYYY-MM-DD date."""
+    if not for_date:
+        return None
+    try:
+        d = datetime.strptime(for_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+    start = int(d.timestamp())
+    end = start + 86399
+    return start, end
+
+
+def _parse_published_epoch(published: str | None) -> int | None:
+    """Best-effort parse of RSS pubDate / Atom published to epoch seconds."""
+    if not published:
+        return None
+    published = published.strip()
+    try:
+        dt = parsedate_to_datetime(published)
+        if dt is None:
+            raise ValueError("empty")
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return int(dt.timestamp())
+    except (TypeError, ValueError):
+        pass
+    for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"):
+        try:
+            dt = datetime.strptime(published, fmt)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return int(dt.timestamp())
+        except ValueError:
+            continue
+    return None
+
+
+def _rewrite_hn_url_for_window(url: str, window: tuple[int, int]) -> str:
+    """Append numericFilters=created_at_i>=start,created_at_i<=end to a HN Algolia URL."""
+    start, end = window
+    parts = urlsplit(url)
+    q = dict(parse_qsl(parts.query, keep_blank_values=True))
+    q["numericFilters"] = f"created_at_i>={start},created_at_i<={end}"
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(q), parts.fragment))
+
+
+def _filter_by_window(items: list[dict], window: tuple[int, int] | None) -> list[dict]:
+    if not window:
+        return items
+    start, end = window
+    out = []
+    for it in items:
+        ep = _parse_published_epoch(it.get("published_at"))
+        if ep is None:
+            continue
+        if start <= ep <= end:
+            out.append(it)
+    return out
 
 
 def _strip_html(text: str) -> str:
@@ -116,10 +179,14 @@ def _parse_hn_algolia(body: bytes, source: dict) -> list[dict]:
     return items[:MAX_PER_SOURCE]
 
 
-def _gather_source(source: dict) -> tuple[list[dict], list[str], str]:
+def _gather_source(source: dict, window: tuple[int, int] | None = None) -> tuple[list[dict], list[str], str]:
     kind = source.get("kind")
+    url = source["url"]
+    # HN Algolia can filter server-side by created_at_i window.
+    if kind == "hn_algolia" and window:
+        url = _rewrite_hn_url_for_window(url, window)
     try:
-        body = _fetch(source["url"])
+        body = _fetch(url)
     except (URLError, HTTPError, socket.timeout, TimeoutError) as exc:
         return [], [f"fetch_error:{exc}"], "failed"
     try:
@@ -133,7 +200,14 @@ def _gather_source(source: dict) -> tuple[list[dict], list[str], str]:
             return [], [f"unknown_kind:{kind}"], "failed"
     except (ET.ParseError, json.JSONDecodeError, ValueError) as exc:
         return [], [f"parse_error:{exc}"], "failed"
-    return items, [], "complete" if items else "partial"
+    limitations: list[str] = []
+    if window and kind in {"rss", "atom"}:
+        before = len(items)
+        items = _filter_by_window(items, window)
+        if before and not items:
+            limitations.append(f"window_filtered_out:{before}")
+    status = "complete" if items else "partial"
+    return items, limitations, status
 
 
 def _to_candidates(items: list[dict], source: dict) -> list[dict]:
@@ -159,10 +233,10 @@ def _to_candidates(items: list[dict], source: dict) -> list[dict]:
     return out
 
 
-def gather_all(registry: dict) -> list[dict]:
+def gather_all(registry: dict, window: tuple[int, int] | None = None) -> list[dict]:
     per_source = []
     for source in registry.get("sources", []):
-        items, limitations, status = _gather_source(source)
+        items, limitations, status = _gather_source(source, window=window)
         cands = _to_candidates(items, source)
         per_source.append({
             "source": source["name"],
@@ -195,11 +269,16 @@ def main() -> None:
     ap.add_argument("--date", required=True, help="YYYY-MM-DD")
     default_registry = str(Path(__file__).resolve().parents[1] / "shared" / "schemas" / "ai_topics_source_registry.json")
     ap.add_argument("--registry", default=default_registry)
+    ap.add_argument("--for-date", default="",
+                    help="Fetch only entries whose pubDate falls in this UTC day (YYYY-MM-DD). "
+                         "For hn_algolia sources the window is applied server-side; for rss/atom "
+                         "the parsed entries are filtered client-side.")
     args = ap.parse_args()
     root = Path(args.root).resolve()
     registry_path = Path(args.registry).resolve()
     registry = json.loads(registry_path.read_text())
-    per_source = gather_all(registry)
+    window = _date_window(args.for_date) if args.for_date else None
+    per_source = gather_all(registry, window=window)
     artifact = {
         "schema_version": 1,
         "track": args.track,

@@ -135,6 +135,97 @@ The two per-track wrappers `run_ai_topics_e2e.sh` and
 `run_market_watch_e2e.sh` remain as thin back-compat shims that just
 invoke `run_pipeline.sh --track <slug>`.
 
+## Backfill mode
+
+`run_pipeline.sh` covers "today". `scripts/backfill.sh` covers "the past
+N days", one date at a time, with real per-date data where the source
+supports it. Use it for demos, month-in-review reports, or seeding a
+fresh scratch tree with history before daily runs start.
+
+```bash
+# One track, one date range (inclusive UTC dates — use past-or-present dates only;
+# future dates will fetch nothing and produce empty artifacts).
+bash scripts/backfill.sh --track ai_topics --start 2026-08-01 --end 2026-08-13
+
+# Explicit list (useful for batching across parallel runs)
+bash scripts/backfill.sh --track ai_topics --dates '2026-08-10 2026-08-11 2026-08-12 2026-08-13'
+
+# All three tracks in parallel for the last four UTC days
+DATES=$(for i in $(seq 3 -1 0); do date -u -d "$i days ago" +%F; done)
+bash scripts/backfill.sh --track ai_topics    --dates "$DATES" &
+bash scripts/backfill.sh --track market_watch --dates "$DATES" &
+bash scripts/backfill.sh --track job_watch    --dates "$DATES" &
+wait
+```
+
+### How real historical fetch works per source kind
+
+`scripts/feed_gather.py` takes an optional `--for-date YYYY-MM-DD`. When
+set, it applies a UTC day window:
+
+| Source kind | Historical behavior |
+|---|---|
+| `hn_algolia` | Server-side filter via `numericFilters=created_at_i>=…,created_at_i<=…` — real per-date results for the whole HN history. |
+| `rss` / `atom` | Client-side filter on the parsed `pubDate` / `published` field — only entries whose timestamp falls in the target UTC day are kept. Feeds that only expose their latest window (Substacks, arXiv, most newswires) will return 0 for older dates. |
+| Anything else | Fetched as-is (no window applied). |
+
+Consequence: an older date's discovery artifact will look thinner than
+today's because most non-HN feeds don't carry archived entries in the
+feed body itself. For deeper historical coverage of a specific source,
+add a per-source archive-page scraper (e.g. Simon Willison's date-indexed
+archive, arXiv's `list/cs.LG/YYMM`, Substack `/archive?year=…`) as its
+own new source kind.
+
+### What backfill.sh runs per date
+
+For every date in the range it runs the deterministic pipeline stages
+against the historical discovery artifact:
+
+1. `feed_gather.py --for-date <date>` — real per-day window per source
+2. `feed_enrich.py` — shared URL cache across all dates
+3. `<track>_classify.py` — same classifier as daily runs
+4. `track_trends.py` — velocity vs. the previous date if present
+5. `track_rerank.py --with-feedback` — feedback boosts apply here too
+6. `synthesize_audience_digests.py` — per-audience digests (I7)
+7. `<track>_synthesize_digest.py` — persona digest
+8. `render_digest.py` — markdown
+
+The scratch tree at `tests/tmp/<track>/` accumulates all dates side by
+side. Re-running `backfill.sh` for a date that already has artifacts
+overwrites them cleanly.
+
+### Rendering a multi-track, per-day-folder site
+
+Once the scratch trees have several dates each, render into a single
+publishable folder with one directory per day per track:
+
+```bash
+./.venv/bin/python scripts/render_multitrack_site.py \
+  --track ai_topics --track market_watch --track job_watch \
+  --out /path/to/output/
+```
+
+Layout produced:
+
+```
+<out>/
+    index.html                             — one card per track, 31 date chips per card
+    style.css
+    <track>/index.html                     — track landing: date table with feed/trends/digest links
+    <track>/sources.html                   — sources + persona
+    <track>/<date>/index.html              — daily report (consolidated)
+    <track>/<date>/details.html            — structured digest tables
+    <track>/<date>/feed.html               — social feed grid with OG images
+    <track>/<date>/trends.html             — trend charts + keyword cloud
+    <track>/<date>/audience/<audience>.html — per-audience report variant
+    raw/<kind>/<track>/<date>.json         — raw JSON behind every page
+```
+
+`render_multitrack_site.py` reuses the shared `html_viewer` renderers
+and only rewrites the root-anchored URLs (`/track/…`, `/style.css`,
+`/raw/…`) to relative paths so the output works via `file://` or from
+any subdirectory of an HTTP server.
+
 ## Adding a new track
 
 1. Author `.arkitype/00-<name>.md` — the SITE_PROFILE-style purpose spec
