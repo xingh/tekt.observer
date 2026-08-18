@@ -1,4 +1,4 @@
-"""Content-item discovery for the ai_topics track (I2 preview).
+"""Content-item discovery for the topic_watch track (I2 preview).
 
 The base discover_jobs.py pipeline is tuned for job listings and filters
 candidates through job-title heuristics (engineer, researcher, ...) that
@@ -86,7 +86,7 @@ def discover_source(source: dict, track_terms: list[str]) -> dict:
             "location": "content",
             "remote": "unknown",
             "matched_terms": matched,
-            "notes": "ai_topics_discover: <a> inside <ul>",
+            "notes": "topic_watch_discover: <a> inside <ul>",
             "description": "",
             "description_truncated": False,
         })
@@ -114,7 +114,7 @@ def discover_source(source: dict, track_terms: list[str]) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", default=".", help="Repo-shaped root")
-    ap.add_argument("--track", default="ai_topics")
+    ap.add_argument("--track", default="topic_watch")
     ap.add_argument("--date", required=True)
     args = ap.parse_args()
     root = Path(args.root).resolve()

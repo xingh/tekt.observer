@@ -74,23 +74,23 @@ Rehearse this; it's four commands and about 90 seconds of waiting.
 bash scripts/bootstrap_venv.sh --no-chromium
 
 # 2. Live run — narrate the stage banners as they print
-bash scripts/run_pipeline.sh --track ai_topics --live
+bash scripts/run_pipeline.sh --track topic_watch --live
 
 # 3. Show the artifacts — one file per stage, predictable paths
-tree tests/tmp/ai_topics/artifacts | head -30
+tree tests/tmp/topic_watch/artifacts | head -30
 
 # 4. Open the report
-./.venv/bin/python scripts/serve_html.py --root tests/tmp/ai_topics
+./.venv/bin/python scripts/serve_html.py --root tests/tmp/topic_watch
 ```
 
 In the browser, walk this path — it maps to slides 4, 6, and 7:
 
 1. `/` — the track index
-2. `/track/ai_topics/<date>` — the consolidated daily report
-3. `/track/ai_topics/<date>?audience=builders` then `?audience=leaders` — same
+2. `/track/topic_watch/<date>` — the consolidated daily report
+3. `/track/topic_watch/<date>?audience=builders` then `?audience=leaders` — same
    day, different reader, different top matches
-4. `/track/ai_topics/trends/<date>` — velocity and the keyword cloud
-5. `/track/ai_topics/feed/<date>` — click **save** on a card, then say the line:
+4. `/track/topic_watch/trends/<date>` — velocity and the keyword cloud
+5. `/track/topic_watch/feed/<date>` — click **save** on a card, then say the line:
    *"that just appended an event; the next run ranks it higher."*
 
 **Offline fallback:** drop `--live` and the run uses a shipped HTML fixture, so

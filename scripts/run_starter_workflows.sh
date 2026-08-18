@@ -7,8 +7,8 @@ usage() {
   cat <<EOF
 Usage: $0 [--scratch PATH] [--today YYYY-MM-DD] [--live] [--serve]
 
-Seeds viewable sample signals for ai_topics, market_watch, and job_watch into
-one scratch root. --live replaces the samples with current keyless feed data.
+Seeds viewable sample signals for every watcher spec in `.arkitype/watchers/`
+into one scratch root. --live replaces the samples with current keyless feed data.
 With --serve, opens the loopback portfolio viewer after the runs finish.
 EOF
 }
@@ -34,9 +34,13 @@ done
 if [[ "$LIVE" -eq 1 ]]; then
   COMMON=(--live --scratch "$SCRATCH")
   if [[ -n "$TODAY" ]]; then COMMON+=(--today "$TODAY"); fi
-  bash "$SCRIPT_DIR/run_pipeline.sh" --track ai_topics "${COMMON[@]}"
-  bash "$SCRIPT_DIR/run_pipeline.sh" --track market_watch "${COMMON[@]}" --append
-  bash "$SCRIPT_DIR/run_pipeline.sh" --track job_watch "${COMMON[@]}" --append
+  FIRST=1
+  while IFS= read -r WATCHER; do
+    EXTRA=()
+    if [[ "$FIRST" -eq 0 ]]; then EXTRA+=(--append); fi
+    bash "$SCRIPT_DIR/run_pipeline.sh" --track "$WATCHER" "${COMMON[@]}" "${EXTRA[@]}"
+    FIRST=0
+  done < <("$ROOT/.venv/bin/python" "$SCRIPT_DIR/generate_watchers.py" --root "$ROOT" --list)
 else
   SEED_ARGS=(--root "$ROOT" --out "$SCRATCH")
   if [[ -n "$TODAY" ]]; then SEED_ARGS+=(--date "$TODAY"); fi

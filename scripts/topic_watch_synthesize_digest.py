@@ -1,11 +1,11 @@
-"""Deterministic digest synthesizer for the ai_topics track (I7 preview).
+"""Deterministic digest synthesizer for the topic_watch track (I7 preview).
 
 Reads:
-- artifacts/organized/ai_topics/<date>.json  (from ai_topics_classify.py)
-- artifacts/discovery/ai_topics/<date>.json  (for source_notes)
+- artifacts/organized/topic_watch/<date>.json  (from topic_watch_classify.py)
+- artifacts/discovery/topic_watch/<date>.json  (for source_notes)
 
 Writes:
-- artifacts/digests/ai_topics/<date>.json    (structured digest per shared/digest_schema.md)
+- artifacts/digests/topic_watch/<date>.json    (structured digest per shared/digest_schema.md)
 
 Splits organized items into top_matches (items whose audiences include the
 --audience flag, ranked by confidence) and other_new_roles (the rest). No LLM;
@@ -112,7 +112,7 @@ def synthesize(
     }
     return {
         "schema_version": 1,
-        "track": "ai_topics",
+        "track": "topic_watch",
         "date": date,
         "runs": [run],
     }
@@ -122,7 +122,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", default=".", help="Repo-shaped root")
     ap.add_argument("--date", required=True, help="YYYY-MM-DD")
-    ap.add_argument("--track", default="ai_topics")
+    ap.add_argument("--track", default="topic_watch")
     ap.add_argument("--audience", default="architects", help="Audience id to prioritise in top_matches")
     ap.add_argument("--max-top", type=int, default=8)
     args = ap.parse_args()

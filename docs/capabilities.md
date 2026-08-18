@@ -11,7 +11,7 @@
 - The `/manage` page launches live runs and source validation, updates schedules, and polls bounded logs; cancellation works across requests.
 - Operational work is limited to one active operation per track; static sites stay read-only.
 
-_Point-in-time status of `master` as of 2026-08-11. This page is the fact source
+_Point-in-time status of `master` as of 2026-08-18. This page is the fact source
 for [`presentation-kit.md`](./presentation-kit.md) — update it when an iteration
 lands and the deck outline stays valid._
 
@@ -31,8 +31,8 @@ source), not in the daily loop.
 
 ```bash
 bash scripts/bootstrap_venv.sh --no-chromium          # ~30s, once
-bash scripts/run_pipeline.sh --track ai_topics --live # fetch → classify → rank → digest
-./.venv/bin/python scripts/serve_html.py --root tests/tmp/ai_topics
+bash scripts/run_pipeline.sh --track topic_watch --live # fetch → classify → rank → digest
+./.venv/bin/python scripts/serve_html.py --root tests/tmp/topic_watch
 # open http://127.0.0.1:8765/
 ```
 
@@ -80,24 +80,25 @@ Mapped onto the code: `discover/gather` → `enrich` → `classify` → `trends`
 
 | Track | Question it answers | Live sources | Audiences |
 |---|---|---|---|
-| **`ai_topics`** | What's worth reading in AI today? | 7 (5 RSS, 1 Atom, 1 HN Algolia — arXiv cs.LG/cs.CL, Latent Space, Sebastian Raschka, Hacker News) | builders · operators · managers · architects · leaders |
-| **`market_watch`** | What moved, and does it touch my watchlist? | 13 (Fed press, SEC press, Bank of England, ECB, CNBC, Yahoo Finance, Ars Technica business, 6 HN Algolia queries for earnings / funding / IPO / rate hikes / acquisitions / central banks) | investors · portfolio_managers · allocators · gps · lps |
-| **`job_watch`** | Who is hiring for AI-enabled engineering? | 8 (HN Jobs firehose, 5 HN Algolia role queries, ai-jobs.net, We Work Remotely) | individual_contributor · senior_ic · tech_lead · manager · instructor |
+| **`topic_watch`** | How is AI changing business use and operating practice? | 10 (AI publications and research feeds plus enterprise-adoption, workflow, and governance queries) | builders · operators · managers · architects · leaders |
+| **`market_watch`** | What changed for AI public companies or AI regulation? | 16 (market and regulator feeds plus company, semiconductor, and regulation queries) | investors · portfolio_managers · allocators · gps · lps |
+| **`job_watch`** | Which professions are being reshaped by applied AI? | 13 (job feeds plus engineering, product, architecture, governance, automation, and customer-role queries) | individual_contributor · senior_ic · tech_lead · manager · instructor |
 
-Each track is declared twice: once as a human-readable purpose spec in
-`.arkitype/00-<name>.md` (taxonomy, audiences, iteration plan) and once as a
-machine-readable `shared/schemas/<track>_taxonomy.json` the classifier and
-reranker read. Adding a fourth track is a documented seven-step recipe.
+Each built-in watcher has one canonical spec directory under
+`.arkitype/watchers/<slug>/`. The generator projects its identity, brief,
+taxonomy, and source registry into `tracks/` and `shared/schemas/`; CI rejects
+runtime files that drift from the spec. Adding another watcher follows the same
+directory contract without registering its slug in Python.
 
 ## Iteration status
 
-Each arkitype spec declares an `I0`–`I8` iteration plan. Where the code stands:
+The original arkitype iteration plan established I0–I8. Where the code stands:
 
-| | ai_topics | market_watch | job_watch |
+| | topic_watch | market_watch | job_watch |
 |---|---|---|---|
 | I0 scaffold | ✅ | ✅ | ✅ |
 | I1 taxonomy + classifier | ✅ | ✅ | ✅ |
-| I2 real sources | ✅ 7 feeds | ✅ 13 feeds | ✅ 8 feeds |
+| I2 real sources | ✅ 10 feeds | ✅ 16 feeds | ✅ 13 feeds |
 | I3 fetchers / ATS modes | ✅ | ✅ | 🟡 adapters exist, employer list not curated into the track |
 | I4 gather → artifacts | ✅ | ✅ | ✅ |
 | I5 organize / classify | ✅ deterministic | ✅ deterministic | ❌ LLM classifier over full JD not started |
@@ -111,7 +112,7 @@ Two things this table is saying that are easy to miss:
    and `track_feedback.py` take `--track` and read the taxonomy — so any new track
    inherits reranking, per-audience digests, and the feedback loop for free the
    moment its taxonomy declares audiences.
-2. **Classification is deterministic on purpose, for now.** `ai_topics_classify.py`
+2. **Classification is deterministic on purpose, for now.** `topic_watch_classify.py`
    describes itself as "a deterministic scaffold, not the eventual LLM-driven
    classifier." That keeps daily runs free and reproducible, and it is the
    deliberate baseline an LLM classifier would have to beat.
@@ -132,7 +133,7 @@ Two things this table is saying that are easy to miss:
   the registry ships CNBC/Yahoo instead of Reuters and SEC *press releases*
   rather than EDGAR filings. Reasonable choices — the specs' open decisions about
   paywalled sources and the EDGAR API are settled in code but not written down.
-- **Feedback has been exercised on ai_topics only.** The machinery is generic;
+- **Feedback has been exercised on topic_watch only.** The machinery is generic;
   the mileage is not.
 - **Only e2e artifacts exist locally.** Runs write to `tests/tmp/<track>/` by
   design so the working tree stays clean, which also means there is no long
@@ -141,7 +142,7 @@ Two things this table is saying that are easy to miss:
 ## How it's verified
 
 `bash scripts/test.sh` runs shell syntax checks, Python compile checks, the skill
-mirror check, the generated-docs check, and the pytest suite — **623 passing tests**
+mirror check, the generated-docs check, and the pytest suite — **642 passing tests**
 (unit / integration / contract / e2e), green in about 3 minutes on a laptop in
 the latest verified run. 53 recorded source-contract fixtures let provider adapters be tested
 without network access.

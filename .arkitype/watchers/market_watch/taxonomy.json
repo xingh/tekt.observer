@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "source": ".arkitype/watchers/market_watch/taxonomy.json",
+  "asset_classes": [
+    {
+      "id": "public_equities",
+      "label": "Public equities",
+      "event_types": [
+        "earnings_release", "guidance_change", "rating_action",
+        "regulatory_action", "m_and_a", "exec_change",
+        "insider_transaction", "activist_filing",
+        "product_launch_with_material_impact",
+        "major_customer_or_supplier_news"
+      ],
+      "keywords": [
+        "earnings", "guidance", "profit warning", "beat estimates",
+        "downgrade", "upgrade", "rating", "sec charges", "settlement",
+        "acquires", "acquisition", "merger", "ceo", "cfo", "resigns",
+        "activist", "insider selling", "stock split", "buyback"
+      ]
+    },
+    {
+      "id": "private_equity",
+      "label": "Private equity / venture",
+      "event_types": [
+        "funding_round", "exit_or_acquisition", "exec_change",
+        "product_launch", "competitor_or_peer_round",
+        "regulatory_action", "down_round_signal", "board_change"
+      ],
+      "keywords": [
+        "funding round", "series a", "series b", "series c", "series d",
+        "seed round", "raises", "ipo", "acquired by",
+        "acquisition of", "down round", "unicorn",
+        "startup", "closed a round"
+      ]
+    },
+    {
+      "id": "fixed_income_macro",
+      "label": "Fixed income / macro",
+      "event_types": [
+        "central_bank_policy", "cpi_pce_print", "payrolls_print",
+        "yield_curve_shift", "credit_spread_shift",
+        "sovereign_debt_action", "rate_decision", "qt_qe_change"
+      ],
+      "keywords": [
+        "fed", "fomc", "ecb", "bank of england", "boe", "boj",
+        "rate decision", "rate cut", "rate hike", "cpi", "pce",
+        "inflation", "payrolls", "unemployment", "yield curve",
+        "treasury", "credit spread", "sovereign debt", "quantitative"
+      ]
+    },
+    {
+      "id": "ai_regulation",
+      "label": "AI regulation / policy",
+      "event_types": [
+        "ai_rulemaking", "antitrust_action", "copyright_action",
+        "export_control", "safety_standard", "privacy_action",
+        "government_procurement_policy"
+      ],
+      "keywords": [
+        "ai act", "artificial intelligence regulation", "ai regulation",
+        "responsible ai", "algorithmic accountability", "ai safety",
+        "antitrust", "copyright", "export control", "chip restrictions",
+        "model transparency", "foundation model rules"
+      ]
+    }
+  ],
+  "digest_sections": [
+    {"id": "portfolio_alerts", "order": 1, "label": "Portfolio alerts"},
+    {"id": "situational_awareness", "order": 2, "label": "Situational awareness"}
+  ],
+  "audiences": [
+    {"id": "investors", "label": "Investors", "lens": "portfolio P&L over 1-5 sessions, capital allocation, risk exposure"},
+    {"id": "portfolio_managers", "label": "Portfolio managers", "lens": "mandate-relative positioning, factor exposures, drawdown control"},
+    {"id": "allocators", "label": "Allocators", "lens": "manager selection, cross-asset allocation, benchmark relative"},
+    {"id": "gps", "label": "GPs", "lens": "private-market pipeline, exit windows, comp sets for portfolio companies"},
+    {"id": "lps", "label": "LPs", "lens": "fund performance drivers, capital call cadence, sector concentration"}
+  ]
+}

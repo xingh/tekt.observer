@@ -1,5 +1,8 @@
 {
   "schema_version": 1,
+  "kind": "watcher",
+  "slug": "job_watch",
+  "order": 20,
   "id": "job_watch",
   "display_name": "Jobwatch · AI-enabled Professions",
   "description": "Technical and business professions being reshaped by applied AI.",

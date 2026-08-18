@@ -40,6 +40,7 @@ docs/plans/*
 !docs/plans/2026-08-01-multi-agent-cli-platform.md
 !docs/plans/2026-08-01-browser-use-integration.md
 !docs/plans/2026-08-18-local-portfolio-ui.md
+!docs/plans/2026-08-18-watcher-spec-refactor.md
 
 # Local user track data
 tracks/*
@@ -48,9 +49,9 @@ tracks/*
 !tracks/test_workflow/sources.md
 !tracks/test_workflow/sources.json
 !tracks/test_workflow/source_state.json
-!tracks/ai_topics/
-!tracks/ai_topics/prefs.md
-!tracks/ai_topics/track.json
+!tracks/topic_watch/
+!tracks/topic_watch/prefs.md
+!tracks/topic_watch/track.json
 !tracks/market_watch/
 !tracks/market_watch/prefs.md
 !tracks/market_watch/track.json

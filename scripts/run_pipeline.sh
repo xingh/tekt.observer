@@ -9,7 +9,7 @@ set -euo pipefail
 # Stages are dispatched conditionally:
 # - Discovery source depends on flags:
 #     --live      : use scripts/feed_gather.py with the track's source registry
-#     (default)   : if scripts/<track>_discover.py exists use it (ai_topics),
+#     (default)   : if scripts/<track>_discover.py exists use it (topic_watch),
 #                   else write an empty discovery artifact (market_watch fixture).
 # - Enrich runs when --live is set.
 # - Classify runs when scripts/<track>_classify.py exists.

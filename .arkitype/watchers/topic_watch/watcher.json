@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "kind": "watcher",
+  "slug": "topic_watch",
+  "order": 10,
+  "id": "topic_watch",
+  "display_name": "Topicwatch · AI in Business",
+  "description": "AI adoption, productivity, governance, customer operations, and operating models for business teams.",
+  "status": "active",
+  "interest_ids": [],
+  "default_audience": "managers",
+  "interest_topic_mappings": {}
+}

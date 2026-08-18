@@ -64,9 +64,9 @@ def test_taxonomy_override_blocks_orphaned_mapping(tmp_path):
 def test_shipped_starter_workflows_have_valid_metadata(repo_root):
     store = PortfolioStore(repo_root)
     expected = {
-        "ai_topics": ("AI Topics", "builders"),
-        "market_watch": ("Market Watch", "investors"),
-        "job_watch": ("Job Watch", "senior_ic"),
+        "topic_watch": ("Topicwatch · AI in Business", "managers"),
+        "market_watch": ("Marketwatch · AI Markets & Regulation", "investors"),
+        "job_watch": ("Jobwatch · AI-enabled Professions", "senior_ic"),
     }
     assert expected.keys() <= store.track_ids()
     for slug, (name, audience) in expected.items():
@@ -79,8 +79,8 @@ def test_shipped_starter_workflows_have_valid_metadata(repo_root):
 def test_seed_starter_workspace_populates_each_workflow(repo_root, tmp_path):
     seed(repo_root, tmp_path, "2026-08-18")
     items = unified_items(tmp_path)
-    assert {item["track"] for item in items} == {"ai_topics", "market_watch", "job_watch"}
-    assert len(items) == 6
+    assert {item["track"] for item in items} == {"topic_watch", "market_watch", "job_watch"}
+    assert len(items) == 9
     assert all(item["sample"] is True for item in items)
 
 

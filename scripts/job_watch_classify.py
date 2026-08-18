@@ -7,7 +7,7 @@ Reads a discovery artifact and classifies each candidate job posting by:
   manager / instructor) via seniority_keywords
 - is_remote_friendly (bool)
 
-Emits organized items in the ai_topics schema shape with job-specific
+Emits organized items in the topic_watch schema shape with job-specific
 extras: role_type, seniority, is_remote_friendly, company. Mirrors
 role_type into `topic` and hard-sets content_type="posting" so the
 shared viewer renders unchanged.

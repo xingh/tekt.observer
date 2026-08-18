@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source": ".arkitype/00-topic-tracker.md",
+  "source": ".arkitype/watchers/topic_watch/taxonomy.json",
   "topics": [
     {"id": "ai_knowledge_memory", "label": "AI Knowledge and Memory", "facets": ["knowledge_storage", "knowledge_graph", "context_graph"]},
     {"id": "ai_capabilities", "label": "AI Capabilities", "facets": ["vision", "document_vision", "document_formulate", "agent_fleet_management"]},
@@ -8,6 +8,10 @@
     {"id": "models_intelligence_inference", "label": "Models / Intelligence Inference", "facets": ["open", "local", "cloud"]},
     {"id": "models_inference_strategy", "label": "Models / Inference Strategy", "facets": ["open", "fusion", "edge", "cloud"]},
     {"id": "models_family", "label": "Models", "facets": ["open_source", "foundation", "frontier"]},
+    {"id": "enterprise_ai_adoption", "label": "Enterprise AI Adoption", "facets": ["operating_model", "change_management", "value_measurement", "deployment"]},
+    {"id": "ai_productivity_workflows", "label": "AI Productivity and Workflows", "facets": ["knowledge_work", "automation", "copilots", "workflow_redesign"]},
+    {"id": "ai_governance_risk", "label": "AI Governance and Risk", "facets": ["policy", "compliance", "security", "responsible_ai"]},
+    {"id": "ai_customer_operations", "label": "AI in Customer Operations", "facets": ["sales", "service", "support", "marketing"]},
     {"id": "news_ai", "label": "News / AI", "facets": []}
   ],
   "content_types": [

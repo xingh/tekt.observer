@@ -53,7 +53,7 @@ RM-### — Title
 - Last updated: 2026-08-18
 - Links: [plan](plans/2026-08-18-local-portfolio-ui.md)
 - Next step: define the resumable browser-setup protocol or keep explicit agent handoff, then add browser-level coverage
-- Notes: Named portfolios, reusable interests, track-local metadata/taxonomy, a unified inbox, curation, and bounded local operations. Local files stay canonical and static output stays read-only. The fresh-checkout path includes three tracked starter workflows, six offline sample signals, and an optional combined live run. `/manage` now covers live runs, source validation, schedules, and operation polling; setup/source judgment stays routed to interactive agents.
+- Notes: Named portfolios, reusable interests, track-local metadata/taxonomy, a unified inbox, curation, and bounded local operations. Local files stay canonical and static output stays read-only. The fresh-checkout path includes three tracked starter workflows, nine offline sample signals, and an optional combined live run. `/manage` now covers live runs, source validation, schedules, and operation polling; setup/source judgment stays routed to interactive agents.
 
 ### RM-017 — Package tekt.observer as an installable Claude skills plugin
 - Status: new

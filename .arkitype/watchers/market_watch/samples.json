@@ -1,0 +1,35 @@
+[
+  {
+    "item_key": "sample-ai-capex",
+    "title": "Starter brief: hyperscaler AI capital spending and demand signals",
+    "url": "https://example.com/tekt-observer/hyperscaler-ai-capex",
+    "description": "A realistic public-market signal linking cloud capital expenditure to chips, data centers, and AI demand.",
+    "topic": "public_equities",
+    "topic_ids": ["public_equities"],
+    "content_type": "guidance_change",
+    "audiences": ["investors", "portfolio_managers", "allocators"],
+    "sample": true
+  },
+  {
+    "item_key": "sample-semiconductor-chain",
+    "title": "Starter brief: reading AI semiconductor supply-chain signals",
+    "url": "https://example.com/tekt-observer/ai-semiconductor-chain",
+    "description": "A realistic watch item spanning accelerators, memory, foundries, lithography, networking, and export exposure.",
+    "topic": "public_equities",
+    "topic_ids": ["public_equities"],
+    "content_type": "major_customer_or_supplier_news",
+    "audiences": ["investors", "portfolio_managers"],
+    "sample": true
+  },
+  {
+    "item_key": "sample-ai-regulation",
+    "title": "Starter brief: AI rules, copyright, antitrust, and chip export controls",
+    "url": "https://example.com/tekt-observer/ai-regulation",
+    "description": "A realistic policy signal for assessing compliance costs, product constraints, and competitive effects.",
+    "topic": "ai_regulation",
+    "topic_ids": ["ai_regulation"],
+    "content_type": "ai_rulemaking",
+    "audiences": ["investors", "portfolio_managers", "lps"],
+    "sample": true
+  }
+]

@@ -1,7 +1,7 @@
-"""Load and validate the ai_topics taxonomy.
+"""Load and validate the topic_watch taxonomy.
 
-The taxonomy is authored in .arkitype/00-topic-tracker.md (human) and mirrored
-in shared/schemas/ai_topics_taxonomy.json (machine-readable). Classifier and
+The taxonomy is authored in .arkitype/00-topic-watch.md (human) and mirrored
+in shared/schemas/topic_watch_taxonomy.json (machine-readable). Classifier and
 tests read the JSON to avoid a YAML/markdown parse step.
 
 An "item" is a content record with topic + content_type + categories + audiences.
@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_TAXONOMY_PATH = ROOT / "shared" / "schemas" / "ai_topics_taxonomy.json"
+DEFAULT_TAXONOMY_PATH = ROOT / "shared" / "schemas" / "topic_watch_taxonomy.json"
 
 
 @dataclass(frozen=True)

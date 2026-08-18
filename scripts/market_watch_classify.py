@@ -10,7 +10,7 @@ Ships a compiled-in default watchlist matching profile/personas/investor.md;
 override via --watchlist path/to/watchlist.json.
 
 Writes artifacts/organized/market_watch/<date>.json using the same schema
-shape as ai_topics organized items (topic + content_type + audiences +
+shape as topic_watch organized items (topic + content_type + audiences +
 categories + confidence + rationale) plus market-specific extras
 (watchlist_matches, is_portfolio_alert, asset_class, event_type). The
 existing viewer + trends + report code works unchanged: asset_class is
@@ -44,7 +44,8 @@ DEFAULT_WATCHLIST: dict = {
     "public_equities": {
         "tickers": [
             "AAPL", "MSFT", "NVDA", "GOOGL", "META", "AMZN",
-            "AVGO", "TSM", "ASML", "BRK.B", "JPM", "GS",
+            "AMD", "AVGO", "TSM", "ASML", "ARM", "ORCL", "CRM",
+            "PLTR", "SNOW", "MU", "SMCI", "BRK.B", "JPM", "GS",
             "CAT", "DE", "GE", "SIE.DE",
             "SPY", "QQQ", "IWM", "XLE", "XLI",
         ],
@@ -63,6 +64,13 @@ DEFAULT_WATCHLIST: dict = {
             "Fed", "FOMC", "ECB", "Bank of England", "BoE", "BoJ",
             "CPI", "PCE", "payrolls", "Treasury", "yield curve",
             "credit spread", "2s10s", "3m10y",
+        ],
+    },
+    "ai_regulation": {
+        "anchors": [
+            "EU AI Act", "AI Act", "FTC", "DOJ", "SEC", "antitrust",
+            "copyright", "export control", "chip restrictions", "AI safety",
+            "algorithmic accountability", "model transparency",
         ],
     },
 }
@@ -106,6 +114,15 @@ def _watchlist_hits(title: str, watchlist: dict) -> tuple[list[str], list[str]]:
             if _match_substring(title, anchor):
                 hits.append(anchor)
                 classes.add("fixed_income_macro")
+    regulation = watchlist.get("ai_regulation", {}) or {}
+    for anchor in regulation.get("anchors", []) or []:
+        if len(anchor) <= 4:
+            matched = _match_word_boundary(title, anchor)
+        else:
+            matched = _match_substring(title, anchor)
+        if matched:
+            hits.append(anchor)
+            classes.add("ai_regulation")
     # dedupe preserving order
     seen = set()
     dedup: list[str] = []
@@ -178,6 +195,16 @@ def _classify_event_type(title: str, asset_class_id: str, taxonomy: dict) -> str
         "yield curve": "yield_curve_shift",
         "credit spread": "credit_spread_shift",
         "quantitative": "qt_qe_change",
+        "ai act": "ai_rulemaking",
+        "artificial intelligence regulation": "ai_rulemaking",
+        "ai regulation": "ai_rulemaking",
+        "antitrust": "antitrust_action",
+        "copyright": "copyright_action",
+        "export control": "export_control",
+        "chip restrictions": "export_control",
+        "ai safety": "safety_standard",
+        "algorithmic accountability": "ai_rulemaking",
+        "model transparency": "ai_rulemaking",
     }
     for kw, evt in event_map.items():
         if _match_substring(title, kw) and evt in ac.get("event_types", []):
@@ -214,7 +241,7 @@ def classify_candidates(discovery: dict, taxonomy: dict, watchlist: dict, date: 
                 "url": url,
                 "title": title,
                 # Mirror asset_class into `topic` and event_type into
-                # `content_type` so the shared viewer (ai_topics-shaped)
+                # `content_type` so the shared viewer (topic_watch-shaped)
                 # renders without changes.
                 "topic": asset_class,
                 "content_type": event_type,

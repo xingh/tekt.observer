@@ -12,7 +12,7 @@ yesterday's, computes:
 
 Writes artifacts/trends/<track>/<date>.json for the viewer to render.
 
-Used by ai_topics and market_watch today; any jobwatch-style track that
+Used by topic_watch and market_watch today; any jobwatch-style track that
 first produces an organized artifact can reuse this unchanged.
 """
 
@@ -88,7 +88,7 @@ def compute_trends(today: dict, prev: dict | None) -> dict:
 
     return {
         "schema_version": 1,
-        "track": today.get("track", "ai_topics"),
+        "track": today.get("track", "topic_watch"),
         "date": today.get("date"),
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "total_items": len(items),
@@ -105,7 +105,7 @@ def compute_trends(today: dict, prev: dict | None) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", default=".")
-    ap.add_argument("--track", default="ai_topics")
+    ap.add_argument("--track", default="topic_watch")
     ap.add_argument("--date", required=True)
     args = ap.parse_args()
     root = Path(args.root).resolve()

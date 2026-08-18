@@ -1,5 +1,5 @@
 {
-  "note": "Hand-labeled fixture items for ai_topics I1 validation. 30 items covering all topics, content types, and audiences. Every item must pass ai_topics_taxonomy.validate_item.",
+  "note": "Hand-labeled fixture items for topic_watch I1 validation. 30 items covering all topics, content types, and audiences. Every item must pass topic_watch_taxonomy.validate_item.",
   "items": [
     {
       "item_key": "km-01",

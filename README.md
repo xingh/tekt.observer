@@ -8,7 +8,7 @@ Ask tekt.observer a question — *what's happening in AI?*, *what moved my portf
 
 No aggregator deciding what matters. No keyword alerts you learn to ignore.
 
-![tekt.observer — daily report page with stats strip, trend highlights, and top matches for the audience you asked for](docs/images/ai_topics-daily-report.png)
+![tekt.observer — daily report page with stats strip, trend highlights, and top matches for the audience you asked for](docs/images/topic_watch-daily-report.png)
 
 ## Get started
 
@@ -34,15 +34,17 @@ bash scripts/run_starter_workflows.sh --serve             # seed 3 workflows, th
 # open http://127.0.0.1:8765/
 ```
 
-The shared portfolio dashboard opens immediately with clearly labeled sample signals for three tracked starter workflows: **AI Topics**, **Market Watch**, and **Job Watch**. When you are ready for current data, rerun with `--live`; that uses the keyless source registries and replaces the sample workspace with a real fetch, classification, ranking, and digest run.
+The shared portfolio dashboard opens immediately with clearly labeled sample signals for three tracked starter workflows: **Topicwatch · AI in Business**, **Marketwatch · AI Markets & Regulation**, and **Jobwatch · AI-enabled Professions**. When you are ready for current data, rerun with `--live`; that uses the keyless source registries and replaces the sample workspace with a real fetch, classification, ranking, and digest run.
 
 ## What every run looks like
 
 Each item is a card with the destination page's OpenGraph image, a topic + content-type + audience badge row, and save / hide / click buttons. Cards are grouped by topic on the report and by publication date in the feed.
 
-![Social-style feed with OpenGraph thumbnails, grouped by topic, save/hide/click on every card](docs/images/ai_topics-feed.png)
+![Social-style feed with OpenGraph thumbnails, grouped by topic, save/hide/click on every card](docs/images/topic_watch-feed.png)
 
-Under the hood it's a six-stage deterministic Python pipeline — **discover → enrich → classify → trends → rerank → synthesize → render** — with **no LLM calls** in the daily loop (agents are used where judgment helps: setting up a track and repairing sources). Three shipped tracks — `ai_topics`, `market_watch`, `job_watch` — run this pipeline end-to-end without any API keys.
+Under the hood it's a six-stage deterministic Python pipeline — **discover → enrich → classify → trends → rerank → synthesize → render** — with **no LLM calls** in the daily loop (agents are used where judgment helps: setting up a track and repairing sources). Three shipped tracks — `topic_watch`, `market_watch`, `job_watch` — run this pipeline end-to-end without any API keys.
+
+Those three are built-in watcher types inside tekt.observer, not separate products. Their canonical specs live under `.arkitype/watchers/`; generated runtime slugs and artifact paths are consistently `topic_watch`, `job_watch`, and `market_watch`.
 
 **📸 See more:** [`docs/screenshots.md`](./docs/screenshots.md) — daily report, feed, market-watch top-matches with why-bullets, backfill multitrack landing.
 
@@ -91,7 +93,7 @@ bash scripts/run_starter_workflows.sh --serve
 bash scripts/run_starter_workflows.sh --live --serve
 
 # Or run one workflow into its own scratch workspace
-bash scripts/run_pipeline.sh --track ai_topics    --live
+bash scripts/run_pipeline.sh --track topic_watch    --live
 bash scripts/run_pipeline.sh --track market_watch --live
 bash scripts/run_pipeline.sh --track job_watch    --live
 
@@ -101,9 +103,9 @@ bash scripts/test_track_workflow.sh
 
 Each run writes into `tests/tmp/<track>/`, mirroring `scripts/test_track_workflow.sh` so your tracked working tree stays clean.
 
-- **`ai_topics`** — AI content across posts / papers / videos / podcasts for a builder-to-leader audience spread
-- **`market_watch`** — investor market-news tracker with a watchlist-driven portfolio-alert digest
-- **`job_watch`** — AI-enabled engineering roles (AI Engineer, prompt engineer, AI instructor / trainer, DevRel)
+- **`topic_watch`** — Topicwatch for enterprise adoption, workflow productivity, governance, and customer operations
+- **`market_watch`** — Marketwatch for AI-exposed public companies, semiconductors, regulation, and policy
+- **`job_watch`** — Jobwatch for technical and business professions building, governing, selling, teaching, or operationalizing AI
 </details>
 
 <details>
@@ -126,10 +128,10 @@ Two ways to see the output:
 
 ```bash
 # Live viewer (loopback only, defaults to 127.0.0.1:8765)
-./.venv/bin/python scripts/serve_html.py --root tests/tmp/ai_topics
+./.venv/bin/python scripts/serve_html.py --root tests/tmp/topic_watch
 
 # Publishable static site
-./.venv/bin/python scripts/render_html.py --root tests/tmp/ai_topics --out site/
+./.venv/bin/python scripts/render_html.py --root tests/tmp/topic_watch --out site/
 ```
 
 Live-server routes:
@@ -148,8 +150,8 @@ Live-server routes:
 
 Initialize explicit private portfolio files with `./.venv/bin/python scripts/portfolio_state.py init`. Without initialization, the three starters and any private tracks appear in an implicit **All Tracks** portfolio and no existing files are rewritten. Writes are loopback-only and require same-origin JSON plus the server CSRF token; static exports contain no controls. See [`docs/local-portfolio.md`](./docs/local-portfolio.md) for the state model and API examples.
 
-**Audience switching** — audience list per track (from `.arkitype/00-*.md`):
-- ai_topics: `builders · operators · managers · architects · leaders`
+**Audience switching** — audience list per watcher (from `.arkitype/watchers/*/taxonomy.json`):
+- topic_watch: `builders · operators · managers · architects · leaders`
 - market_watch: `investors · portfolio_managers · allocators · gps · lps`
 - job_watch: `individual_contributor · senior_ic · tech_lead · manager · instructor`
 </details>
@@ -171,14 +173,14 @@ Full detail: [`docs/tracks_pipeline.md#feedback-loop-i8`](./docs/tracks_pipeline
 # 1) fetch + process a date range for each track (parallel across tracks).
 #    Use past-or-present dates only — the guard in backfill.sh skips future dates.
 DATES=$(for i in $(seq 13 -1 0); do date -u -d "$i days ago" +%F; done)   # last 14 UTC days
-bash scripts/backfill.sh --track ai_topics    --dates "$DATES" &
+bash scripts/backfill.sh --track topic_watch    --dates "$DATES" &
 bash scripts/backfill.sh --track market_watch --dates "$DATES" &
 bash scripts/backfill.sh --track job_watch    --dates "$DATES" &
 wait
 
 # 2) render one publishable folder with 3 tracks × N days
 ./.venv/bin/python scripts/render_multitrack_site.py \
-  --track ai_topics --track market_watch --track job_watch \
+  --track topic_watch --track market_watch --track job_watch \
   --out /path/to/output/
 ```
 

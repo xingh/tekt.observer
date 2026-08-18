@@ -27,6 +27,7 @@ bash -n tests/e2e/fake_codex.sh
 "$PYTHON_BIN" -m py_compile scripts/source_config.py
 "$PYTHON_BIN" -m py_compile scripts/render_discovery_modes_md.py
 "$PYTHON_BIN" -m py_compile scripts/render_sources_md.py
+"$PYTHON_BIN" -m py_compile scripts/generate_watchers.py
 "$PYTHON_BIN" -m py_compile scripts/send_digest_telegram.py
 "$PYTHON_BIN" -m py_compile scripts/update_source_state.py
 "$PYTHON_BIN" -m py_compile scripts/source_integration.py
@@ -36,6 +37,7 @@ bash -n tests/e2e/fake_codex.sh
 "$PYTHON_BIN" -m py_compile scripts/discover/*.py scripts/discover/sources/*.py
 bash scripts/sync_claude_skills.sh --check
 "$PYTHON_BIN" scripts/render_discovery_modes_md.py --check
+"$PYTHON_BIN" scripts/generate_watchers.py --check
 
 PYTEST_ARGS=("$@")
 if [[ ${#PYTEST_ARGS[@]} -eq 0 ]]; then
@@ -64,6 +66,11 @@ fi
   tests/unit/test_telegram_chat_id.py \
   tests/unit/test_source_quality.py \
   tests/unit/test_update_ranked_overview.py \
+  tests/unit/test_generate_watchers.py \
+  tests/unit/test_starter_workflows.py \
+  tests/unit/test_portfolio_state.py \
+  tests/unit/test_portfolio_operations.py \
+  tests/unit/test_portfolio_http.py \
   tests/integration/test_machine_setup.py \
   tests/integration/test_run_track.py \
   tests/integration/test_eval_source_quality.py \

@@ -12,7 +12,7 @@ executive summary, stats strip (items · sources OK · topics · cross-source
 URLs), trend highlights (topic pills, buzzword pills), then top matches
 followed by everything else grouped by topic.
 
-![ai_topics daily report — hero, stats, trend highlights, top matches](./images/ai_topics-daily-report.png)
+![topic_watch daily report — hero, stats, trend highlights, top matches](./images/topic_watch-daily-report.png)
 
 ## Feed grid — social-style, with OpenGraph thumbnails
 
@@ -20,7 +20,7 @@ Every item's card carries the destination page's OG image, description,
 and site name, plus per-item save / hide / click buttons that feed the
 next run's ranking.
 
-![ai_topics feed — cards with OG thumbnails, grouped by topic](./images/ai_topics-feed.png)
+![topic_watch feed — cards with OG thumbnails, grouped by topic](./images/topic_watch-feed.png)
 
 ## Items by topic — same shape, market news
 

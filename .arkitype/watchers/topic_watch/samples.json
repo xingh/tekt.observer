@@ -1,0 +1,35 @@
+[
+  {
+    "item_key": "sample-enterprise-adoption",
+    "title": "Starter brief: measuring enterprise AI adoption beyond pilot counts",
+    "url": "https://example.com/tekt-observer/enterprise-ai-adoption",
+    "description": "A realistic business-use signal about deployment depth, active use, workflow change, and measurable value.",
+    "topic": "enterprise_ai_adoption",
+    "topic_ids": ["enterprise_ai_adoption"],
+    "content_type": "post",
+    "audiences": ["managers", "leaders"],
+    "sample": true
+  },
+  {
+    "item_key": "sample-customer-operations",
+    "title": "Starter brief: redesigning customer-support workflows around AI",
+    "url": "https://example.com/tekt-observer/ai-customer-operations",
+    "description": "A realistic signal covering agent assist, escalation design, quality controls, and customer outcomes.",
+    "topic": "ai_customer_operations",
+    "topic_ids": ["ai_customer_operations", "ai_productivity_workflows"],
+    "content_type": "post",
+    "audiences": ["operators", "managers"],
+    "sample": true
+  },
+  {
+    "item_key": "sample-governance-operating-model",
+    "title": "Starter brief: an operating model for AI governance and accountable deployment",
+    "url": "https://example.com/tekt-observer/ai-governance-operating-model",
+    "description": "A realistic governance signal about ownership, risk tiers, evaluation, monitoring, and approval paths.",
+    "topic": "ai_governance_risk",
+    "topic_ids": ["ai_governance_risk"],
+    "content_type": "resource",
+    "audiences": ["architects", "leaders", "managers"],
+    "sample": true
+  }
+]

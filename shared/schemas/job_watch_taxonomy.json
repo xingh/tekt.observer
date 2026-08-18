@@ -1,61 +1,215 @@
 {
   "schema_version": 1,
-  "source": ".arkitype/00-job-watch.md",
+  "source": ".arkitype/watchers/job_watch/taxonomy.json",
   "role_types": [
     {
       "id": "ai_engineer",
       "label": "AI Engineer",
-      "keywords": ["ai engineer", "llm engineer", "agent engineer", "rag", "retrieval augmented", "orchestration", "llm ops"]
+      "keywords": [
+        "ai engineer",
+        "llm engineer",
+        "agent engineer",
+        "rag",
+        "retrieval augmented",
+        "orchestration",
+        "llm ops"
+      ]
     },
     {
       "id": "prompt_engineer",
       "label": "Prompt Engineer",
-      "keywords": ["prompt engineer", "prompt engineering"]
+      "keywords": [
+        "prompt engineer",
+        "prompt engineering"
+      ]
     },
     {
       "id": "ml_engineer",
       "label": "ML Engineer",
-      "keywords": ["ml engineer", "machine learning engineer", "mle", "training pipeline", "model serving", "feature engineering"]
+      "keywords": [
+        "ml engineer",
+        "machine learning engineer",
+        "mle",
+        "training pipeline",
+        "model serving",
+        "feature engineering"
+      ]
     },
     {
       "id": "ai_researcher",
       "label": "AI Researcher",
-      "keywords": ["ai researcher", "research scientist", "research engineer", "applied research", "alignment researcher"]
+      "keywords": [
+        "ai researcher",
+        "research scientist",
+        "research engineer",
+        "applied research",
+        "alignment researcher"
+      ]
     },
     {
       "id": "ai_instructor",
       "label": "AI Instructor / Trainer",
-      "keywords": ["ai instructor", "ai trainer", "curriculum", "workshop", "cohort course", "teach ai", "instructor"]
+      "keywords": [
+        "ai instructor",
+        "ai trainer",
+        "curriculum",
+        "workshop",
+        "cohort course",
+        "teach ai",
+        "instructor"
+      ]
     },
     {
       "id": "ai_devrel",
       "label": "AI Developer Advocate",
-      "keywords": ["developer advocate", "devrel", "community engineer", "developer relations", "developer experience"]
+      "keywords": [
+        "developer advocate",
+        "devrel",
+        "community engineer",
+        "developer relations",
+        "developer experience"
+      ]
     },
     {
       "id": "ai_pm",
       "label": "AI Product Manager",
-      "keywords": ["ai product manager", "ai pm", "product lead ai"]
+      "keywords": [
+        "ai product manager",
+        "ai pm",
+        "product lead ai"
+      ]
+    },
+    {
+      "id": "ai_solutions_architect",
+      "label": "AI Solutions Architect",
+      "keywords": [
+        "ai solutions architect",
+        "genai architect",
+        "ai architect",
+        "llm solutions architect",
+        "ai consultant"
+      ]
+    },
+    {
+      "id": "ai_product_designer",
+      "label": "AI Product Designer",
+      "keywords": [
+        "ai product designer",
+        "ai ux",
+        "conversational designer",
+        "ai interaction designer"
+      ]
+    },
+    {
+      "id": "ai_governance_risk",
+      "label": "AI Governance / Risk",
+      "keywords": [
+        "ai governance",
+        "responsible ai",
+        "ai risk",
+        "model risk",
+        "ai compliance",
+        "ai safety policy"
+      ]
+    },
+    {
+      "id": "ai_operations_automation",
+      "label": "AI Operations / Automation",
+      "keywords": [
+        "ai operations",
+        "ai automation",
+        "automation lead",
+        "ai transformation",
+        "ai enablement"
+      ]
+    },
+    {
+      "id": "ai_customer_success",
+      "label": "AI Customer Success / Sales Engineering",
+      "keywords": [
+        "ai customer success",
+        "ai sales engineer",
+        "ai solutions engineer",
+        "genai specialist",
+        "ai account executive"
+      ]
     },
     {
       "id": "ai_augmented_generalist",
       "label": "AI-augmented Generalist SWE",
-      "keywords": ["staff engineer", "senior engineer", "principal engineer", "backend engineer", "full stack", "generalist"]
+      "keywords": [
+        "staff engineer",
+        "senior engineer",
+        "principal engineer",
+        "backend engineer",
+        "full stack",
+        "generalist"
+      ]
     }
   ],
   "audiences": [
-    {"id": "individual_contributor", "label": "Individual contributor", "lens": "shipping, building, learning"},
-    {"id": "senior_ic", "label": "Senior IC / Staff", "lens": "architecture reach, tech-lead influence without formal mgmt"},
-    {"id": "tech_lead", "label": "Tech Lead", "lens": "small team leadership + hands-on code, roadmap responsibility"},
-    {"id": "manager", "label": "Manager", "lens": "people leadership, hiring, cross-team collaboration"},
-    {"id": "instructor", "label": "Instructor / Educator", "lens": "teaching, curriculum, live delivery"}
+    {
+      "id": "individual_contributor",
+      "label": "Individual contributor",
+      "lens": "shipping, building, learning"
+    },
+    {
+      "id": "senior_ic",
+      "label": "Senior IC / Staff",
+      "lens": "architecture reach, tech-lead influence without formal mgmt"
+    },
+    {
+      "id": "tech_lead",
+      "label": "Tech Lead",
+      "lens": "small team leadership + hands-on code, roadmap responsibility"
+    },
+    {
+      "id": "manager",
+      "label": "Manager",
+      "lens": "people leadership, hiring, cross-team collaboration"
+    },
+    {
+      "id": "instructor",
+      "label": "Instructor / Educator",
+      "lens": "teaching, curriculum, live delivery"
+    }
   ],
   "seniority_keywords": {
-    "individual_contributor": ["junior", "mid-level", "entry"],
-    "senior_ic": ["senior", "staff", "principal", "lead engineer", "distinguished"],
-    "tech_lead": ["tech lead", "engineering lead"],
-    "manager": ["manager", "director", "head of", "vp"],
-    "instructor": ["instructor", "trainer", "curriculum lead"]
+    "individual_contributor": [
+      "junior",
+      "mid-level",
+      "entry"
+    ],
+    "senior_ic": [
+      "senior",
+      "staff",
+      "principal",
+      "lead engineer",
+      "distinguished"
+    ],
+    "tech_lead": [
+      "tech lead",
+      "engineering lead"
+    ],
+    "manager": [
+      "manager",
+      "director",
+      "head of",
+      "vp"
+    ],
+    "instructor": [
+      "instructor",
+      "trainer",
+      "curriculum lead"
+    ]
   },
-  "remote_keywords": ["remote", "distributed", "anywhere", "work from home", "wfh", "remote-first", "remote-friendly"]
+  "remote_keywords": [
+    "remote",
+    "distributed",
+    "anywhere",
+    "work from home",
+    "wfh",
+    "remote-first",
+    "remote-friendly"
+  ]
 }

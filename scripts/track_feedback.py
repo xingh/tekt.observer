@@ -8,7 +8,7 @@ never mutate.
 Event shape (v1):
   {
     "ts":       "2026-08-10T15:22:11Z",
-    "track":    "ai_topics",
+    "track":    "topic_watch",
     "audience": "architects",
     "item_key": "ai-6c…",
     "url":      "https://…",

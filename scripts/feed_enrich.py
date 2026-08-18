@@ -7,7 +7,7 @@ Writes the enrichment map to artifacts/enrichment/<track>/urls.json so
 subsequent runs skip already-fetched URLs. Also patches the discovery
 artifact in place, adding an `enrichment` key to each candidate.
 
-Used by ai_topics, market_watch, and any jobwatch-style track that wants
+Used by topic_watch, market_watch, and any jobwatch-style track that wants
 OG images on its listings.
 """
 
@@ -115,7 +115,7 @@ def enrich_url(url: str) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", default=".", help="Repo-shaped root")
-    ap.add_argument("--track", default="ai_topics")
+    ap.add_argument("--track", default="topic_watch")
     ap.add_argument("--date", required=True)
     ap.add_argument("--max-urls", type=int, default=MAX_URLS)
     ap.add_argument("--refetch", action="store_true", help="Ignore cache and re-fetch every URL")

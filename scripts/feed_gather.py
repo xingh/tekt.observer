@@ -1,11 +1,11 @@
-"""Feed-based discovery step, shared across topic-tracker-style tracks.
+"""Feed-based discovery step, shared across topic-watch-style tracks.
 
-Reads a source registry JSON (defaults to ai_topics; override with --registry),
+Reads a source registry JSON (defaults to topic_watch; override with --registry),
 fetches each source according to its `kind` (rss/atom/hn_algolia), normalises
 entries into the discovery artifact schema, and writes
 artifacts/discovery/<track>/<date>.json.
 
-Used by ai_topics, market_watch, and any future feed-driven track. Stdlib
+Used by topic_watch, market_watch, and any future feed-driven track. Stdlib
 only. Degrades per-source: if a source fails, its entry lands with status
 "failed" and empty candidates rather than crashing the whole run.
 """
@@ -265,9 +265,9 @@ def gather_all(registry: dict, window: tuple[int, int] | None = None) -> list[di
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", default=".", help="Repo-shaped root")
-    ap.add_argument("--track", default="ai_topics")
+    ap.add_argument("--track", default="topic_watch")
     ap.add_argument("--date", required=True, help="YYYY-MM-DD")
-    default_registry = str(Path(__file__).resolve().parents[1] / "shared" / "schemas" / "ai_topics_source_registry.json")
+    default_registry = str(Path(__file__).resolve().parents[1] / "shared" / "schemas" / "topic_watch_source_registry.json")
     ap.add_argument("--registry", default=default_registry)
     ap.add_argument("--for-date", default="",
                     help="Fetch only entries whose pubDate falls in this UTC day (YYYY-MM-DD). "

@@ -26,6 +26,8 @@ The live viewer is a loopback `http.server` with read-only HTML routes and one u
 - 2026-08-18 - Added six explicit sample signals so a fresh/offline user sees content immediately; `--live` replaces that workspace with current feed results.
 - 2026-08-18 - Verified the sample dashboard (3 workflows, 6 signals), combined live pipeline control flow, focused portfolio tests (8 passed, 2 sandbox-skipped), and full suite (623 passed, 28 skipped).
 - 2026-08-18 - Added `/manage` for live runs, source validation, schedules, and polling; fixed cross-request cancellation and terminal-state races. Focused suite: 11 passed, 2 sandbox-skipped.
+- 2026-08-18 - Refocused the three starters on AI-enabled professions, AI public companies/regulation, and AI business use; expanded their taxonomies, live query registries, briefs, and offline samples.
+- 2026-08-18 - Verified 9 seeded items across the three starters, focused behavior (14 passed, 2 sandbox-skipped), and the full suite (623 passed, 28 skipped).
 
 ## Handoff Notes
 The safe foundation, read/curation APIs, fresh-checkout starter workspace, and operational management page are implemented. Next: decide whether browser setup should remain a handoff to interactive agents or become a resumable wizard protocol, then add browser-level coverage. Files added in this effort include `scripts/run_starter_workflows.sh`, `scripts/seed_starter_workspace.py`, `docs/local-portfolio.md`, and tracked metadata for the three starter workflows.

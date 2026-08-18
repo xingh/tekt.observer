@@ -8,9 +8,11 @@ A fresh checkout includes three starter workflow definitions and their keyless s
 
 | Workflow | Starting question | Default audience | Sources |
 | --- | --- | --- | --- |
-| `ai_topics` | What changed in AI research, tools, models, and operating practice? | `builders` | 7 AI blogs, research feeds, and HN |
-| `market_watch` | What market, company, funding, and macro events may matter? | `investors` | 13 financial, central-bank, and HN feeds |
-| `job_watch` | Who is hiring for AI-enabled technical work? | `senior_ic` | 8 job and HN feeds |
+| `topic_watch` | How is AI changing business workflows, operating models, governance, and customer operations? | `managers` | 10 AI publications, research feeds, and focused HN queries |
+| `market_watch` | What changed for AI-related public companies or the rules governing them? | `investors` | 16 market, regulator, financial-news, and focused HN feeds |
+| `job_watch` | Which technical and business professions are being reshaped by applied AI? | `senior_ic` | 13 job feeds and profession-specific HN queries |
+
+These built-ins are generated from `.arkitype/watchers/{topic_watch,job_watch,market_watch}/`. Edit the specs and run `./.venv/bin/python scripts/generate_watchers.py`; do not edit their generated track metadata or shared schemas directly.
 
 Populate one shared workspace and start the viewer:
 
@@ -19,7 +21,7 @@ bash scripts/bootstrap_venv.sh --no-chromium
 bash scripts/run_starter_workflows.sh --serve
 ```
 
-Open `http://127.0.0.1:8765/`. The launcher writes six clearly marked sample signals to the ignored `tests/tmp/starter-workflows/` tree, so this path works without network access. Omit `--serve` if you want to inspect the artifacts first. Use `--today YYYY-MM-DD` or `--scratch PATH` to override the defaults.
+Open `http://127.0.0.1:8765/`. The launcher writes nine clearly marked sample signals—three per starter—to the ignored `tests/tmp/starter-workflows/` tree, so this path works without network access. Omit `--serve` if you want to inspect the artifacts first. Use `--today YYYY-MM-DD` or `--scratch PATH` to override the defaults.
 
 Replace the sample workspace with current feed data when you are ready:
 
@@ -30,8 +32,8 @@ bash scripts/run_starter_workflows.sh --live --serve
 For one workflow only:
 
 ```bash
-bash scripts/run_pipeline.sh --track ai_topics --live
-./.venv/bin/python scripts/serve_html.py --root tests/tmp/ai_topics
+bash scripts/run_pipeline.sh --track topic_watch --live
+./.venv/bin/python scripts/serve_html.py --root tests/tmp/topic_watch
 ```
 
 Live runs depend on upstream availability and feed windows. The sample URLs use `example.com` deliberately and should not be mistaken for fetched reporting or job listings. For deterministic runner validation beyond the sample workspace, use `bash scripts/test_track_workflow.sh`.

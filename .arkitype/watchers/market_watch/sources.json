@@ -7,149 +7,112 @@
       "name": "Federal Reserve — Press Releases",
       "kind": "rss",
       "url": "https://www.federalreserve.gov/feeds/press_all.xml",
-      "topic_hints": [
-        "fixed_income_macro"
-      ]
+      "topic_hints": ["fixed_income_macro"]
     },
     {
       "id": "sec_press_rss",
       "name": "SEC — Press Releases",
       "kind": "rss",
       "url": "https://www.sec.gov/news/pressreleases.rss",
-      "topic_hints": [
-        "public_equities"
-      ]
+      "topic_hints": ["public_equities"]
     },
     {
       "id": "boe_news_rss",
       "name": "Bank of England — News",
       "kind": "rss",
       "url": "https://www.bankofengland.co.uk/rss/news",
-      "topic_hints": [
-        "fixed_income_macro"
-      ]
+      "topic_hints": ["fixed_income_macro"]
     },
     {
       "id": "ecb_press_rss",
       "name": "European Central Bank — Press Releases",
       "kind": "rss",
       "url": "https://www.ecb.europa.eu/rss/press.html",
-      "topic_hints": [
-        "fixed_income_macro"
-      ]
+      "topic_hints": ["fixed_income_macro"]
     },
     {
       "id": "cnbc_top_rss",
       "name": "CNBC — Top News",
       "kind": "rss",
       "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
-      "topic_hints": [
-        "public_equities",
-        "fixed_income_macro"
-      ]
+      "topic_hints": ["public_equities", "fixed_income_macro"]
     },
     {
       "id": "yahoo_finance_rss",
       "name": "Yahoo Finance — Top Stories",
       "kind": "rss",
       "url": "https://finance.yahoo.com/news/rssindex",
-      "topic_hints": [
-        "public_equities",
-        "fixed_income_macro"
-      ]
+      "topic_hints": ["public_equities", "fixed_income_macro"]
     },
     {
       "id": "arstechnica_business_rss",
       "name": "Ars Technica — Business",
       "kind": "rss",
       "url": "https://arstechnica.com/business/feed/",
-      "topic_hints": [
-        "public_equities",
-        "private_equity"
-      ]
+      "topic_hints": ["public_equities", "private_equity"]
     },
     {
       "id": "hn_algolia_earnings",
       "name": "Hacker News (earnings)",
       "kind": "hn_algolia",
       "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=earnings&hitsPerPage=15",
-      "topic_hints": [
-        "public_equities"
-      ]
+      "topic_hints": ["public_equities"]
     },
     {
       "id": "hn_algolia_funding",
       "name": "Hacker News (funding round)",
       "kind": "hn_algolia",
       "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=funding%20round&hitsPerPage=15",
-      "topic_hints": [
-        "private_equity"
-      ]
+      "topic_hints": ["private_equity"]
     },
     {
       "id": "hn_algolia_ipo",
       "name": "Hacker News (IPO)",
       "kind": "hn_algolia",
       "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=IPO&hitsPerPage=15",
-      "topic_hints": [
-        "public_equities",
-        "private_equity"
-      ]
+      "topic_hints": ["public_equities", "private_equity"]
     },
     {
       "id": "hn_algolia_rate_hike",
       "name": "Hacker News (rate hike)",
       "kind": "hn_algolia",
       "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=rate%20hike&hitsPerPage=15",
-      "topic_hints": [
-        "fixed_income_macro"
-      ]
+      "topic_hints": ["fixed_income_macro"]
     },
     {
       "id": "hn_algolia_acquisition",
       "name": "Hacker News (acquisition)",
       "kind": "hn_algolia",
       "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=acquisition&hitsPerPage=15",
-      "topic_hints": [
-        "private_equity",
-        "public_equities"
-      ]
+      "topic_hints": ["private_equity", "public_equities"]
     },
     {
       "id": "hn_algolia_central_bank",
       "name": "Hacker News (central bank)",
       "kind": "hn_algolia",
       "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=central%20bank&hitsPerPage=15",
-      "topic_hints": [
-        "fixed_income_macro"
-      ]
+      "topic_hints": ["fixed_income_macro"]
     },
     {
       "id": "federal_register_ai_rss",
       "name": "US Federal Register (artificial intelligence)",
       "kind": "rss",
       "url": "https://www.federalregister.gov/documents/search.rss?conditions%5Bterm%5D=artificial%20intelligence",
-      "topic_hints": [
-        "ai_regulation"
-      ]
+      "topic_hints": ["ai_regulation"]
     },
     {
       "id": "hn_algolia_ai_regulation",
       "name": "Hacker News (AI regulation)",
       "kind": "hn_algolia",
       "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=AI%20regulation&hitsPerPage=20",
-      "topic_hints": [
-        "ai_regulation"
-      ]
+      "topic_hints": ["ai_regulation"]
     },
     {
       "id": "hn_algolia_ai_public_companies",
       "name": "Hacker News (AI chips and public companies)",
       "kind": "hn_algolia",
       "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=NVIDIA%20Microsoft%20AI%20chips&hitsPerPage=20",
-      "topic_hints": [
-        "public_equities"
-      ]
+      "topic_hints": ["public_equities"]
     }
   ]
 }

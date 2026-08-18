@@ -36,12 +36,12 @@ each stage conditionally.
 
 | Stage | Generic (any track) | Track-specific |
 |---|---|---|
-| Discover / gather | `scripts/feed_gather.py` (RSS / Atom / HN Algolia, `--registry`) | `scripts/discover_jobs.py` (jobwatch), `scripts/ai_topics_discover.py` (local HTML fixture) |
+| Discover / gather | `scripts/feed_gather.py` (RSS / Atom / HN Algolia, `--registry`) | `scripts/discover_jobs.py` (jobwatch), `scripts/topic_watch_discover.py` (local HTML fixture) |
 | Enrich | `scripts/feed_enrich.py` (per-URL OpenGraph / Twitter / canonical, cached) | — |
-| Classify | — | `scripts/ai_topics_classify.py`, `scripts/market_watch_classify.py`, `scripts/job_watch_classify.py` |
+| Classify | — | `scripts/topic_watch_classify.py`, `scripts/market_watch_classify.py`, `scripts/job_watch_classify.py` |
 | Trends | `scripts/track_trends.py` (topic/source/audience counts, velocity, cross-source URLs, keyword cloud) | — |
 | Rerank per audience (I6) | `scripts/track_rerank.py` (reads `<track>_taxonomy.json` audiences; supports `--with-feedback` from I8) | — |
-| Synthesize digest — persona | — | `scripts/ai_topics_synthesize_digest.py`, `scripts/market_watch_synthesize_digest.py`, `scripts/job_watch_synthesize_digest.py`. jobwatch's own `test_workflow` track uses the provider LLM agent instead. |
+| Synthesize digest — persona | — | `scripts/topic_watch_synthesize_digest.py`, `scripts/market_watch_synthesize_digest.py`, `scripts/job_watch_synthesize_digest.py`. jobwatch's own `test_workflow` track uses the provider LLM agent instead. |
 | Synthesize digest — per audience (I7) | `scripts/synthesize_audience_digests.py` (one digest JSON + markdown per audience declared in `<track>_taxonomy.json`) | — |
 | Render (markdown) | `scripts/render_digest.py` | — |
 | Render (HTML site) | `scripts/render_html.py` (static) and `scripts/serve_html.py` (live) — shared `scripts/html_viewer.py` | — |
@@ -64,7 +64,7 @@ change often and benefit from real Python (imports, list comprehensions,
 regex). They live in the track-specific classifier module rather than
 JSON:
 
-- `scripts/ai_topics_classify.py` — `TOPIC_KEYWORDS`, `AUDIENCE_KEYWORDS`, `CONTENT_TYPE_HINTS`
+- `scripts/topic_watch_classify.py` — `TOPIC_KEYWORDS`, `AUDIENCE_KEYWORDS`, `CONTENT_TYPE_HINTS`
 - `scripts/market_watch_classify.py` — `DEFAULT_WATCHLIST`, keyword → event_type map
 
 ## How each track uses the pipeline today
@@ -78,18 +78,18 @@ JSON:
 - **Synthesize:** the provider LLM agent (via `run_track.sh`)
 - **Render:** the shared markdown + HTML renderers
 
-### ai_topics
+### topic_watch
 
-- **Discover:** `scripts/ai_topics_discover.py` (local HTML fixture) or `scripts/feed_gather.py` (RSS from `shared/schemas/ai_topics_source_registry.json`)
+- **Discover:** `scripts/topic_watch_discover.py` (local HTML fixture) or `scripts/feed_gather.py` (RSS from `shared/schemas/topic_watch_source_registry.json`)
 - **Enrich:** `scripts/feed_enrich.py`
-- **Classify:** `scripts/ai_topics_classify.py` — topic keyword matching against `shared/schemas/ai_topics_taxonomy.json`
+- **Classify:** `scripts/topic_watch_classify.py` — topic keyword matching against `shared/schemas/topic_watch_taxonomy.json`
 - **Trends:** `scripts/track_trends.py`
-- **Synthesize:** `scripts/ai_topics_synthesize_digest.py` — picks top matches by audience overlap
+- **Synthesize:** `scripts/topic_watch_synthesize_digest.py` — picks top matches by audience overlap
 - **Render:** shared
 
 ### market_watch
 
-- **Discover:** `scripts/feed_gather.py` with `shared/schemas/market_watch_source_registry.json` (13 sources: Fed press, SEC press, BoE, ECB, CNBC, Yahoo Finance, Ars Technica business, and 6 HN Algolia queries for earnings / funding / IPO / rate hikes / acquisitions / central banks)
+- **Discover:** `scripts/feed_gather.py` with `shared/schemas/market_watch_source_registry.json` (16 sources spanning market news, central banks, the SEC, the US Federal Register, and focused HN queries including AI public companies and regulation)
 - **Enrich:** `scripts/feed_enrich.py`
 - **Classify:** `scripts/market_watch_classify.py` — asset-class + event-type keywords, watchlist matching for portfolio alerts
 - **Trends:** `scripts/track_trends.py`
@@ -98,7 +98,7 @@ JSON:
 
 ### job_watch
 
-- **Discover:** `scripts/feed_gather.py` with `shared/schemas/job_watch_source_registry.json` (8 sources: HN Jobs firehose, 5 HN Algolia role queries, ai-jobs.net, We Work Remotely). The ATS adapters under `scripts/discover/sources/` are available via `scripts/discover_jobs.py` but no curated employer list is wired into the track yet.
+- **Discover:** `scripts/feed_gather.py` with `shared/schemas/job_watch_source_registry.json` (13 sources: HN Jobs, ai-jobs.net, We Work Remotely, and focused queries for engineering, product/design, architecture, governance, automation, education, DevRel, and customer-facing AI roles). The ATS adapters under `scripts/discover/sources/` remain available for private employer-specific tracks.
 - **Enrich:** `scripts/feed_enrich.py`
 - **Classify:** `scripts/job_watch_classify.py` — role_type + seniority audience + remote-friendliness from keyword sets
 - **Trends:** `scripts/track_trends.py`
@@ -109,29 +109,30 @@ JSON:
 
 Which iteration (`I0`–`I8`) each track has actually reached, plus the known
 gaps, is tracked in [`capabilities.md`](./capabilities.md#iteration-status).
-The iteration plans themselves live in `.arkitype/00-<name>.md`.
+The original iteration plans are summarized by the `.arkitype/00-*-watch.md`
+overviews; executable watcher definitions live under `.arkitype/watchers/`.
 
 ## Running the pipeline
 
 ```bash
 # fixture mode (no network)
-bash scripts/run_pipeline.sh --track ai_topics
+bash scripts/run_pipeline.sh --track topic_watch
 bash scripts/run_pipeline.sh --track market_watch
 
 # live mode (uses the track's source registry)
-bash scripts/run_pipeline.sh --track ai_topics --live
+bash scripts/run_pipeline.sh --track topic_watch --live
 bash scripts/run_pipeline.sh --track market_watch --live
 
 # view the result
-./.venv/bin/python scripts/serve_html.py --root tests/tmp/ai_topics
-./.venv/bin/python scripts/render_html.py --root tests/tmp/ai_topics --out site/
+./.venv/bin/python scripts/serve_html.py --root tests/tmp/topic_watch
+./.venv/bin/python scripts/render_html.py --root tests/tmp/topic_watch --out site/
 ```
 
 The pipeline writes into a scratch `JOB_AGENT_ROOT` (default
 `tests/tmp/<track>`) so the tracked working tree stays clean, mirroring
 `scripts/test_track_workflow.sh`.
 
-The two per-track wrappers `run_ai_topics_e2e.sh` and
+The two per-track wrappers `run_topic_watch_e2e.sh` and
 `run_market_watch_e2e.sh` remain as thin back-compat shims that just
 invoke `run_pipeline.sh --track <slug>`.
 
@@ -145,14 +146,14 @@ fresh scratch tree with history before daily runs start.
 ```bash
 # One track, one date range (inclusive UTC dates — use past-or-present dates only;
 # future dates will fetch nothing and produce empty artifacts).
-bash scripts/backfill.sh --track ai_topics --start 2026-08-01 --end 2026-08-13
+bash scripts/backfill.sh --track topic_watch --start 2026-08-01 --end 2026-08-13
 
 # Explicit list (useful for batching across parallel runs)
-bash scripts/backfill.sh --track ai_topics --dates '2026-08-10 2026-08-11 2026-08-12 2026-08-13'
+bash scripts/backfill.sh --track topic_watch --dates '2026-08-10 2026-08-11 2026-08-12 2026-08-13'
 
 # All three tracks in parallel for the last four UTC days
 DATES=$(for i in $(seq 3 -1 0); do date -u -d "$i days ago" +%F; done)
-bash scripts/backfill.sh --track ai_topics    --dates "$DATES" &
+bash scripts/backfill.sh --track topic_watch    --dates "$DATES" &
 bash scripts/backfill.sh --track market_watch --dates "$DATES" &
 bash scripts/backfill.sh --track job_watch    --dates "$DATES" &
 wait
@@ -201,7 +202,7 @@ publishable folder with one directory per day per track:
 
 ```bash
 ./.venv/bin/python scripts/render_multitrack_site.py \
-  --track ai_topics --track market_watch --track job_watch \
+  --track topic_watch --track market_watch --track job_watch \
   --out /path/to/output/
 ```
 
@@ -228,22 +229,12 @@ any subdirectory of an HTTP server.
 
 ## Adding a new track
 
-1. Author `.arkitype/00-<name>.md` — the SITE_PROFILE-style purpose spec
-   (taxonomy, audiences, iteration plan). Follow
-   `.arkitype/00-topic-tracker.md` or `.arkitype/00-market-watch.md`.
-2. Scaffold `tracks/<name>/` (AGENTS.md, prefs.md, sources.json,
-   source_state.json). Mirror `tracks/ai_topics/` shape.
-3. Encode the taxonomy as
-   `shared/schemas/<name>_taxonomy.json` if the classifier will read it.
-4. If feed-driven, author
-   `shared/schemas/<name>_source_registry.json`.
-5. Write `scripts/<name>_classify.py` and
-   `scripts/<name>_synthesize_digest.py`. The generic runner picks them
-   up automatically.
-6. If a persona applies, add `profile/personas/<name>.md` and reference
-   it from the track's `AGENTS.md`.
-7. `bash scripts/run_pipeline.sh --track <name> --live`.
-8. `./.venv/bin/python scripts/render_html.py --root tests/tmp/<name> --out site/`.
+1. Copy one `.arkitype/watchers/<slug>/` directory and give it a new file-safe slug.
+2. Edit its `watcher.json`, `brief.md`, `taxonomy.json`, `sources.json`, and `samples.json`. IDs referenced by sources and samples must exist in the taxonomy.
+3. Run `./.venv/bin/python scripts/generate_watchers.py`. Do not hand-edit the generated `tracks/<slug>/{track.json,prefs.md}` or `shared/schemas/<slug>_*` files.
+4. Add `scripts/<slug>_classify.py` and `scripts/<slug>_synthesize_digest.py` when the watcher needs type-specific organization or digest logic. The generic runner discovers these by filename; feed gathering, trends, audience reranking, and rendering are shared.
+5. Run `./.venv/bin/python scripts/generate_watchers.py --check` and `bash scripts/run_pipeline.sh --track <slug> --live`.
+6. Render with `./.venv/bin/python scripts/render_html.py --root tests/tmp/<slug> --out site/`.
 
 ## Where artifacts live
 
@@ -284,11 +275,11 @@ per item wins when it is a stronger signal.
 CLI equivalents for scripted use:
 
 ```bash
-./.venv/bin/python scripts/track_feedback.py --root tests/tmp/ai_topics \
-  append --track ai_topics --audience builders --item-key ai-abc123... --action save
+./.venv/bin/python scripts/track_feedback.py --root tests/tmp/topic_watch \
+  append --track topic_watch --audience builders --item-key ai-abc123... --action save
 
-./.venv/bin/python scripts/track_feedback.py --root tests/tmp/ai_topics \
-  summary --track ai_topics --audience builders
+./.venv/bin/python scripts/track_feedback.py --root tests/tmp/topic_watch \
+  summary --track topic_watch --audience builders
 ```
 
 On a static site opened via `file://`, the buttons render but each click

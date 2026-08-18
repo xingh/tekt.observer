@@ -1,0 +1,35 @@
+[
+  {
+    "item_key": "sample-ai-platform-engineer",
+    "title": "Senior AI Platform Engineer",
+    "url": "https://example.com/tekt-observer/ai-platform-engineer",
+    "description": "A starter role focused on production LLM systems, retrieval, and platform reliability.",
+    "topic": "ai_engineer",
+    "topic_ids": ["ai_engineer"],
+    "content_type": "posting",
+    "audiences": ["senior_ic", "tech_lead"],
+    "sample": true
+  },
+  {
+    "item_key": "sample-ai-governance",
+    "title": "AI Governance and Model Risk Lead",
+    "url": "https://example.com/tekt-observer/ai-governance-risk-lead",
+    "description": "A starter profession covering policy, controls, evaluations, auditability, and regulatory readiness.",
+    "topic": "ai_governance_risk",
+    "topic_ids": ["ai_governance_risk"],
+    "content_type": "posting",
+    "audiences": ["senior_ic", "manager"],
+    "sample": true
+  },
+  {
+    "item_key": "sample-ai-solutions-architect",
+    "title": "AI Solutions Architect",
+    "url": "https://example.com/tekt-observer/ai-solutions-architect",
+    "description": "A starter profession joining customer discovery, architecture, implementation, and value realization.",
+    "topic": "ai_solutions_architect",
+    "topic_ids": ["ai_solutions_architect", "ai_customer_success"],
+    "content_type": "posting",
+    "audiences": ["senior_ic", "tech_lead"],
+    "sample": true
+  }
+]

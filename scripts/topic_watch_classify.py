@@ -1,8 +1,8 @@
-"""Deterministic classifier for the ai_topics track (I5 preview).
+"""Deterministic classifier for the topic_watch track (I5 preview).
 
-Reads a discovery artifact at artifacts/discovery/ai_topics/<date>.json and
-emits artifacts/organized/ai_topics/<date>.json using keyword-based matching
-against the taxonomy in shared/schemas/ai_topics_taxonomy.json.
+Reads a discovery artifact at artifacts/discovery/topic_watch/<date>.json and
+emits artifacts/organized/topic_watch/<date>.json using keyword-based matching
+against the taxonomy in shared/schemas/topic_watch_taxonomy.json.
 
 This is a deterministic scaffold, not the eventual LLM-driven classifier.
 Purpose: prove the pipeline shape and give the HTML viewer something to render.
@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ai_topics_taxonomy import Taxonomy, taxonomy_from_dict  # noqa: E402
+from topic_watch_taxonomy import Taxonomy, taxonomy_from_dict  # noqa: E402
 from portfolio_state import resolved_classifier_taxonomy  # noqa: E402
 from track_common import item_key, iso_utc_now, substring_match  # noqa: E402
 
@@ -46,6 +46,22 @@ TOPIC_KEYWORDS: dict[str, list[str]] = {
     "models_family": [
         "foundation model", "frontier model", "open weights",
     ],
+    "enterprise_ai_adoption": [
+        "enterprise ai", "ai adoption", "ai transformation", "operating model",
+        "change management", "return on investment", "roi", "deployment",
+    ],
+    "ai_productivity_workflows": [
+        "productivity", "workflow", "copilot", "knowledge work", "automation",
+        "process redesign", "time saved",
+    ],
+    "ai_governance_risk": [
+        "ai governance", "responsible ai", "ai risk", "compliance", "audit",
+        "security", "guardrail", "ai act",
+    ],
+    "ai_customer_operations": [
+        "customer service", "customer support", "contact center", "sales",
+        "marketing", "customer experience", "crm",
+    ],
     "news_ai": [
         "regulator", "adoption", "roundup", "quarterly report",
         "policy", "transparency rule",
@@ -66,7 +82,7 @@ AUDIENCE_KEYWORDS: dict[str, list[str]] = {
         "cache", "caching", "production", "repair",
     ],
     "managers": [
-        "team", "roadmap", "hiring", "adoption", "playbook",
+        "team", "roadmap", "hiring", "adoption", "playbook", "workflow", "productivity",
     ],
     "leaders": [
         "strategy", "portfolio", "policy", "regulator",
@@ -154,7 +170,7 @@ def classify_candidates(discovery: dict, taxonomy: Taxonomy, date: str) -> dict:
             items.append(item)
     return {
         "schema_version": 1,
-        "track": "ai_topics",
+        "track": "topic_watch",
         "date": date,
         "generated_at": iso_utc_now(),
         "items": items,
@@ -165,7 +181,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", default=".", help="Repo-shaped root")
     ap.add_argument("--date", required=True, help="YYYY-MM-DD (discovery date)")
-    ap.add_argument("--track", default="ai_topics")
+    ap.add_argument("--track", default="topic_watch")
     args = ap.parse_args()
     root = Path(args.root).resolve()
     discovery_path = root / "artifacts" / "discovery" / args.track / f"{args.date}.json"

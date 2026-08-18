@@ -1,5 +1,8 @@
 {
   "schema_version": 1,
+  "kind": "watcher",
+  "slug": "market_watch",
+  "order": 30,
   "id": "market_watch",
   "display_name": "Marketwatch · AI Markets & Regulation",
   "description": "AI-related public companies, semiconductors, cloud platforms, regulation, and market-moving policy.",

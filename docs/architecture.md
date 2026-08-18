@@ -2,7 +2,11 @@
 
 ## Local portfolio management (I9–I14)
 
-The loopback viewer is also a server-rendered local portfolio application. `portfolio_state.py` validates and atomically persists private interests, portfolios, track metadata, and taxonomy overrides. Missing metadata is projected in memory. `serve_html.py` adapts immutable pipeline artifacts into unified `<track>:<item_key>` records and exposes `/api/v1`; `portfolio_operations.py` runs bounded pollable subprocesses with one active operation per track. Non-loopback bindings and static output are read-only. Three tracked starter workflow definitions make `ai_topics`, `market_watch`, and `job_watch` visible on a fresh checkout; `run_starter_workflows.sh` seeds a viewable offline workspace by default or appends their live runs into one workspace with `--live`. See [`local-portfolio.md`](./local-portfolio.md) for the operating guide and API surface.
+The loopback viewer is also a server-rendered local portfolio application. `portfolio_state.py` validates and atomically persists private interests, portfolios, track metadata, and taxonomy overrides. Missing metadata is projected in memory. `serve_html.py` adapts immutable pipeline artifacts into unified `<track>:<item_key>` records and exposes `/api/v1`; `portfolio_operations.py` runs bounded pollable subprocesses with one active operation per track. Non-loopback bindings and static output are read-only. Three tracked starter workflow definitions make `topic_watch`, `market_watch`, and `job_watch` visible on a fresh checkout; `run_starter_workflows.sh` seeds a viewable offline workspace by default or appends their live runs into one workspace with `--live`. See [`local-portfolio.md`](./local-portfolio.md) for the operating guide and API surface.
+
+## Watcher specification boundary
+
+Built-in watcher types are authored under `.arkitype/watchers/<slug>/`. Each directory owns `watcher.json`, `brief.md`, `taxonomy.json`, `sources.json`, and `samples.json`. `scripts/generate_watchers.py` validates cross-references and emits the runtime track metadata, preferences, taxonomy, and source registry. `scripts/test.sh` runs the generator in `--check` mode, so generated runtime files cannot become a second source of truth. The runtime slug and all artifact paths use the spec directory name; the canonical built-ins are `topic_watch`, `job_watch`, and `market_watch`.
 
 This repo runs agent-assisted observation tracks — AI content, market news, job
 postings, or whatever question you scaffold next. Each track combines
