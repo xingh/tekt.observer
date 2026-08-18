@@ -1,8 +1,8 @@
 # Multi-Agent CLI Platform with Command Phases
 
-Status: planned
-Owner: copilot; agent_id: unknown
-Last updated: 2026-08-12
+Status: in progress
+Owner: copilot; codex; agent_id: 01a0166a-76ec-7821-bc18-ea395a5349f6
+Last updated: 2026-08-18
 
 ## Goal
 
@@ -36,7 +36,7 @@ Evolve tekt.observer from a single-domain observation tool into a generalized pl
 
 ### Layer 1 — Command-phase abstraction
 
-- [ ] Define `Phase` protocol in `scripts/phases/__init__.py`
+- [x] Define `Phase` protocol in `scripts/phases/__init__.py`
   ```python
   class Phase(Protocol):
       name: str
@@ -44,7 +44,7 @@ Evolve tekt.observer from a single-domain observation tool into a generalized pl
       outputs: dict[str, type]
       def run(self, context: PhaseContext) -> PhaseResult: ...
   ```
-- [ ] Implement `scripts/phases/explore.py` — wraps crawl4ai probing + URL validation
+- [x] Implement `scripts/phases/explore.py` — wraps source probing + URL validation
 - [ ] Implement `scripts/phases/seek.py` — directed retrieval via sensor config
 - [ ] Implement `scripts/phases/gather.py` — refactor from `discover_jobs.py` dispatcher
 - [ ] Implement `scripts/phases/organize.py` — schema mapping (from digest_json patterns)
@@ -114,6 +114,8 @@ Evolve tekt.observer from a single-domain observation tool into a generalized pl
 - 2026-08-01 23:30 — Plan created. Knowledge entries for GitHub Copilot CLI and Pi CLI added to `.manage/6.knowledge.md`. Project entries added to `.manage/2.projects.md`. Process definitions for all six phases added to `.manage/3.processes.md`. Roadmap item RM-018 added.
 - 2026-08-12 — Renamed the planned CLI from `tekt` to `tekt.observer` because `tekt` is reserved; updated command examples, verification criteria, roadmap notes, and internal planning documentation.
 - 2026-08-12 — Bootstrapped the repo-local virtualenv and ran `bash scripts/test.sh`: 616 passed, 28 skipped. An initial sandboxed run had two environment-only multiprocessing failures because Unix-socket creation was denied; the unrestricted rerun passed.
+- 2026-08-18 — Added the typed `Phase`, `PhaseContext`, and `PhaseResult` contracts in `scripts/phases/__init__.py`, with focused unit coverage for independent phase invocation. Concrete phase implementations remain separate Layer 1 steps.
+- 2026-08-18 — Added `ExplorePhase` as a validated adapter around `probe_career_source.probe`, returning a serializable exploration artifact without duplicating fetch or ATS-detection logic. Added phase tests to the standard test suite; `bash scripts/test.sh` passed with 623 tests passed and 28 skipped.
 
 ## Handoff Notes
 
@@ -125,6 +127,8 @@ The phase abstraction (Layer 1) can proceed independently. Start there.
 
 Documentation-only update on 2026-08-12: no implementation files changed. `scripts/test.sh` passed with 616 tests passed and 28 skipped after rerunning outside the sandbox. The next concrete step remains defining the Phase protocol and scaffolding the module structure, using `tekt.observer` for the executable.
 
+Implementation resumed on 2026-08-18. Files changed so far: `scripts/phases/__init__.py`, `scripts/phases/explore.py`, `tests/unit/test_phases.py`, and `scripts/test.sh`. The exploration boundary accepts a URL plus optional source name, terms, and timeout, then returns the existing probe payload under `exploration`. Targeted tests passed (11 passed), and `bash scripts/test.sh` passed (623 passed, 28 skipped). The next concrete step is `scripts/phases/seek.py`; define its boundary around the existing source registry and provider dispatch without changing `run_track.sh`.
+
 Key architectural decisions:
 - Auxiliary CLIs are helpers, not providers — they don't replace the codex/claude/gemini model
 - Phases are composable — any phase can be run alone or chained
@@ -134,7 +138,7 @@ Key architectural decisions:
 
 ## Verification
 
-- [ ] `scripts/phases/__init__.py` defines Phase protocol with type hints
+- [x] `scripts/phases/__init__.py` defines Phase protocol with type hints
 - [ ] Each phase module can be imported and run independently with test fixtures
 - [ ] `tekt.observer explore <url>` produces an exploration artifact for a known working URL
 - [ ] `tekt.observer sources add <url>` generates a sensor definition for a simple career page

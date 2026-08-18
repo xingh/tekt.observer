@@ -60,6 +60,7 @@ fi
   tests/unit/test_machine_resolution.py \
   tests/unit/test_integrate_next_source.py \
   tests/unit/test_probe_career_source.py \
+  tests/unit/test_phases.py \
   tests/unit/test_telegram_chat_id.py \
   tests/unit/test_source_quality.py \
   tests/unit/test_update_ranked_overview.py \
