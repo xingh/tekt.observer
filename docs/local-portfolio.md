@@ -96,9 +96,17 @@ Non-loopback bindings are read-only. Static exports remain read-only and contain
 
 ## Background operations
 
-The local operation manager currently exposes bounded, pollable `run` and `validate_sources` work. Only one active operation is allowed per track; state is retained in ignored `logs/portfolio-operations.json`, capped at 200 records. Setup and schedule operation kinds are reserved, but still require dedicated forms before the API will launch them.
+Open `/manage` from the dashboard to:
 
-This is intentionally an operational foundation rather than a complete browser setup wizard. Guided track creation, source curation, delivery, and scheduling continue to use the agent skills and CLI flows documented in [`machine_setup.md`](./machine_setup.md).
+- run a workflow against its live registry
+- validate a workflow's configured sources
+- create or replace its daily, weekly, or monthly schedule entry
+- choose configured Logseq, email, or Telegram delivery targets
+- inspect the state and bounded log of recent operations
+
+The local operation manager exposes this work as pollable `run`, `validate_sources`, and `schedule` operations. Only one active operation is allowed per track; state is retained in ignored `logs/portfolio-operations.json`, capped at 200 records. Cancellation works across HTTP requests and preserves the terminal `cancelled` state.
+
+New workflow setup and source curation remain interactive agent tasks because they involve recommendations and reviewable external-source decisions. The management page links to those flows rather than launching an unattended interactive agent. Delivery credentials and scheduler installation also remain in the guided setup documented in [`machine_setup.md`](./machine_setup.md); the browser schedule form only updates `.schedule.local`.
 
 ## Customize after exploring
 

@@ -13,7 +13,7 @@ The live viewer is a loopback `http.server` with read-only HTML routes and one u
 ## Implementation Plan
 - [x] I9: specifications, validated private state, initialization, legacy projection
 - [x] I10–I12: unified items/dashboard, feedback, portfolio/interest/track/taxonomy APIs
-- [ ] I13–I14: bounded background operations and operational APIs (run/validation and polling landed; setup wizard, schedule/source forms remain)
+- [ ] I13–I14: bounded background operations and operational APIs (run/validation/schedule forms and polling landed; guided browser setup remains agent-routed)
 - [x] Fresh-checkout experience: track three starter workflows, add offline sample and combined live launchers, and update the user-facing documentation
 - [x] Documentation for the behavior landed in this slice
 
@@ -25,9 +25,10 @@ The live viewer is a loopback `http.server` with read-only HTML routes and one u
 - 2026-08-18 - The combined-launcher smoke test exposed misplaced imports in the two newest classifier integrations; moved them before `main()` so the documented default-taxonomy path runs.
 - 2026-08-18 - Added six explicit sample signals so a fresh/offline user sees content immediately; `--live` replaces that workspace with current feed results.
 - 2026-08-18 - Verified the sample dashboard (3 workflows, 6 signals), combined live pipeline control flow, focused portfolio tests (8 passed, 2 sandbox-skipped), and full suite (623 passed, 28 skipped).
+- 2026-08-18 - Added `/manage` for live runs, source validation, schedules, and polling; fixed cross-request cancellation and terminal-state races. Focused suite: 11 passed, 2 sandbox-skipped.
 
 ## Handoff Notes
-The safe foundation, read/curation APIs, and fresh-checkout starter workspace are implemented. Next: build the setup wizard and source/schedule management forms on the operation API, then add Playwright coverage. Files added in this slice include `scripts/run_starter_workflows.sh`, `scripts/seed_starter_workspace.py`, `docs/local-portfolio.md`, and tracked metadata for the three starter workflows.
+The safe foundation, read/curation APIs, fresh-checkout starter workspace, and operational management page are implemented. Next: decide whether browser setup should remain a handoff to interactive agents or become a resumable wizard protocol, then add browser-level coverage. Files added in this effort include `scripts/run_starter_workflows.sh`, `scripts/seed_starter_workspace.py`, `docs/local-portfolio.md`, and tracked metadata for the three starter workflows.
 
 ## Verification
 - [x] focused state and HTTP tests

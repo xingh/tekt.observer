@@ -134,6 +134,7 @@ Two ways to see the output:
 
 Live-server routes:
 - `/` — named-portfolio dashboard and cross-track signal inbox
+- `/manage` — live runs, source validation, schedules, and operation status
 - `/api/v1/state`, `/api/v1/items` — portfolio state and unified items
 - `/api/v1/portfolios`, `/api/v1/interests`, `/api/v1/tracks/<track>` — management APIs
 - `/api/v1/operations` — pollable local operations

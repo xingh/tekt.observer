@@ -22,9 +22,12 @@ def _now(): return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 class OperationManager:
+    _shared_processes: dict[str, subprocess.Popen] = {}
+    _shared_guard = threading.Lock()
+
     def __init__(self, root: Path):
         self.root = Path(root); self.path = self.root / "logs" / "portfolio-operations.json"
-        self._processes: dict[str, subprocess.Popen] = {}; self._guard = threading.Lock()
+        self._processes = self._shared_processes; self._guard = self._shared_guard
     def _load(self):
         if not self.path.exists(): return {"schema_version": 1, "operations": []}
         try: value = json.loads(self.path.read_text())
@@ -56,15 +59,19 @@ class OperationManager:
         try:
             process = subprocess.Popen(command, cwd=self.root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             with self._guard: self._processes[op_id] = process
-            output, _ = process.communicate(); state = "ready" if process.returncode == 0 else "failed"
-            self._update(op_id, state=state, returncode=process.returncode, log=output[-MAX_LOG_CHARS:])
+            output, _ = process.communicate()
+            if self.get(op_id)["state"] != "cancelled":
+                state = "ready" if process.returncode == 0 else "failed"
+                self._update(op_id, state=state, returncode=process.returncode, log=output[-MAX_LOG_CHARS:])
         except Exception as exc: self._update(op_id, state="failed", log=str(exc)[-MAX_LOG_CHARS:])
         finally:
             with self._guard: self._processes.pop(op_id, None)
     def cancel(self, op_id: str):
         op = self.get(op_id)
         if not op: raise PortfolioStateError("unknown operation")
+        if op["state"] not in ACTIVE: raise PortfolioStateError("operation is not active")
+        cancelled = self._update(op_id, state="cancelled")
         with self._guard:
             process = self._processes.get(op_id)
             if process: process.terminate()
-        return self._update(op_id, state="cancelled")
+        return cancelled

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import html
+import re
 import secrets
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -33,6 +34,75 @@ from portfolio_state import PortfolioStateError, PortfolioStore, unified_items  
 from portfolio_operations import OperationManager  # noqa: E402
 
 MAX_JSON_BYTES = 256 * 1024
+CODE_ROOT = Path(__file__).resolve().parents[1]
+TIME_RE = re.compile(r"^([01][0-9]|2[0-3]):[0-5][0-9]$")
+WEEKDAYS = {"mon", "tue", "wed", "thu", "fri", "sat", "sun"}
+DELIVERY_TARGETS = {"logseq", "email", "telegram"}
+
+
+def operation_command(root: Path, store: PortfolioStore, body: dict) -> tuple[str, str, list[str]]:
+    kind, track = body.get("kind"), body.get("track")
+    if not isinstance(track, str) or track not in store.track_ids():
+        raise PortfolioStateError("unknown track")
+    script_root = root if (root / "scripts" / "run_pipeline.sh").is_file() else CODE_ROOT
+    if kind == "run":
+        command = ["bash", str(script_root / "scripts" / "run_pipeline.sh"), "--track", track, "--live",
+                   "--scratch", str(root), "--append"]
+    elif kind == "validate_sources":
+        command = [sys.executable, str(script_root / "scripts" / "discover_jobs.py"), "--track", track, "--plan-only"]
+    elif kind == "schedule":
+        cadence, run_time = body.get("cadence"), body.get("time")
+        if cadence not in {"daily", "weekly", "monthly"}:
+            raise PortfolioStateError("invalid cadence")
+        if not isinstance(run_time, str) or not TIME_RE.fullmatch(run_time):
+            raise PortfolioStateError("time must use HH:MM")
+        deliveries = body.get("delivery", [])
+        if not isinstance(deliveries, list) or any(x not in DELIVERY_TARGETS for x in deliveries):
+            raise PortfolioStateError("invalid delivery target")
+        command = [sys.executable, str(script_root / "scripts" / "configure_schedule.py"), "--track", track,
+                   "--cadence", cadence, "--time", run_time, "--schedule-file", str(root / ".schedule.local")]
+        if cadence == "weekly":
+            weekday = body.get("weekday")
+            if weekday not in WEEKDAYS: raise PortfolioStateError("weekly schedules require a weekday")
+            command += ["--weekday", weekday]
+        elif cadence == "monthly":
+            month_day = body.get("month_day")
+            if not isinstance(month_day, int) or isinstance(month_day, bool) or not 1 <= month_day <= 31:
+                raise PortfolioStateError("monthly schedules require month_day 1-31")
+            command += ["--month-day", str(month_day)]
+        for target in deliveries:
+            command += ["--delivery", target]
+    else:
+        raise PortfolioStateError("invalid operation kind")
+    return track, kind, command
+
+
+def render_management(root: Path, csrf_token: str, writes_enabled: bool = True) -> str:
+    store = PortfolioStore(root)
+    options = "".join(
+        f'<option value="{html.escape(track)}">{html.escape(store.track(track)["display_name"])}</option>'
+        for track in sorted(store.track_ids())
+    )
+    disabled = "" if writes_enabled else " disabled"
+    readonly_note = "" if writes_enabled else "<p><strong>Read-only:</strong> controls require a loopback binding.</p>"
+    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Manage workflows · tekt.observer</title><link rel="stylesheet" href="/style.css"><style>
+.manage-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}} .panel{{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:16px}} .panel form,.field{{display:grid;gap:8px}} .row{{display:flex;gap:8px;flex-wrap:wrap}} button,input,select{{font:inherit;padding:8px}} pre{{white-space:pre-wrap;max-height:280px;overflow:auto}} .status{{min-height:1.5em}} @media(max-width:600px){{main{{padding:12px}}}}
+</style></head><body><main><p><a href="/">← Portfolio dashboard</a></p><h1>Manage workflows</h1><p>Run and validate workflows or update the machine-local schedule. Only one operation per workflow runs at a time.</p>{readonly_note}<section class="manage-grid">
+<article class="panel"><h2>Run or validate</h2><form id="operate"><label class="field">Workflow<select name="track">{options}</select></label><div class="row"><button name="kind" value="run"{disabled}>Run live</button><button name="kind" value="validate_sources"{disabled}>Validate sources</button></div></form></article>
+<article class="panel"><h2>Schedule</h2><form id="schedule"><label class="field">Workflow<select name="track">{options}</select></label><label class="field">Cadence<select name="cadence"><option>daily</option><option>weekly</option><option>monthly</option></select></label><label class="field">Time<input name="time" type="time" value="08:00" required></label><label class="field">Weekday (weekly)<select name="weekday"><option value="mon">Monday</option><option value="tue">Tuesday</option><option value="wed">Wednesday</option><option value="thu">Thursday</option><option value="fri">Friday</option><option value="sat">Saturday</option><option value="sun">Sunday</option></select></label><label class="field">Month day (monthly)<input name="month_day" type="number" min="1" max="31" value="1"></label><fieldset><legend>Delivery</legend><label><input type="checkbox" name="delivery" value="logseq"> Logseq</label> <label><input type="checkbox" name="delivery" value="email"> Email</label> <label><input type="checkbox" name="delivery" value="telegram"> Telegram</label></fieldset><button{disabled}>Save schedule</button></form></article>
+<article class="panel"><h2>Create or curate</h2><p>New workflow setup and source curation require an interactive agent so recommendations and external changes remain reviewable.</p><pre>bash scripts/start_setup_agent.sh --agent codex
+
+# Or ask your agent:
+add &lt;company&gt; as a source to &lt;track&gt;</pre></article>
+</section><h2>Recent operations</h2><p class="status" id="status" aria-live="polite"></p><div id="operations"></div></main><script>
+const csrf={json.dumps(csrf_token)},statusEl=document.querySelector('#status');
+async function post(payload){{let r=await fetch('/api/v1/operations',{{method:'POST',headers:{{'Content-Type':'application/json','X-CSRF-Token':csrf}},body:JSON.stringify(payload)}});let data=await r.json();if(!r.ok)throw Error(data.error||'Request failed');return data}}
+function escapeHtml(s){{let d=document.createElement('div');d.textContent=s;return d.innerHTML}}
+async function refresh(){{let data=await (await fetch('/api/v1/operations')).json();document.querySelector('#operations').innerHTML=data.operations.slice().reverse().map(o=>`<article class="panel"><strong>${{o.kind}} · ${{o.track}}</strong><p>${{o.state}} · ${{o.updated_at}}</p>${{o.log?`<pre>${{escapeHtml(o.log)}}</pre>`:''}}</article>`).join('')||'<p>No operations yet.</p>'}}
+document.querySelector('#operate').addEventListener('submit',async e=>{{e.preventDefault();try{{let op=await post({{track:e.target.track.value,kind:e.submitter.value}});statusEl.textContent=`Started ${{op.kind}} for ${{op.track}}.`;refresh()}}catch(err){{statusEl.textContent=err.message}}}});
+document.querySelector('#schedule').addEventListener('submit',async e=>{{e.preventDefault();let f=new FormData(e.target),payload={{kind:'schedule',track:f.get('track'),cadence:f.get('cadence'),time:f.get('time'),delivery:f.getAll('delivery')}};if(payload.cadence==='weekly')payload.weekday=f.get('weekday');if(payload.cadence==='monthly')payload.month_day=Number(f.get('month_day'));try{{let op=await post(payload);statusEl.textContent=`Schedule update queued for ${{op.track}}.`;refresh()}}catch(err){{statusEl.textContent=err.message}}}});
+refresh();setInterval(refresh,3000);
+</script></body></html>'''
 
 
 def render_dashboard(root: Path, csrf_token: str, query: dict[str, str], writes_enabled: bool = True) -> str:
@@ -62,7 +132,7 @@ def render_dashboard(root: Path, csrf_token: str, query: dict[str, str], writes_
     empty = '<div class="empty"><h2>No signals yet</h2><p>Run a track or change the filters. Existing CLI and static workflows continue to work.</p></div>'
     return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>tekt.observer portfolio</title><link rel="stylesheet" href="/style.css"><style>
 .toolbar{{display:flex;gap:10px;flex-wrap:wrap;align-items:end}} .toolbar label{{display:grid;gap:4px}} .tracks{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0}} .track-health,.signal{{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:14px;text-decoration:none;color:inherit}} .track-health small{{display:block;margin-top:6px}} .inbox{{display:grid;gap:10px}} .signal h2{{font-size:17px;margin:5px 0}} .actions{{display:flex;gap:7px}} button,input,select{{font:inherit;padding:7px}} button:focus,a:focus,input:focus,select:focus{{outline:3px solid var(--accent)}} @media(max-width:600px){{main{{padding:12px}}.toolbar>*{{width:100%}}}}
-</style></head><body><main><h1>Portfolio dashboard</h1><form class="toolbar" method="get"><label>Portfolio<select name="portfolio" onchange="this.form.submit()">{opts}</select></label><label>Track<input name="track" value="{html.escape(query.get('track',''))}"></label><label>Audience<input name="audience" value="{html.escape(audience)}"></label><label>Topic<input name="topic" value="{html.escape(topic)}"></label><label>Search<input name="q" value="{html.escape(query.get('q',''))}"></label><button>Filter</button></form><div class="tracks">{track_cards}</div><h2>Signal inbox <small>({len(items)})</small></h2><section class="inbox">{''.join(cards) or empty}</section></main><script>
+</style></head><body><main><p><a href="/manage">Manage workflows</a></p><h1>Portfolio dashboard</h1><form class="toolbar" method="get"><label>Portfolio<select name="portfolio" onchange="this.form.submit()">{opts}</select></label><label>Track<input name="track" value="{html.escape(query.get('track',''))}"></label><label>Audience<input name="audience" value="{html.escape(audience)}"></label><label>Topic<input name="topic" value="{html.escape(topic)}"></label><label>Search<input name="q" value="{html.escape(query.get('q',''))}"></label><button>Filter</button></form><div class="tracks">{track_cards}</div><h2>Signal inbox <small>({len(items)})</small></h2><section class="inbox">{''.join(cards) or empty}</section></main><script>
 const csrf={json.dumps(csrf_token)}; document.addEventListener('click',async e=>{{let b=e.target.closest('[data-action]');if(!b)return;let row=b.closest('.actions');let audience=row.dataset.audience;if(!audience){{let r=await fetch('/api/v1/tracks/'+row.dataset.track);if(r.ok)audience=(await r.json()).default_audience}}if(!audience){{alert('Configure a default audience for this track first.');return}}b.disabled=true;let r=await fetch('/api/v1/feedback',{{method:'POST',headers:{{'Content-Type':'application/json','X-CSRF-Token':csrf}},body:JSON.stringify({{track:row.dataset.track,item_key:row.dataset.item,audience,action:b.dataset.action}})}});b.disabled=false;if(r.ok){{b.textContent='Done';if(b.dataset.action==='hide')b.closest('.signal').remove()}}else alert((await r.json()).error)}});
 </script></body></html>'''
 
@@ -143,14 +213,8 @@ class ViewerHandler(BaseHTTPRequestHandler):
                 def add(data): data["portfolios"].append(body); return data
                 self._json(store.mutate("portfolios", add), 201); return
             if path == "/api/v1/operations":
-                kind, track = body.get("kind"), body.get("track")
-                if track not in store.track_ids() and kind != "setup": raise PortfolioStateError("unknown track")
-                commands = {
-                    "run": ["bash", "scripts/run_pipeline.sh", "--track", str(track), "--live"],
-                    "validate_sources": [sys.executable, "scripts/discover_jobs.py", "--track", str(track), "--plan-only"],
-                }
-                if kind not in commands: raise PortfolioStateError("this operation requires its dedicated setup or schedule form")
-                self._json(OperationManager(self.root).create(str(track), str(kind), commands[kind]), 202); return
+                track, kind, command = operation_command(self.root, store, body)
+                self._json(OperationManager(self.root).create(track, kind, command), 202); return
             if path.startswith("/api/v1/operations/") and path.endswith("/cancel"):
                 self._json(OperationManager(self.root).cancel(path.split("/")[-2])); return
             self._json({"error": "route not found"}, 404)
@@ -205,6 +269,9 @@ class ViewerHandler(BaseHTTPRequestHandler):
         query = {k: v[-1] for k, v in parse_qs(parts.query).items()}
         if path == "/" or path == "/index.html":
             self._html(render_dashboard(self.root, self.csrf_token, query, self.writes_enabled))
+            return
+        if path == "/manage":
+            self._html(render_management(self.root, self.csrf_token, self.writes_enabled))
             return
         if path == "/style.css":
             self._write(200, STYLE_CSS.encode("utf-8"), "text/css; charset=utf-8")

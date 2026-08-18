@@ -90,22 +90,24 @@ if [[ "$APPEND" -eq 0 ]]; then
   rm -rf "$SCRATCH"
 fi
 mkdir -p "$SCRATCH/tracks/$TRACK" "$SCRATCH/shared" "$SCRATCH/artifacts/discovery/$TRACK"
-mkdir -p "$SCRATCH/scripts"
-cp -R "$ROOT/scripts/." "$SCRATCH/scripts/"
-if [[ ! -e "$SCRATCH/shared/schemas" ]]; then
-  ln -s "$ROOT/shared/schemas" "$SCRATCH/shared/schemas"
+if [[ "$SCRATCH" != "$ROOT" ]]; then
+  mkdir -p "$SCRATCH/scripts"
+  cp -R "$ROOT/scripts/." "$SCRATCH/scripts/"
+  if [[ ! -e "$SCRATCH/shared/schemas" ]]; then
+    ln -s "$ROOT/shared/schemas" "$SCRATCH/shared/schemas"
+  fi
+  cp "$ROOT/shared/digest_schema.md" "$SCRATCH/shared/digest_schema.md"
+  if [[ ! -e "$SCRATCH/.venv" ]]; then
+    ln -s "$ROOT/.venv" "$SCRATCH/.venv"
+  fi
+  if [[ -d "$ROOT/profile" ]]; then
+    mkdir -p "$SCRATCH/profile"
+    [[ -d "$ROOT/profile/personas" ]] && ln -s "$ROOT/profile/personas" "$SCRATCH/profile/personas"
+  fi
+  for f in sources.json source_state.json prefs.md track.json AGENTS.md; do
+    [[ -f "$TRACK_DIR/$f" ]] && cp "$TRACK_DIR/$f" "$SCRATCH/tracks/$TRACK/$f"
+  done
 fi
-cp "$ROOT/shared/digest_schema.md" "$SCRATCH/shared/digest_schema.md"
-if [[ ! -e "$SCRATCH/.venv" ]]; then
-  ln -s "$ROOT/.venv" "$SCRATCH/.venv"
-fi
-if [[ -d "$ROOT/profile" ]]; then
-  mkdir -p "$SCRATCH/profile"
-  [[ -d "$ROOT/profile/personas" ]] && ln -s "$ROOT/profile/personas" "$SCRATCH/profile/personas"
-fi
-for f in sources.json source_state.json prefs.md track.json AGENTS.md; do
-  [[ -f "$TRACK_DIR/$f" ]] && cp "$TRACK_DIR/$f" "$SCRATCH/tracks/$TRACK/$f"
-done
 
 # --- 1. Discover / gather --------------------------------------------------
 if [[ "$LIVE" -eq 1 ]]; then

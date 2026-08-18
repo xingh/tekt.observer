@@ -1,9 +1,12 @@
 import json
 import threading
+import time
 from http.client import HTTPConnection
 from http.server import ThreadingHTTPServer
 
-from serve_html import ViewerHandler
+from portfolio_state import PortfolioStateError, PortfolioStore
+from portfolio_operations import OperationManager
+from serve_html import ViewerHandler, operation_command, render_management
 import pytest
 
 
@@ -48,3 +51,25 @@ def test_mutations_require_json_csrf_and_same_origin(tmp_path):
         status, body = _request(server, "POST", "/api/v1/interests", payload, {"Content-Type": "application/json", "X-CSRF-Token": "test-token"})
         assert status == 201 and json.loads(body)["interests"][0]["id"] == "ai"
     finally: server.shutdown(); thread.join(); server.server_close()
+
+
+def test_management_page_and_schedule_command(tmp_path):
+    (tmp_path / "tracks" / "alpha").mkdir(parents=True)
+    store = PortfolioStore(tmp_path)
+    page = render_management(tmp_path, "test-token")
+    assert "Manage workflows" in page and "Save schedule" in page and "Alpha" in page
+    track, kind, command = operation_command(tmp_path, store, {
+        "kind": "schedule", "track": "alpha", "cadence": "weekly", "time": "08:30",
+        "weekday": "fri", "delivery": ["email", "telegram"],
+    })
+    assert (track, kind) == ("alpha", "schedule")
+    assert command[-4:] == ["--delivery", "email", "--delivery", "telegram"]
+    op = OperationManager(tmp_path).create(track, kind, command)
+    for _ in range(100):
+        current = OperationManager(tmp_path).get(op["id"])
+        if current["state"] in {"ready", "failed"}: break
+        time.sleep(.01)
+    assert current["state"] == "ready"
+    assert (tmp_path / ".schedule.local").read_text().rstrip().endswith("weekly fri 08:30 track alpha --delivery email --delivery telegram")
+    with pytest.raises(PortfolioStateError, match="month_day"):
+        operation_command(tmp_path, store, {"kind": "schedule", "track": "alpha", "cadence": "monthly", "time": "08:30", "month_day": 0})

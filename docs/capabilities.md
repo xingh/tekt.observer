@@ -8,7 +8,8 @@
 - Save, hide, click, and note signals reuse audience-specific append-only feedback.
 - Track metadata and taxonomy overrides enforce reference integrity and overlay shipped schemas.
 - Management APIs enforce JSON, size, origin, CSRF, stable-ID, and loopback-write constraints.
-- Run/source-validation work is pollable and limited to one active operation per track; static sites stay read-only.
+- The `/manage` page launches live runs and source validation, updates schedules, and polls bounded logs; cancellation works across requests.
+- Operational work is limited to one active operation per track; static sites stay read-only.
 
 _Point-in-time status of `master` as of 2026-08-11. This page is the fact source
 for [`presentation-kit.md`](./presentation-kit.md) — update it when an iteration
