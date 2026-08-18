@@ -211,5 +211,6 @@
     "wfh",
     "remote-first",
     "remote-friendly"
-  ]
+  ],
+  "generated_from": ".arkitype/watchers/job_watch/taxonomy.json"
 }

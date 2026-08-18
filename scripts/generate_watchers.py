@@ -15,6 +15,8 @@ from typing import Any
 SLUG_RE = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 SOURCE_KINDS = {"rss", "atom", "hn_algolia"}
 PRIMARY_DIMENSIONS = ("topics", "role_types", "asset_classes")
+SPEC_ROOT = ".arkitype/watchers"
+PREFS_MARKER_RE = re.compile(r"^<!-- Generated from (\.arkitype/watchers/[^;]+); do not edit directly\. -->$")
 
 
 class WatcherSpecError(ValueError):
@@ -116,11 +118,16 @@ def _json_text(value: dict[str, Any]) -> str:
 def rendered_outputs(root: Path, specs: list[WatcherSpec]) -> dict[Path, str]:
     outputs: dict[Path, str] = {}
     for spec in specs:
+        source_root = f"{SPEC_ROOT}/{spec.slug}"
         track = {key: value for key, value in spec.metadata.items() if key not in {"kind", "slug", "order"}}
+        track["generated_from"] = f"{source_root}/watcher.json"
+        taxonomy = {**spec.taxonomy, "generated_from": f"{source_root}/taxonomy.json"}
+        registry = {**spec.registry, "generated_from": f"{source_root}/sources.json"}
+        prefs = f"<!-- Generated from {source_root}/brief.md; do not edit directly. -->\n\n{spec.brief}"
         outputs[root / "tracks" / spec.slug / "track.json"] = _json_text(track)
-        outputs[root / "tracks" / spec.slug / "prefs.md"] = spec.brief
-        outputs[root / "shared" / "schemas" / f"{spec.slug}_taxonomy.json"] = _json_text(spec.taxonomy)
-        outputs[root / "shared" / "schemas" / f"{spec.slug}_source_registry.json"] = _json_text(spec.registry)
+        outputs[root / "tracks" / spec.slug / "prefs.md"] = prefs
+        outputs[root / "shared" / "schemas" / f"{spec.slug}_taxonomy.json"] = _json_text(taxonomy)
+        outputs[root / "shared" / "schemas" / f"{spec.slug}_source_registry.json"] = _json_text(registry)
     return outputs
 
 
@@ -139,6 +146,25 @@ def check_outputs(root: Path, outputs: dict[Path, str]) -> bool:
         label = str(path.relative_to(root))
         sys.stderr.writelines(difflib.unified_diff(actual.splitlines(True), expected.splitlines(True),
                                                    fromfile=label, tofile=f"{label} (generated)"))
+    expected_paths = set(outputs)
+    candidates = list((root / "tracks").glob("*/track.json"))
+    candidates.extend((root / "tracks").glob("*/prefs.md"))
+    candidates.extend((root / "shared" / "schemas").glob("*_taxonomy.json"))
+    candidates.extend((root / "shared" / "schemas").glob("*_source_registry.json"))
+    for path in sorted(set(candidates) - expected_paths):
+        try:
+            if path.suffix == ".md":
+                first_line = path.read_text().splitlines()[0]
+                generated = PREFS_MARKER_RE.fullmatch(first_line) is not None
+            else:
+                value = json.loads(path.read_text())
+                source = value.get("generated_from") if isinstance(value, dict) else None
+                generated = isinstance(source, str) and source.startswith(f"{SPEC_ROOT}/")
+        except (IndexError, OSError, json.JSONDecodeError):
+            generated = False
+        if generated:
+            clean = False
+            print(f"orphaned generated watcher output: {path.relative_to(root)}", file=sys.stderr)
     return clean
 
 

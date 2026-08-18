@@ -102,5 +102,6 @@
         "ai_governance_risk"
       ]
     }
-  ]
+  ],
+  "generated_from": ".arkitype/watchers/topic_watch/sources.json"
 }

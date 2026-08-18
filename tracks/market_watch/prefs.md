@@ -1,3 +1,5 @@
+<!-- Generated from .arkitype/watchers/market_watch/brief.md; do not edit directly. -->
+
 # Marketwatch · AI Markets & Regulation
 
 Watch public companies exposed to AI compute, cloud platforms, enterprise software, and AI applications. Track earnings, guidance, capital expenditure, launches, customer adoption, supply constraints, and material partnerships alongside AI regulation, antitrust, copyright, safety rules, and semiconductor export controls.

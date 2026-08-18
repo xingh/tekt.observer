@@ -151,5 +151,6 @@
         "public_equities"
       ]
     }
-  ]
+  ],
+  "generated_from": ".arkitype/watchers/market_watch/sources.json"
 }

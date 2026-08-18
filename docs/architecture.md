@@ -6,7 +6,7 @@ The loopback viewer is also a server-rendered local portfolio application. `port
 
 ## Watcher specification boundary
 
-Built-in watcher types are authored under `.arkitype/watchers/<slug>/`. Each directory owns `watcher.json`, `brief.md`, `taxonomy.json`, `sources.json`, and `samples.json`. `scripts/generate_watchers.py` validates cross-references and emits the runtime track metadata, preferences, taxonomy, and source registry. `scripts/test.sh` runs the generator in `--check` mode, so generated runtime files cannot become a second source of truth. The runtime slug and all artifact paths use the spec directory name; the canonical built-ins are `topic_watch`, `job_watch`, and `market_watch`.
+Built-in watcher types are authored under `.arkitype/watchers/<slug>/`. Each directory owns `watcher.json`, `brief.md`, `taxonomy.json`, `sources.json`, and `samples.json`. `scripts/generate_watchers.py` validates cross-references and emits the runtime track metadata, preferences, taxonomy, and source registry. Every emitted file identifies its owning spec. `scripts/test.sh` runs the generator in `--check` mode, so drift and orphaned outputs from renamed or removed specs fail verification instead of becoming a second source of truth. The runtime slug and all artifact paths use the spec directory name; the canonical built-ins are `topic_watch`, `job_watch`, and `market_watch`.
 
 This repo runs agent-assisted observation tracks — AI content, market news, job
 postings, or whatever question you scaffold next. Each track combines

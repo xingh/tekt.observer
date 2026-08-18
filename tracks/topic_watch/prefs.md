@@ -1,3 +1,5 @@
+<!-- Generated from .arkitype/watchers/topic_watch/brief.md; do not edit directly. -->
+
 # Topicwatch · AI in Business
 
 Watch practical uses of AI in business: adoption, team productivity, customer and back-office operations, governance, risk, operating-model changes, and evidence of measurable value.

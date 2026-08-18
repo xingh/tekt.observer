@@ -233,7 +233,7 @@ any subdirectory of an HTTP server.
 2. Edit its `watcher.json`, `brief.md`, `taxonomy.json`, `sources.json`, and `samples.json`. IDs referenced by sources and samples must exist in the taxonomy.
 3. Run `./.venv/bin/python scripts/generate_watchers.py`. Do not hand-edit the generated `tracks/<slug>/{track.json,prefs.md}` or `shared/schemas/<slug>_*` files.
 4. Add `scripts/<slug>_classify.py` and `scripts/<slug>_synthesize_digest.py` when the watcher needs type-specific organization or digest logic. The generic runner discovers these by filename; feed gathering, trends, audience reranking, and rendering are shared.
-5. Run `./.venv/bin/python scripts/generate_watchers.py --check` and `bash scripts/run_pipeline.sh --track <slug> --live`.
+5. Run `./.venv/bin/python scripts/generate_watchers.py --check` and `bash scripts/run_pipeline.sh --track <slug> --live`. The check also reports stamped generated files left behind by a renamed or removed watcher; review and remove those explicitly.
 6. Render with `./.venv/bin/python scripts/render_html.py --root tests/tmp/<slug> --out site/`.
 
 ## Where artifacts live

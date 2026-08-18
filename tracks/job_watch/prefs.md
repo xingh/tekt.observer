@@ -1,3 +1,5 @@
+<!-- Generated from .arkitype/watchers/job_watch/brief.md; do not edit directly. -->
+
 # Jobwatch · AI-enabled Professions
 
 Watch professions that build, govern, sell, teach, or operationalize AI: AI and ML engineering, solutions architecture, product management and design, governance and risk, operations and automation, developer relations, education, and customer-facing technical roles.

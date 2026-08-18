@@ -170,5 +170,6 @@
       "label": "LPs",
       "lens": "fund performance drivers, capital call cadence, sector concentration"
     }
-  ]
+  ],
+  "generated_from": ".arkitype/watchers/market_watch/taxonomy.json"
 }

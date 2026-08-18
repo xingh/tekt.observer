@@ -216,5 +216,6 @@
       "label": "Leaders",
       "lens": "strategy, portfolio bets, external narrative"
     }
-  ]
+  ],
+  "generated_from": ".arkitype/watchers/topic_watch/taxonomy.json"
 }

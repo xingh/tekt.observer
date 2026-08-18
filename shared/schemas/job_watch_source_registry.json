@@ -124,5 +124,6 @@
         "ai_customer_success"
       ]
     }
-  ]
+  ],
+  "generated_from": ".arkitype/watchers/job_watch/sources.json"
 }

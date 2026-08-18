@@ -6,5 +6,6 @@
   "status": "active",
   "interest_ids": [],
   "default_audience": "investors",
-  "interest_topic_mappings": {}
+  "interest_topic_mappings": {},
+  "generated_from": ".arkitype/watchers/market_watch/watcher.json"
 }

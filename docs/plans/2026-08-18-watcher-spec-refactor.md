@@ -16,6 +16,7 @@ Make `topic_watch`, `job_watch`, and `market_watch` the canonical built-in watch
 - [x] Rename the topic watcher runtime surface from the legacy slug to `topic_watch`; verify pipeline dispatch, artifacts, starter workspace, and tests.
 - [x] Update docs and extension guidance; verify no unintended legacy topic slug references remain.
 - [x] Run focused tests and `bash scripts/test.sh`.
+- [x] Harden generated-file provenance and orphan detection; verify stale generated outputs fail `--check`.
 
 ## Progress Log
 - 2026-08-18 - Began repository-wide inventory and spec-generation design; preserved existing dirty work from the prior starter-workflow iteration.
@@ -23,14 +24,16 @@ Make `topic_watch`, `job_watch`, and `market_watch` the canonical built-in watch
 - 2026-08-18 - Renamed the topic runtime surface, scripts, schemas, track, fixtures, screenshots, commands, and docs to canonical `topic_watch`; canonical pipeline smoke completed with empty-feed degradation in the restricted network sandbox.
 - 2026-08-18 - Made starter seeding and combined live runs discover watcher specs dynamically, so an additional watcher does not require registration in Python or shell.
 - 2026-08-18 - Full verification passed: generated watcher check clean; 642 tests passed and 28 skipped.
+- 2026-08-18 - Continued with generator hardening so runtime outputs identify their source spec and removed specs cannot leave silent orphan files.
+- 2026-08-18 - Added provenance stamps and orphan detection, documented explicit cleanup, and completed full verification with 643 tests passed and 28 skipped.
 
 ## Handoff Notes
-Implementation and verification are complete. Canonical spec directories generate 12 runtime files; focused generator/portfolio tests, the canonical topic pipeline, the 9-item starter workspace, and the full repository suite passed. New watcher types follow the documented spec-directory convention, with optional classifier/synthesizer modules named from the slug.
+The canonical refactor and generator hardening passed in full. Future watcher types should begin as a new `.arkitype/watchers/<slug>/` directory and use the generator rather than editing runtime files directly.
 
 ## Verification
 - [x] watcher spec generator check
 - [x] focused watcher/pipeline tests
-- [x] `bash scripts/test.sh` (642 passed, 28 skipped)
+- [x] `bash scripts/test.sh` (643 passed, 28 skipped)
 
 ## Caveats
 The slug change intentionally provides no permanent runtime alias. Existing ignored legacy artifact directories remain ordinary local track data, but new built-in runs only emit `topic_watch`.

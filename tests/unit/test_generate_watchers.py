@@ -9,6 +9,11 @@ def test_committed_watcher_outputs_are_generated_from_specs(repo_root):
     assert {spec.slug for spec in specs} == {"topic_watch", "job_watch", "market_watch"}
     assert check_outputs(repo_root, rendered_outputs(repo_root, specs))
     assert all(spec.metadata["id"] == spec.slug for spec in specs)
+    for spec in specs:
+        track = json.loads((repo_root / "tracks" / spec.slug / "track.json").read_text())
+        assert track["generated_from"] == f".arkitype/watchers/{spec.slug}/watcher.json"
+        prefs = (repo_root / "tracks" / spec.slug / "prefs.md").read_text()
+        assert prefs.startswith(f"<!-- Generated from .arkitype/watchers/{spec.slug}/brief.md;")
 
 
 def test_generator_check_detects_drift(repo_root, tmp_path):
@@ -18,6 +23,19 @@ def test_generator_check_detects_drift(repo_root, tmp_path):
     assert check_outputs(tmp_path, outputs)
     stale = tmp_path / "tracks" / "topic_watch" / "track.json"
     stale.write_text("{}\n")
+    assert not check_outputs(tmp_path, outputs)
+
+
+def test_generator_check_detects_orphaned_generated_outputs(repo_root, tmp_path):
+    shutil.copytree(repo_root / ".arkitype", tmp_path / ".arkitype")
+    outputs = rendered_outputs(tmp_path, discover_specs(tmp_path))
+    write_outputs(outputs)
+    orphan = tmp_path / "tracks" / "retired_watch" / "track.json"
+    orphan.parent.mkdir(parents=True)
+    orphan.write_text(json.dumps({
+        "id": "retired_watch",
+        "generated_from": ".arkitype/watchers/retired_watch/watcher.json",
+    }, indent=2) + "\n")
     assert not check_outputs(tmp_path, outputs)
 
 
