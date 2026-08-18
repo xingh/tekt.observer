@@ -22,6 +22,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portfolio_state import resolved_classifier_taxonomy  # noqa: E402
 from track_common import item_key, iso_utc_now, substring_match  # noqa: E402
 
 DEFAULT_TAXONOMY = Path(__file__).resolve().parents[1] / "shared" / "schemas" / "job_watch_taxonomy.json"
@@ -143,4 +144,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-from portfolio_state import resolved_classifier_taxonomy

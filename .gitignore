@@ -48,6 +48,15 @@ tracks/*
 !tracks/test_workflow/sources.md
 !tracks/test_workflow/sources.json
 !tracks/test_workflow/source_state.json
+!tracks/ai_topics/
+!tracks/ai_topics/prefs.md
+!tracks/ai_topics/track.json
+!tracks/market_watch/
+!tracks/market_watch/prefs.md
+!tracks/market_watch/track.json
+!tracks/job_watch/
+!tracks/job_watch/prefs.md
+!tracks/job_watch/track.json
 tracks/*/digests/
 
 # Generated artifacts and digests

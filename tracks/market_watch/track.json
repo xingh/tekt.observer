@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "market_watch",
+  "display_name": "Market Watch",
+  "description": "Market-moving company, central-bank, funding, and macro signals.",
+  "status": "active",
+  "interest_ids": [],
+  "default_audience": "investors",
+  "interest_topic_mappings": {}
+}

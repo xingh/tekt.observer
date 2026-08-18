@@ -27,6 +27,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portfolio_state import resolved_classifier_taxonomy  # noqa: E402
 from track_common import (  # noqa: E402
     item_key,
     iso_utc_now,
@@ -273,4 +274,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-from portfolio_state import resolved_classifier_taxonomy

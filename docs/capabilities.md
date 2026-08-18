@@ -2,6 +2,7 @@
 
 ## Local portfolio workspace (I9–I14)
 
+- Three tracked starter workflows can be populated with offline sample signals in one shared scratch dashboard; `scripts/run_starter_workflows.sh --live` replaces them with current feed data.
 - Named portfolios organize tracks and reusable interests; legacy tracks appear in an implicit All Tracks portfolio.
 - The live dashboard combines organized, ranked, digest, and discovery artifacts without modifying them.
 - Save, hide, click, and note signals reuse audience-specific append-only feedback.
@@ -139,9 +140,9 @@ Two things this table is saying that are easy to miss:
 ## How it's verified
 
 `bash scripts/test.sh` runs shell syntax checks, Python compile checks, the skill
-mirror check, the generated-docs check, and the pytest suite — **616 tests across
-49 files** (unit / integration / contract / e2e), green in about 3 minutes on a
-laptop. 53 recorded source-contract fixtures let provider adapters be tested
+mirror check, the generated-docs check, and the pytest suite — **623 passing tests**
+(unit / integration / contract / e2e), green in about 3 minutes on a laptop in
+the latest verified run. 53 recorded source-contract fixtures let provider adapters be tested
 without network access.
 
 ## Where to read next
@@ -149,5 +150,6 @@ without network access.
 - [`presentation-kit.md`](./presentation-kit.md) — deck outline built from this page
 - [`tracks_pipeline.md`](./tracks_pipeline.md) — the six stages, script by script
 - [`architecture.md`](./architecture.md) — component map, source-integration loop
+- [`local-portfolio.md`](./local-portfolio.md) — starter workflows and local dashboard/API guide
 - [`roadmap.md`](./roadmap.md) — what's queued next
 - [`../README.md`](../README.md) — install and run it yourself

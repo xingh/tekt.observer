@@ -22,7 +22,7 @@ set -euo pipefail
 
 usage() {
   cat <<EOF
-Usage: $0 --track <slug> [--live] [--today YYYY-MM-DD] [--audience <id>] [--scratch <path>] [--registry <path>]
+Usage: $0 --track <slug> [--live] [--today YYYY-MM-DD] [--audience <id>] [--scratch <path>] [--registry <path>] [--append]
 
 Options:
   --track SLUG        Track name under tracks/<slug>/  (required)
@@ -31,6 +31,7 @@ Options:
   --audience ID       Audience id passed to synthesize (default per track)
   --scratch PATH      Scratch root (default: tests/tmp/<track>)
   --registry PATH     Override the source registry path
+  --append            Preserve other tracks already present in the scratch root
   -h, --help          Show this help
 EOF
 }
@@ -41,6 +42,7 @@ TODAY=""
 AUDIENCE=""
 SCRATCH=""
 REGISTRY=""
+APPEND=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -50,6 +52,7 @@ while [[ $# -gt 0 ]]; do
     --audience)  AUDIENCE="$2"; shift 2 ;;
     --scratch)   SCRATCH="$2"; shift 2 ;;
     --registry)  REGISTRY="$2"; shift 2 ;;
+    --append)    APPEND=1; shift ;;
     -h|--help)   usage; exit 0 ;;
     *) echo "Unknown flag: $1" >&2; usage >&2; exit 2 ;;
   esac
@@ -83,17 +86,24 @@ fi
 echo "[pipeline] track=$TRACK today=$TODAY live=$LIVE scratch=$SCRATCH"
 
 # --- Scratch setup ---------------------------------------------------------
-rm -rf "$SCRATCH"
+if [[ "$APPEND" -eq 0 ]]; then
+  rm -rf "$SCRATCH"
+fi
 mkdir -p "$SCRATCH/tracks/$TRACK" "$SCRATCH/shared" "$SCRATCH/artifacts/discovery/$TRACK"
-cp -R "$ROOT/scripts" "$SCRATCH/scripts"
-ln -s "$ROOT/shared/schemas" "$SCRATCH/shared/schemas"
+mkdir -p "$SCRATCH/scripts"
+cp -R "$ROOT/scripts/." "$SCRATCH/scripts/"
+if [[ ! -e "$SCRATCH/shared/schemas" ]]; then
+  ln -s "$ROOT/shared/schemas" "$SCRATCH/shared/schemas"
+fi
 cp "$ROOT/shared/digest_schema.md" "$SCRATCH/shared/digest_schema.md"
-ln -s "$ROOT/.venv" "$SCRATCH/.venv"
+if [[ ! -e "$SCRATCH/.venv" ]]; then
+  ln -s "$ROOT/.venv" "$SCRATCH/.venv"
+fi
 if [[ -d "$ROOT/profile" ]]; then
   mkdir -p "$SCRATCH/profile"
   [[ -d "$ROOT/profile/personas" ]] && ln -s "$ROOT/profile/personas" "$SCRATCH/profile/personas"
 fi
-for f in sources.json source_state.json prefs.md AGENTS.md; do
+for f in sources.json source_state.json prefs.md track.json AGENTS.md; do
   [[ -f "$TRACK_DIR/$f" ]] && cp "$TRACK_DIR/$f" "$SCRATCH/tracks/$TRACK/$f"
 done
 

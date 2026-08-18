@@ -1,6 +1,6 @@
 # Roadmap
 
-_Last updated: 2026-08-12_
+_Last updated: 2026-08-18_
 
 ## Conventions
 
@@ -52,8 +52,8 @@ RM-### — Title
 - Owner: Codex
 - Last updated: 2026-08-18
 - Links: [plan](plans/2026-08-18-local-portfolio-ui.md)
-- Next step: finish I9–I14 verification and documentation
-- Notes: Named portfolios, reusable interests, track-local metadata/taxonomy, a unified inbox, curation, and bounded local operations. Local files stay canonical and static output stays read-only.
+- Next step: build setup, source, and schedule forms on the bounded operation API; then add browser-level coverage
+- Notes: Named portfolios, reusable interests, track-local metadata/taxonomy, a unified inbox, curation, and bounded local operations. Local files stay canonical and static output stays read-only. The fresh-checkout path now includes three tracked starter workflows, six offline sample signals, an optional combined live run, and a dedicated local-portfolio guide.
 
 ### RM-017 — Package tekt.observer as an installable Claude skills plugin
 - Status: new

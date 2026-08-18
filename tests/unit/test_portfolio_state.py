@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from portfolio_state import PortfolioStateError, PortfolioStore, unified_items
+from seed_starter_workspace import seed
 
 
 def _track(root: Path, slug="alpha"):
@@ -58,3 +59,31 @@ def test_taxonomy_override_blocks_orphaned_mapping(tmp_path):
     store.save_track("alpha", {"schema_version": 1, "id": "alpha", "display_name": "Alpha", "status": "active", "interest_ids": ["ai"], "default_audience": "builders", "interest_topic_mappings": {"ai": ["agents"]}})
     with pytest.raises(PortfolioStateError, match="orphan"):
         store.save_taxonomy("alpha", {"schema_version": 1, "track": "alpha", "topics": [], "audiences": []})
+
+
+def test_shipped_starter_workflows_have_valid_metadata(repo_root):
+    store = PortfolioStore(repo_root)
+    expected = {
+        "ai_topics": ("AI Topics", "builders"),
+        "market_watch": ("Market Watch", "investors"),
+        "job_watch": ("Job Watch", "senior_ic"),
+    }
+    assert expected.keys() <= store.track_ids()
+    for slug, (name, audience) in expected.items():
+        metadata = store.track(slug)
+        assert metadata["display_name"] == name
+        assert metadata["default_audience"] == audience
+        assert metadata.get("implicit") is not True
+
+
+def test_seed_starter_workspace_populates_each_workflow(repo_root, tmp_path):
+    seed(repo_root, tmp_path, "2026-08-18")
+    items = unified_items(tmp_path)
+    assert {item["track"] for item in items} == {"ai_topics", "market_watch", "job_watch"}
+    assert len(items) == 6
+    assert all(item["sample"] is True for item in items)
+
+
+def test_seed_starter_workspace_refuses_repository_root(repo_root):
+    with pytest.raises(ValueError, match="must not be"):
+        seed(repo_root, repo_root, "2026-08-18")

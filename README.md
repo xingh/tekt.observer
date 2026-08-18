@@ -25,17 +25,16 @@ Swap `claude` for `codex` or `gemini` to use those coding agents instead. The `s
 
 📖 **[`docs/machine_setup.md`](./docs/machine_setup.md)** — bootstrap flow, per-agent notes, secrets handling.
 
-**C — no agent, no keys, 60-second demo of a shipped track**
+**C — no agent or API keys: populate the starter workspace**
 
 ```bash
 git clone git@github.com:xingh/tekt.observer.git && cd tekt.observer
 bash scripts/bootstrap_venv.sh --no-chromium              # ~30s, one-time
-bash scripts/run_pipeline.sh --track ai_topics --live     # fetch → classify → rank → digest
-./.venv/bin/python scripts/serve_html.py --root tests/tmp/ai_topics
+bash scripts/run_starter_workflows.sh --serve             # seed 3 workflows, then serve
 # open http://127.0.0.1:8765/
 ```
 
-That's a real run against 7 live feeds — OpenGraph enrichment, topic classification, trend detection, one rerank per audience, per-audience digests — rendered as a report whose save/hide/click buttons make the *next* run smarter.
+The shared portfolio dashboard opens immediately with clearly labeled sample signals for three tracked starter workflows: **AI Topics**, **Market Watch**, and **Job Watch**. When you are ready for current data, rerun with `--live`; that uses the keyless source registries and replaces the sample workspace with a real fetch, classification, ranking, and digest run.
 
 ## What every run looks like
 
@@ -57,6 +56,7 @@ Under the hood it's a six-stage deterministic Python pipeline — **discover →
 | 🔧 [`docs/tracks_pipeline.md`](./docs/tracks_pipeline.md) | The six-stage pipeline script by script, artifacts, backfill mode |
 | 🎬 [`docs/presentation-kit.md`](./docs/presentation-kit.md) | Slide outline + demo script for presenting tekt.observer |
 | 🏗️ [`docs/architecture.md`](./docs/architecture.md) | Component map + scheduled-run sequence + source-integration loop |
+| 🖥️ [`docs/local-portfolio.md`](./docs/local-portfolio.md) | Local dashboard, starter workflows, state files, APIs, and safety model |
 | 🗂️ [`shared/discovery_modes.md`](./shared/discovery_modes.md) | Generated catalog of all 60 discovery-mode adapters |
 | 🛣️ [`docs/roadmap.md`](./docs/roadmap.md) | What's queued next |
 | 🤝 [`CONTRIBUTING.md`](./CONTRIBUTING.md) | Fork-and-PR workflow |
@@ -79,18 +79,24 @@ Full capability tour → [`docs/capabilities.md`](./docs/capabilities.md).
 </details>
 
 <details>
-<summary><strong>Try each of the three shipped tracks</strong></summary>
+<summary><strong>Try the three shipped starter workflows</strong></summary>
 
 ```bash
 bash scripts/bootstrap_venv.sh --no-chromium
 
-# Live runs (real feeds)
+# Recommended: populate one cross-track dashboard with sample signals
+bash scripts/run_starter_workflows.sh --serve
+
+# Replace the samples with current data from the keyless live feeds
+bash scripts/run_starter_workflows.sh --live --serve
+
+# Or run one workflow into its own scratch workspace
 bash scripts/run_pipeline.sh --track ai_topics    --live
 bash scripts/run_pipeline.sh --track market_watch --live
 bash scripts/run_pipeline.sh --track job_watch    --live
 
-# Fixture mode (no network) — ai_topics uses a shipped HTML fixture
-bash scripts/run_pipeline.sh --track ai_topics
+# Deterministic no-network fixture validation remains available separately
+bash scripts/test_track_workflow.sh
 ```
 
 Each run writes into `tests/tmp/<track>/`, mirroring `scripts/test_track_workflow.sh` so your tracked working tree stays clean.
@@ -139,7 +145,7 @@ Live-server routes:
 - `/track/<track>/sources` — sources + persona
 - `/raw/digests/<track>/<date>.json` — raw digest JSON
 
-Initialize explicit private portfolio files with `./.venv/bin/python scripts/portfolio_state.py init`. Without initialization, legacy tracks appear in an implicit **All Tracks** portfolio and no existing files are rewritten. Writes are loopback-only and require same-origin JSON plus the server CSRF token; static exports contain no controls.
+Initialize explicit private portfolio files with `./.venv/bin/python scripts/portfolio_state.py init`. Without initialization, the three starters and any private tracks appear in an implicit **All Tracks** portfolio and no existing files are rewritten. Writes are loopback-only and require same-origin JSON plus the server CSRF token; static exports contain no controls. See [`docs/local-portfolio.md`](./docs/local-portfolio.md) for the state model and API examples.
 
 **Audience switching** — audience list per track (from `.arkitype/00-*.md`):
 - ai_topics: `builders · operators · managers · architects · leaders`
