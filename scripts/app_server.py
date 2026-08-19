@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+"""Loopback application server backed by the immutable JSON journal."""
+
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+from http import HTTPStatus
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+import json
+from pathlib import Path
+import re
+from typing import Any
+from urllib.parse import unquote, urlparse
+
+from immutable_json_store import ImmutableJsonStore, StoreError
+
+ROOT = Path(__file__).resolve().parents[1]
+ITEM_PATH = re.compile(r"^/api/v1/items/([^/]+)$")
+MAX_BODY = 64 * 1024
+
+
+def _read_json(path: Path) -> Any:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def seed_store(store: ImmutableJsonStore, specs_root: Path = ROOT / ".arkitype" / "watchers") -> None:
+    state = store.read()
+    if state["workspaces"]:
+        return
+    now = dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z")
+    store.append("workspaces", "local", "put", {"id": "local", "name": "My observation workspace", "revision": 1})
+    for watcher_dir in sorted(specs_root.iterdir()):
+        if not watcher_dir.is_dir() or not (watcher_dir / "watcher.json").exists():
+            continue
+        definition = _read_json(watcher_dir / "watcher.json")
+        sources = _read_json(watcher_dir / "sources.json")
+        source_rows = sources.get("sources", sources) if isinstance(sources, dict) else sources
+        watcher = {
+            "id": definition["id"], "slug": definition["slug"],
+            "name": definition.get("display_name", definition["slug"]).split(" · ")[-1],
+            "description": definition.get("description", ""), "enabled": definition.get("status") == "active",
+            "status": "healthy", "sourceCount": len(source_rows),
+        }
+        store.append("watchers", watcher["id"], "put", watcher)
+        for index, sample in enumerate(_read_json(watcher_dir / "samples.json")):
+            item_id = f"{definition['slug']}:{sample['item_key']}"
+            item = {
+                "id": item_id, "watcher": definition["slug"], "title": sample["title"],
+                "description": sample.get("description", ""), "url": sample.get("url", ""),
+                "topic": sample.get("topic", "general"), "score": max(72, 94 - index * 5),
+                "status": "new", "observedAt": now,
+                "provenance": ["Starter watcher specification", "Normalized by tekt.observer", "Sample content — replace with a live run"],
+            }
+            store.append("items", item_id, "put", item)
+    store.append("operations", "starter-run", "put", {"id": "starter-run", "label": "Starter watchers initialized", "status": "complete", "progress": 100, "updatedAt": now})
+    store.compact_if_due(force=True)
+
+
+def workspace_payload(store: ImmutableJsonStore) -> dict[str, Any]:
+    state = store.read()
+    workspace = state["workspaces"].get("local") or next(iter(state["workspaces"].values()), {"id": "local", "name": "Workspace", "revision": 0})
+    return {
+        "workspace": workspace,
+        "watchers": sorted(state["watchers"].values(), key=lambda row: row["slug"]),
+        "items": sorted(state["items"].values(), key=lambda row: row.get("observedAt", ""), reverse=True),
+        "operations": sorted(state["operations"].values(), key=lambda row: row.get("updatedAt", ""), reverse=True),
+    }
+
+
+def patch_item(store: ImmutableJsonStore, item_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    if set(payload) != {"status"} or payload["status"] not in {"new", "saved", "dismissed"}:
+        raise StoreError("status must be one of new, saved, or dismissed")
+    state = store.read()
+    existing = state["items"].get(item_id)
+    if existing is None:
+        raise KeyError(item_id)
+    updated = {**existing, "status": payload["status"]}
+    store.append("items", item_id, "put", updated)
+    workspace = state["workspaces"].get("local")
+    if workspace:
+        store.append("workspaces", "local", "put", {**workspace, "revision": int(workspace.get("revision", 0)) + 1})
+    return updated
+
+
+class AppHandler(SimpleHTTPRequestHandler):
+    server_version = "tekt.observer"
+
+    def __init__(self, *args: Any, directory: str, store: ImmutableJsonStore, **kwargs: Any) -> None:
+        self.store = store
+        super().__init__(*args, directory=directory, **kwargs)
+
+    def _json(self, status: HTTPStatus, value: Any) -> None:
+        body = (json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self) -> None:
+        if urlparse(self.path).path == "/api/v1/workspace":
+            try:
+                self._json(HTTPStatus.OK, workspace_payload(self.store))
+            except StoreError as exc:
+                self._json(HTTPStatus.INTERNAL_SERVER_ERROR, {"error": str(exc)})
+            return
+        path = urlparse(self.path).path
+        if path != "/" and not (Path(self.directory) / path.lstrip("/")).exists():
+            self.path = "/index.html"
+        super().do_GET()
+
+    def do_PATCH(self) -> None:
+        match = ITEM_PATH.match(urlparse(self.path).path)
+        if not match:
+            self._json(HTTPStatus.NOT_FOUND, {"error": "not found"})
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if length <= 0 or length > MAX_BODY:
+                raise StoreError("invalid request size")
+            payload = json.loads(self.rfile.read(length))
+            if not isinstance(payload, dict):
+                raise StoreError("request body must be an object")
+            updated = patch_item(self.store, unquote(match.group(1)), payload)
+            self._json(HTTPStatus.OK, updated)
+        except KeyError:
+            self._json(HTTPStatus.NOT_FOUND, {"error": "item not found"})
+        except (StoreError, json.JSONDecodeError) as exc:
+            self._json(HTTPStatus.BAD_REQUEST, {"error": str(exc)})
+
+    def log_message(self, format_: str, *args: Any) -> None:
+        print(f"{self.address_string()} - {format_ % args}")
+
+
+def serve(host: str, port: int, store_path: Path, static_path: Path) -> None:
+    if host not in {"127.0.0.1", "localhost", "::1"}:
+        raise ValueError("the local app server only binds to loopback")
+    if not (static_path / "index.html").exists():
+        raise FileNotFoundError(f"frontend build missing at {static_path}; run: cd frontend && npm run build")
+    store = ImmutableJsonStore(store_path)
+    seed_store(store)
+    handler = lambda *args, **kwargs: AppHandler(*args, directory=str(static_path), store=store, **kwargs)
+    server = ThreadingHTTPServer((host, port), handler)
+    print(f"tekt.observer is ready at http://{host}:{port}")
+    try:
+        server.serve_forever()
+    finally:
+        server.server_close()
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=8091)
+    parser.add_argument("--store", type=Path, default=ROOT / "state")
+    parser.add_argument("--static", type=Path, default=ROOT / "frontend" / "dist")
+    args = parser.parse_args()
+    serve(args.host, args.port, args.store, args.static)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

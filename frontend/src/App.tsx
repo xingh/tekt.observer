@@ -1,0 +1,89 @@
+import { useEffect, useMemo, useState, type ButtonHTMLAttributes } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Archive, Bell, BookOpen, Check, ChevronRight, CircleDot, Command, Download, Inbox, Menu, Moon, MoreHorizontal, Play, Plus, Search, Settings, Sun, Users, X } from "lucide-react";
+import { getWorkspace, updateItem } from "./api";
+import { demoState } from "./demo-data";
+import { cn, relativeTime } from "./lib";
+import type { Signal, WorkspaceState } from "./types";
+
+type View = "inbox" | "watchers" | "digests" | "operations" | "members" | "exports" | "settings";
+const nav: Array<[View, string, typeof Inbox]> = [["inbox", "Inbox", Inbox], ["watchers", "Watchers", CircleDot], ["digests", "Digests", BookOpen], ["operations", "Operations", Play], ["members", "Members", Users], ["exports", "Import & export", Download]];
+
+function Button({ children, className, variant = "default", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "default" | "quiet" | "accent" }) {
+  return <button className={cn("inline-flex h-9 items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors disabled:opacity-45", variant === "accent" ? "bg-accent text-white hover:brightness-95" : variant === "quiet" ? "text-muted hover:bg-ink/5 hover:text-ink" : "border bg-surface hover:bg-ink/[.035]", className)} {...props}>{children}</button>;
+}
+
+export function App() {
+  const [view, setView] = useState<View>("inbox");
+  const [selected, setSelected] = useState<string | null>(null);
+  const [watcher, setWatcher] = useState("all");
+  const [query, setQuery] = useState("");
+  const [mobileNav, setMobileNav] = useState(false);
+  const [dark, setDark] = useState(() => localStorage.getItem("tekt-theme") === "dark");
+  const result = useQuery({ queryKey: ["workspace"], queryFn: getWorkspace });
+  const data = result.data ?? demoState;
+  const usingDemo = result.isError;
+
+  useEffect(() => { document.documentElement.classList.toggle("dark", dark); localStorage.setItem("tekt-theme", dark ? "dark" : "light"); }, [dark]);
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === "/" && !(event.target instanceof HTMLInputElement)) { event.preventDefault(); document.getElementById("signal-search")?.focus(); }
+      if (event.key === "Escape") { setSelected(null); setMobileNav(false); }
+    };
+    window.addEventListener("keydown", handler); return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const filtered = useMemo(() => data.items.filter((item) => (watcher === "all" || item.watcher === watcher) && item.status !== "dismissed" && `${item.title} ${item.description} ${item.topic}`.toLowerCase().includes(query.toLowerCase())), [data.items, watcher, query]);
+  const selectedItem = data.items.find((item) => item.id === selected) ?? null;
+
+  return <div className="min-h-screen lg:grid lg:grid-cols-[244px_minmax(0,1fr)]">
+    <Sidebar data={data} view={view} setView={(next) => { setView(next); setMobileNav(false); }} open={mobileNav} close={() => setMobileNav(false)} />
+    <main className="min-w-0">
+      <header className="sticky top-0 z-20 flex h-16 items-center border-b bg-canvas/90 px-4 backdrop-blur-md sm:px-7">
+        <Button variant="quiet" className="mr-2 px-2 lg:hidden" aria-label="Open navigation" onClick={() => setMobileNav(true)}><Menu size={19}/></Button>
+        <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{data.workspace.name}</p><p className="text-xs text-muted">{usingDemo ? "Starter workspace · local API is starting" : `Revision ${data.workspace.revision} · all changes saved`}</p></div>
+        <Button variant="quiet" className="px-2" aria-label="Toggle theme" onClick={() => setDark(!dark)}>{dark ? <Sun size={17}/> : <Moon size={17}/>}</Button>
+        <Button variant="quiet" className="px-2" aria-label="Notifications"><Bell size={17}/></Button>
+      </header>
+      {view === "inbox" && <InboxView data={data} filtered={filtered} watcher={watcher} setWatcher={setWatcher} query={query} setQuery={setQuery} select={setSelected} />}
+      {view === "watchers" && <WatchersView data={data} />}
+      {view === "digests" && <Placeholder title="Digests" description="Readable summaries from each observation run." icon={BookOpen} action="Generate digest" />}
+      {view === "operations" && <OperationsView data={data} />}
+      {view === "members" && <Placeholder title="Members" description="Invite collaborators and control workspace access." icon={Users} action="Invite member" />}
+      {view === "exports" && <Placeholder title="Import & export" description="Create immutable JSON handoff bundles or import a workspace fork." icon={Download} action="Create export" />}
+      {view === "settings" && <Placeholder title="Workspace settings" description="Appearance, storage, compaction, and connection preferences." icon={Settings} />}
+    </main>
+    {selectedItem && <Detail item={selectedItem} close={() => setSelected(null)} live={!usingDemo} />}
+  </div>;
+}
+
+function Sidebar({ data, view, setView, open, close }: { data: WorkspaceState; view: View; setView: (v: View) => void; open: boolean; close: () => void }) {
+  return <><div className={cn("fixed inset-0 z-30 bg-black/25 backdrop-blur-sm lg:hidden", open ? "block" : "hidden")} onClick={close}/><aside className={cn("fixed inset-y-0 left-0 z-40 flex w-[276px] flex-col border-r bg-surface p-3 transition-transform lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:w-auto lg:translate-x-0", open ? "translate-x-0" : "-translate-x-full")}>
+    <div className="flex h-12 items-center gap-2 px-2"><div className="grid h-7 w-7 place-items-center rounded-lg bg-ink text-xs font-semibold text-canvas">t.</div><span className="font-serif text-lg font-semibold tracking-tight">tekt.observer</span><Button variant="quiet" className="ml-auto px-2 lg:hidden" onClick={close}><X size={18}/></Button></div>
+    <nav className="mt-4 space-y-1" aria-label="Workspace">
+      {nav.map(([id, label, Icon]) => <button key={id} onClick={() => setView(id)} className={cn("flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors", view === id ? "bg-ink/[.07] font-medium text-ink" : "text-muted hover:bg-ink/[.04] hover:text-ink")}><Icon size={17}/><span>{label}</span>{id === "inbox" && <span className="ml-auto rounded-full bg-ink/[.07] px-2 py-0.5 text-[11px]">{data.items.filter(i => i.status === "new").length}</span>}</button>)}
+    </nav>
+    <div className="mt-6 px-3 text-[11px] font-semibold uppercase tracking-[.14em] text-muted">Watchers</div>
+    <div className="mt-2 space-y-1">{data.watchers.map((item) => <button key={item.id} onClick={() => setView("watchers")} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-muted hover:bg-ink/[.04] hover:text-ink"><span className={cn("h-2 w-2 rounded-full", item.status === "attention" ? "bg-amber-500" : "bg-emerald-500")}/><span className="truncate">{item.name}</span></button>)}</div>
+    <div className="mt-auto border-t pt-3"><button onClick={() => setView("settings")} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted hover:bg-ink/[.04] hover:text-ink"><Settings size={17}/>Settings</button><div className="mt-1 flex items-center gap-3 px-3 py-2"><div className="grid h-8 w-8 place-items-center rounded-full bg-accent/15 text-xs font-semibold text-accent">YO</div><div className="min-w-0"><p className="truncate text-xs font-medium">Local owner</p><p className="text-[11px] text-muted">Owner</p></div><MoreHorizontal className="ml-auto text-muted" size={16}/></div></div>
+  </aside></>;
+}
+
+function InboxView({ data, filtered, watcher, setWatcher, query, setQuery, select }: { data: WorkspaceState; filtered: Signal[]; watcher: string; setWatcher: (v: string) => void; query: string; setQuery: (v: string) => void; select: (v: string) => void }) {
+  return <section className="mx-auto max-w-6xl px-4 py-8 sm:px-7 sm:py-12"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-accent">Unified signals</p><h1 className="mt-2 font-serif text-4xl font-semibold tracking-tight sm:text-5xl">Your inbox</h1><p className="mt-3 max-w-xl text-sm leading-6 text-muted">A focused view of what changed across everything you observe.</p></div><Button variant="accent"><Play size={15}/>Run watchers</Button></div>
+    <div className="mt-9 flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center"><div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16}/><input id="signal-search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search signals" className="h-10 w-full rounded-lg border bg-surface pl-9 pr-14 text-sm outline-none placeholder:text-muted/70"/><span className="absolute right-3 top-1/2 -translate-y-1/2 rounded border px-1.5 py-0.5 text-[10px] text-muted">/</span></div><div className="flex gap-1 overflow-x-auto">{[["all", "All"], ...data.watchers.map(w => [w.slug, w.name.split(" ")[0]])].map(([id, label]) => <button key={id} onClick={() => setWatcher(id)} className={cn("whitespace-nowrap rounded-lg px-3 py-2 text-xs font-medium", watcher === id ? "bg-ink text-canvas" : "text-muted hover:bg-ink/5")}>{label}</button>)}</div></div>
+    <div className="divide-y">{filtered.map(item => <article key={item.id}><button onClick={() => select(item.id)} className="group grid w-full gap-3 py-5 text-left sm:grid-cols-[minmax(0,1fr)_64px] sm:py-6"><div><div className="flex flex-wrap items-center gap-2 text-[11px] font-medium text-muted"><span className="rounded-full bg-ink/[.05] px-2 py-1">{data.watchers.find(w => w.slug === item.watcher)?.name}</span><span>{relativeTime(item.observedAt)}</span><span>·</span><span>{item.topic}</span></div><h2 className="mt-3 text-base font-semibold leading-6 tracking-[-.01em] group-hover:text-accent sm:text-lg">{item.title}</h2><p className="mt-1.5 line-clamp-2 max-w-3xl text-sm leading-6 text-muted">{item.description}</p></div><div className="flex items-center justify-between sm:block sm:text-right"><span className="text-xs text-muted sm:hidden">Match</span><span className="font-serif text-xl font-semibold">{item.score}</span><ChevronRight className="ml-auto mt-3 hidden text-muted/50 transition-transform group-hover:translate-x-1 sm:block" size={17}/></div></button></article>)}{filtered.length === 0 && <div className="py-20 text-center"><Archive className="mx-auto text-muted/50"/><p className="mt-4 font-medium">Nothing here</p><p className="mt-1 text-sm text-muted">Try another watcher or search.</p></div>}</div>
+  </section>;
+}
+
+function Detail({ item, close, live }: { item: Signal; close: () => void; live: boolean }) {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({ mutationFn: (status: "new" | "saved" | "dismissed") => live ? updateItem(item.id, status) : Promise.resolve(), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["workspace"] }); close(); } });
+  return <><div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]" onClick={close}/><aside role="dialog" aria-modal="true" aria-label={item.title} className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto border-l bg-surface shadow-2xl sm:max-w-xl"><div className="sticky top-0 flex h-16 items-center border-b bg-surface/90 px-5 backdrop-blur"><Button variant="quiet" className="px-2" onClick={close} aria-label="Close"><X size={18}/></Button><span className="ml-2 text-xs text-muted">Signal detail</span><Button variant="quiet" className="ml-auto px-2"><MoreHorizontal size={18}/></Button></div><div className="px-6 py-8 sm:px-10 sm:py-10"><div className="flex items-center gap-2 text-xs text-muted"><span className="rounded-full bg-accent/10 px-2.5 py-1 font-medium text-accent">{item.topic}</span><span>{relativeTime(item.observedAt)}</span></div><h1 className="mt-5 font-serif text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">{item.title}</h1><p className="mt-5 text-base leading-7 text-muted">{item.description}</p><div className="mt-8 grid grid-cols-2 gap-3 rounded-xl border bg-canvas p-4"><div><p className="text-[11px] uppercase tracking-wider text-muted">Match score</p><p className="mt-1 font-serif text-2xl font-semibold">{item.score}<span className="text-sm text-muted">/100</span></p></div><div><p className="text-[11px] uppercase tracking-wider text-muted">Status</p><p className="mt-2 text-sm font-medium capitalize">{item.status}</p></div></div><div className="mt-9"><h2 className="text-sm font-semibold">Why you are seeing this</h2><div className="mt-3 space-y-3">{item.provenance.map((line, index) => <div key={line} className="flex gap-3 text-sm leading-6 text-muted"><div className="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-ink/[.06] text-[10px] font-semibold text-ink">{index + 1}</div>{line}</div>)}</div></div><div className="mt-10 flex gap-2 border-t pt-6"><Button variant="accent" onClick={() => mutation.mutate("saved")} disabled={mutation.isPending}><Check size={16}/>Save</Button><Button onClick={() => mutation.mutate("dismissed")} disabled={mutation.isPending}><X size={16}/>Dismiss</Button><a href={item.url} target="_blank" rel="noreferrer" className="ml-auto inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium text-muted hover:bg-ink/5 hover:text-ink">Open source</a></div></div></aside></>;
+}
+
+function WatchersView({ data }: { data: WorkspaceState }) { return <section className="mx-auto max-w-5xl px-4 py-10 sm:px-7 sm:py-12"><div className="flex items-end justify-between"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-accent">Configuration</p><h1 className="mt-2 font-serif text-4xl font-semibold">Watchers</h1><p className="mt-3 text-sm text-muted">Questions that keep observing, even when you are away.</p></div><Button variant="accent"><Plus size={16}/>New watcher</Button></div><div className="mt-9 grid gap-4 md:grid-cols-2">{data.watchers.map(w => <article key={w.id} className="rounded-xl border bg-surface p-5 shadow-soft"><div className="flex items-center"><span className={cn("h-2.5 w-2.5 rounded-full", w.status === "attention" ? "bg-amber-500" : "bg-emerald-500")}/><span className="ml-2 text-xs capitalize text-muted">{w.status}</span><Button variant="quiet" className="ml-auto px-2"><MoreHorizontal size={17}/></Button></div><h2 className="mt-5 font-serif text-2xl font-semibold">{w.name}</h2><p className="mt-2 min-h-12 text-sm leading-6 text-muted">{w.description}</p><div className="mt-5 flex items-center border-t pt-4 text-xs text-muted"><span>{w.sourceCount} sources</span><span className="mx-2">·</span><span>{data.items.filter(i => i.watcher === w.slug).length} signals</span><ChevronRight className="ml-auto" size={16}/></div></article>)}</div></section>; }
+
+function OperationsView({ data }: { data: WorkspaceState }) { return <section className="mx-auto max-w-4xl px-4 py-10 sm:px-7 sm:py-12"><p className="text-xs font-semibold uppercase tracking-[.16em] text-accent">Activity</p><h1 className="mt-2 font-serif text-4xl font-semibold">Operations</h1><p className="mt-3 text-sm text-muted">Runs, imports, exports, and maintenance in one place.</p><div className="mt-9 rounded-xl border bg-surface">{data.operations.map(op => <div key={op.id} className="flex items-center gap-4 border-b p-5 last:border-0"><div className="grid h-9 w-9 place-items-center rounded-full bg-emerald-500/10 text-emerald-600"><Check size={17}/></div><div className="flex-1"><p className="text-sm font-medium">{op.label}</p><p className="mt-1 text-xs capitalize text-muted">{op.status} · {relativeTime(op.updatedAt)}</p></div><span className="text-sm font-medium">{op.progress}%</span></div>)}</div></section>; }
+
+function Placeholder({ title, description, icon: Icon, action }: { title: string; description: string; icon: typeof Inbox; action?: string }) { return <section className="mx-auto max-w-4xl px-4 py-10 sm:px-7 sm:py-12"><p className="text-xs font-semibold uppercase tracking-[.16em] text-accent">Workspace</p><div className="mt-2 flex items-end justify-between gap-4"><div><h1 className="font-serif text-4xl font-semibold">{title}</h1><p className="mt-3 text-sm text-muted">{description}</p></div>{action && <Button variant="accent"><Plus size={16}/>{action}</Button>}</div><div className="mt-12 rounded-2xl border border-dashed bg-surface/50 px-6 py-20 text-center"><div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-ink/[.05] text-muted"><Icon size={22}/></div><p className="mt-5 font-medium">Ready when you are</p><p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted">This workspace is prepared for {title.toLowerCase()}. Connect the local service to make changes durable.</p></div></section>; }

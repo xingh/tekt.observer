@@ -160,6 +160,9 @@ def parser() -> argparse.ArgumentParser:
     publisher.add_argument("--bundle", type=Path, required=True)
     publisher.add_argument("--remote", required=True)
     sub.add_parser("seed-local")
+    app = sub.add_parser("app")
+    app.add_argument("--host", default="127.0.0.1")
+    app.add_argument("--port", type=int, default=8091)
     store = sub.add_parser("store")
     store_sub = store.add_subparsers(dest="store_command", required=True)
     put = store_sub.add_parser("put")
@@ -205,6 +208,9 @@ def main(argv: list[str] | None = None) -> int:
                 print(str(path) if path else "not due")
             elif args.store_command == "show":
                 print(json.dumps(store.read(), ensure_ascii=False, sort_keys=True, indent=2))
+            return 0
+        if args.command == "app":
+            subprocess.run([sys.executable, str(ROOT / "scripts" / "app_server.py"), "--host", args.host, "--port", str(args.port)], cwd=ROOT, check=True)
             return 0
         client = client_from_env()
         if args.command == "worker":
