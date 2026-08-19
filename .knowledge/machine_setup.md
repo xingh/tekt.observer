@@ -1,5 +1,16 @@
 # Machine Setup
 
+## Local application
+
+The shortest path to the user interface is:
+
+```bash
+bash scripts/bootstrap_venv.sh --no-chromium
+./tekt.observer up
+```
+
+Open `http://127.0.0.1:8091`. The first run uses npm to install and build the React frontend if necessary, then seeds the immutable JSON store under `state/`. Later launches reuse both. Override storage with `TEKT_OBSERVER_STORE`; tune snapshot compaction with `TEKT_OBSERVER_COMPACT_EVERY` and `TEKT_OBSERVER_COMPACT_SECONDS`. The app server refuses non-loopback bindings.
+
 For first-time setup, choose the automation agent explicitly after cloning the repo:
 
 ```bash

@@ -28,6 +28,13 @@ bash scripts/sync_claude_skills.sh --check
 "$PYTHON_BIN" scripts/render_discovery_modes_md.py --check
 "$PYTHON_BIN" scripts/generate_watchers.py --check
 
+if [[ -d "$ROOT/frontend/node_modules" ]]; then
+  npm --prefix frontend run build
+  npm --prefix frontend test
+else
+  echo "Skipping frontend checks because frontend/node_modules is absent; run npm install in frontend/." >&2
+fi
+
 PYTEST_ARGS=("$@")
 if [[ ${#PYTEST_ARGS[@]} -eq 0 ]]; then
   PYTEST_ARGS=(-q)

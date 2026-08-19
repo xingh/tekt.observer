@@ -12,7 +12,18 @@ No aggregator deciding what matters. No keyword alerts you learn to ignore.
 
 ## Get started
 
-**A — one command, agent-driven onboarding** (recommended)
+**Run the local app**
+
+```bash
+git clone git@github.com:xingh/tekt.observer.git && cd tekt.observer
+bash scripts/bootstrap_venv.sh --no-chromium
+./tekt.observer up
+# open http://127.0.0.1:8091
+```
+
+The first launch installs/builds the React frontend when needed, initializes an immutable local JSON journal, and opens a useful workspace with nine realistic signals across `topic_watch`, `job_watch`, and `market_watch`. Save and dismiss actions are journaled and fsynced before the API acknowledges them; automatic snapshots keep replay fast without overwriting history. Node.js 20+ and npm are required for the first frontend build.
+
+**A — agent-driven custom watcher setup**
 
 ```bash
 git clone git@github.com:xingh/tekt.observer.git && cd tekt.observer && \

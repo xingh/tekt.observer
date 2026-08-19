@@ -147,6 +147,8 @@ def serve(host: str, port: int, store_path: Path, static_path: Path) -> None:
     print(f"tekt.observer is ready at http://{host}:{port}")
     try:
         server.serve_forever()
+    except KeyboardInterrupt:
+        print("\ntekt.observer stopped")
     finally:
         server.server_close()
 

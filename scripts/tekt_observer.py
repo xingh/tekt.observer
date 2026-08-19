@@ -37,6 +37,22 @@ def file_store_from_env() -> ImmutableJsonStore:
     )
 
 
+def ensure_frontend() -> None:
+    if (ROOT / "frontend" / "dist" / "index.html").exists():
+        return
+    if not shutil.which("npm"):
+        raise OSError("npm is required for the first frontend build")
+    frontend = ROOT / "frontend"
+    if not (frontend / "node_modules").exists():
+        subprocess.run(["npm", "install"], cwd=frontend, check=True)
+    subprocess.run(["npm", "run", "build"], cwd=frontend, check=True)
+
+
+def run_local_app(host: str, port: int) -> None:
+    ensure_frontend()
+    subprocess.run([sys.executable, str(ROOT / "scripts" / "app_server.py"), "--host", host, "--port", str(port)], cwd=ROOT, check=True)
+
+
 def _record_payload(record: dict[str, Any]) -> dict[str, Any]:
     transient = {"collectionId", "collectionName", "expand", "created", "updated"}
     return {key: value for key, value in record.items() if key not in transient}
@@ -145,7 +161,10 @@ def worker_loop(client: PocketBaseClient, poll_seconds: float, once: bool) -> No
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(prog="tekt.observer")
     sub = result.add_subparsers(dest="command", required=True)
-    sub.add_parser("up").add_argument("--hosted", action="store_true")
+    up = sub.add_parser("up")
+    up.add_argument("--hosted", action="store_true")
+    up.add_argument("--host", default="127.0.0.1")
+    up.add_argument("--port", type=int, default=8091)
     worker = sub.add_parser("worker")
     worker.add_argument("--poll-seconds", type=float, default=5)
     worker.add_argument("--once", action="store_true")
@@ -190,10 +209,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
         if args.command == "up":
-            command = ["docker", "compose", "-f", str(ROOT / "deploy" / "docker-compose.yml"), "up", "-d"]
             if args.hosted:
                 print("Hosted mode requires a reverse proxy, TLS, and non-loopback port configuration.", file=sys.stderr)
-            subprocess.run(command, cwd=ROOT, check=True)
+                subprocess.run(["docker", "compose", "-f", str(ROOT / "deploy" / "docker-compose.yml"), "up", "-d"], cwd=ROOT, check=True)
+            else:
+                run_local_app(args.host, args.port)
             return 0
         if args.command == "store":
             store = file_store_from_env()
@@ -210,7 +230,7 @@ def main(argv: list[str] | None = None) -> int:
                 print(json.dumps(store.read(), ensure_ascii=False, sort_keys=True, indent=2))
             return 0
         if args.command == "app":
-            subprocess.run([sys.executable, str(ROOT / "scripts" / "app_server.py"), "--host", args.host, "--port", str(args.port)], cwd=ROOT, check=True)
+            run_local_app(args.host, args.port)
             return 0
         client = client_from_env()
         if args.command == "worker":

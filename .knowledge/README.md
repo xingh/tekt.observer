@@ -12,6 +12,7 @@ processes, routines, roadmap state, and operational knowledge.
 - [`pocketbase.md`](pocketbase.md) — operational database, deployment, upgrades, backups, and collaboration
 - [`json-handoff.md`](json-handoff.md) — deterministic exchange bundle and immutable publication contract
 - [`immutable-json-store.md`](immutable-json-store.md) — append-only event journal, compaction, durability, and recovery
+- [`application.md`](application.md) — local React app, first-run behavior, keyboard use, and durable curation
 - [`contributing/adding-sources.md`](contributing/adding-sources.md) — source integration guide
 - [`screenshots.md`](screenshots.md) and [`presentation-kit.md`](presentation-kit.md) — presentation material
 - [`roadmap.md`](roadmap.md) — human-readable roadmap; detailed plans live in [`.manage/plans/`](../.manage/plans/)

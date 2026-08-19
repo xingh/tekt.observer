@@ -24,7 +24,8 @@ Incrementally rebuild tekt.observer around an immutable JSON durable record, pin
 - [ ] Validate migration and API rules against the pinned executable, including owner/editor/viewer/worker and cross-workspace cases.
 - [ ] Import current portfolio state, starter watcher specs, sources, feedback, operations, and artifacts with stable IDs and idempotent retries.
 - [ ] Add operation claim leases, cancellation, crash recovery, revision mutation discipline, and realtime progress.
-- [ ] Build the React/Vite/shadcn frontend and browser-level workflows.
+- [x] Build the responsive React/Vite/Tailwind application shell, starter inbox, watcher health, signal detail/provenance, operations view, keyboard search, themes, and durable Save/Dismiss workflow.
+- [ ] Complete member management, import/export controls, digest generation, watcher editing, and browser-level workflow coverage.
 - [ ] Cut workers over to PocketBase, then retire the legacy viewer and redundant shell entrypoints after parity.
 - [ ] Complete hosted deployment, backup/restore, immutable rclone round-trip, and local/hosted acceptance.
 
@@ -32,7 +33,7 @@ Incrementally rebuild tekt.observer around an immutable JSON durable record, pin
 
 - Focused bundle/client/store tests: 8 passed.
 - Python compile check and `git diff --check`: passed.
-- Full `scripts/test.sh`: 711 passed, 28 skipped.
+- Full `scripts/test.sh`: 714 passed, 28 skipped, including frontend build and component tests.
 
 ## Next Step
 
