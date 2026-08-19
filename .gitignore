@@ -37,6 +37,8 @@ scripts/local/
 
 # Generated logs
 logs/
+state/
+exports/
 
 # Local user track data
 tracks/*

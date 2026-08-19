@@ -1,10 +1,22 @@
 # Data and Content
 
-PocketBase is the operational database and REST/realtime/authORIZATION boundary. Every domain record carries a `workspace` relation. Existing JSON discovery and digest artifacts remain durable pipeline outputs and are imported without changing canonical watcher IDs.
+Immutable JSON is the durable record; PocketBase is the queryable operational projection and REST/realtime/authorization boundary. Every domain record carries a `workspace` relation. Existing JSON discovery and digest artifacts remain durable pipeline outputs and are imported without changing canonical watcher IDs.
 
 ```yaml
 DATABASE:
+  durable_store:
+    format: one canonical JSON object per immutable event
+    ordering: monotonically increasing sequence under an exclusive writer lock
+    integrity: SHA-256 filename plus previous-event hash chain
+    acknowledgement: file and containing directory fsynced
+    operations: [put, delete]
+    compaction:
+      output: immutable full-state JSON snapshot
+      trigger_default: 100 events or 300 seconds
+      pointer: CURRENT.json atomically replaced; never required for recovery
+      retention: event and prior snapshot files are not overwritten or deleted
   engine: PocketBase 0.39.11
+  role: materialized operational projection, API, realtime, authentication, authorization
   migrations: committed and reproducible
   collections:
     users: auth identities; local mode creates an implicit owner

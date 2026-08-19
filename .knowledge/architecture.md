@@ -2,19 +2,21 @@
 
 ## PocketBase rebuild boundary
 
-PocketBase is becoming the operational authority for workspace-scoped records, authentication, authorization, REST, realtime, and queued operations. Python workers retain deterministic discovery and artifact generation. A React client will talk directly to PocketBase. Deterministic JSON bundles are the permanent handoff contract and publish through immutable rclone copies. The committed migration, REST adapter, exchange serializer, and unified CLI are the first implemented slice; the legacy local portfolio below remains a compatibility surface until frontend and worker parity.
+An immutable JSON journal and compacted snapshots are the durable record. PocketBase is the operational projection for workspace-scoped queries, authentication, authorization, REST, realtime, and queued operations. Python workers retain deterministic discovery and artifact generation. A React client will talk to PocketBase. Deterministic JSON bundles are the handoff contract and publish through immutable rclone copies. The legacy local portfolio below remains a compatibility surface until frontend and worker parity.
 
 ```mermaid
 flowchart LR
-  UI[React / TypeScript client] -->|REST + realtime| PB[(PocketBase)]
-  Worker[Python worker] -->|claim + progress + records| PB
+  UI[React / TypeScript client] -->|REST + realtime| PB[(PocketBase projection)]
+  Worker[Python worker] --> Journal[(Immutable JSON events)]
+  Journal --> Snapshot[(Immutable compacted snapshots)]
+  Worker -->|project + progress| PB
   Worker --> Artifacts[(JSON discovery + digest artifacts)]
   PB --> Export[Deterministic exchange bundle]
   Artifacts --> Export
   Export -->|rclone copy --immutable| Remote[(Configured handoff remote)]
 ```
 
-See [`pocketbase.md`](./pocketbase.md) and [`json-handoff.md`](./json-handoff.md).
+See [`immutable-json-store.md`](./immutable-json-store.md), [`pocketbase.md`](./pocketbase.md), and [`json-handoff.md`](./json-handoff.md).
 
 ## Legacy local portfolio management (I9–I14)
 

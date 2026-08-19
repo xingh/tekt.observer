@@ -15,6 +15,7 @@ import time
 from typing import Any
 
 from exchange_bundle import BundleError, assert_publishable, build_bundle, read_bundle, write_bundle
+from immutable_json_store import ImmutableJsonStore, StoreError
 from pocketbase_client import PocketBaseClient, PocketBaseError
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,6 +26,15 @@ def client_from_env() -> PocketBaseClient:
     url = os.environ.get("TEKT_OBSERVER_POCKETBASE_URL", "http://127.0.0.1:8090")
     token = os.environ.get("TEKT_OBSERVER_TOKEN")
     return PocketBaseClient(url, token=token)
+
+
+def file_store_from_env() -> ImmutableJsonStore:
+    root = Path(os.environ.get("TEKT_OBSERVER_STORE", ROOT / "state"))
+    return ImmutableJsonStore(
+        root,
+        compact_every=int(os.environ.get("TEKT_OBSERVER_COMPACT_EVERY", "100")),
+        compact_interval_seconds=float(os.environ.get("TEKT_OBSERVER_COMPACT_SECONDS", "300")),
+    )
 
 
 def _record_payload(record: dict[str, Any]) -> dict[str, Any]:
@@ -111,6 +121,7 @@ def seed_local(client: PocketBaseClient) -> str:
 
 
 def worker_loop(client: PocketBaseClient, poll_seconds: float, once: bool) -> None:
+    file_store = file_store_from_env()
     while True:
         queued = client.list_records("operations", filter_='status="queued"', sort="created")
         if queued:
@@ -125,6 +136,7 @@ def worker_loop(client: PocketBaseClient, poll_seconds: float, once: bool) -> No
             except Exception as exc:
                 next_status = "queued" if int(operation.get("attempt", 0)) + 1 < int(operation.get("max_attempts", 1)) else "failed"
                 client.update_record("operations", operation["id"], {"status": next_status, "error": str(exc)})
+        file_store.compact_if_due()
         if once:
             return
         time.sleep(poll_seconds)
@@ -148,7 +160,27 @@ def parser() -> argparse.ArgumentParser:
     publisher.add_argument("--bundle", type=Path, required=True)
     publisher.add_argument("--remote", required=True)
     sub.add_parser("seed-local")
+    store = sub.add_parser("store")
+    store_sub = store.add_subparsers(dest="store_command", required=True)
+    put = store_sub.add_parser("put")
+    put.add_argument("collection")
+    put.add_argument("record_id")
+    put.add_argument("record", help="JSON object or @path/to/record.json")
+    delete = store_sub.add_parser("delete")
+    delete.add_argument("collection")
+    delete.add_argument("record_id")
+    compact = store_sub.add_parser("compact")
+    compact.add_argument("--force", action="store_true")
+    store_sub.add_parser("show")
     return result
+
+
+def _json_argument(value: str) -> dict[str, Any]:
+    raw = Path(value[1:]).read_text(encoding="utf-8") if value.startswith("@") else value
+    parsed = json.loads(raw)
+    if not isinstance(parsed, dict):
+        raise StoreError("record JSON must be an object")
+    return parsed
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -159,6 +191,20 @@ def main(argv: list[str] | None = None) -> int:
             if args.hosted:
                 print("Hosted mode requires a reverse proxy, TLS, and non-loopback port configuration.", file=sys.stderr)
             subprocess.run(command, cwd=ROOT, check=True)
+            return 0
+        if args.command == "store":
+            store = file_store_from_env()
+            if args.store_command == "put":
+                event = store.append(args.collection, args.record_id, "put", _json_argument(args.record))
+                print(json.dumps(event, sort_keys=True))
+            elif args.store_command == "delete":
+                event = store.append(args.collection, args.record_id, "delete")
+                print(json.dumps(event, sort_keys=True))
+            elif args.store_command == "compact":
+                path = store.compact_if_due(force=args.force)
+                print(str(path) if path else "not due")
+            elif args.store_command == "show":
+                print(json.dumps(store.read(), ensure_ascii=False, sort_keys=True, indent=2))
             return 0
         client = client_from_env()
         if args.command == "worker":
@@ -174,7 +220,7 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "seed-local":
             print(seed_local(client))
         return 0
-    except (BundleError, PocketBaseError, subprocess.CalledProcessError) as exc:
+    except (BundleError, StoreError, PocketBaseError, json.JSONDecodeError, OSError, subprocess.CalledProcessError) as exc:
         print(f"tekt.observer: {exc}", file=sys.stderr)
         return 1
 

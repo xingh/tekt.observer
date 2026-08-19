@@ -17,7 +17,8 @@ SITE_PROFILE:
   canonical_watchers: [topic_watch, job_watch, market_watch]
   core_entities: [workspace, membership, watcher, source, run, item, feedback, operation, export]
   authority:
-    operational: PocketBase
+    durable: immutable hash-chained JSON events and compacted JSON snapshots
+    operational_projection: PocketBase
     portable: versioned JSON exchange bundles
     artifacts: structured discovery and digest JSON
   modes:

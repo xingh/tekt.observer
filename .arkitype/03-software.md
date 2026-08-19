@@ -3,7 +3,8 @@
 ```yaml
 SOFTWARE:
   boundaries:
-    pocketbase: operational CRUD, auth, authorization, realtime, queue state
+    immutable_json_store: durable write-ahead events, validation, replay, and snapshot compaction
+    pocketbase: materialized operational CRUD projection, auth, authorization, realtime, queue state
     frontend: direct PocketBase client; document-centered workspace interactions
     python_worker: deterministic discovery, normalization, export/import, delivery, and subprocess orchestration
     agents: setup, semantic interpretation, ranking, synthesis, and source repair
@@ -14,7 +15,7 @@ SOFTWARE:
     rule: agents do not replace deterministic routine fetching
   cli:
     executable: tekt.observer
-    commands: [up, worker, import, export, publish]
+    commands: [up, worker, import, export, publish, store]
   api:
     style: standard PocketBase REST and realtime
     custom_server_framework: none

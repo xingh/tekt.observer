@@ -1,6 +1,6 @@
 # PocketBase operations and collaboration
 
-tekt.observer pins PocketBase `0.39.11` in `pocketbase/VERSION`. Committed JavaScript migrations under `pocketbase/pb_migrations/` are the schema source of truth. Do not customize the Go binary or add PocketBase JavaScript hooks; the frontend and Python workers use the standard REST/realtime APIs.
+tekt.observer pins PocketBase `0.39.11` in `pocketbase/VERSION`. It is the operational projection and API/auth layer; immutable JSON events and snapshots are the durable record. Committed JavaScript migrations under `pocketbase/pb_migrations/` are the projection schema source of truth. Do not customize the Go binary or add PocketBase JavaScript hooks; the frontend and Python workers use the standard REST/realtime APIs.
 
 Local mode binds PocketBase to loopback and creates a `local` workspace with the three canonical watcher slugs. Hosted mode uses the same collections and frontend behind TLS. It is a single-writer deployment: scale vertically, keep `pb_data` on a persistent volume, and run one coordinated writer/worker group.
 

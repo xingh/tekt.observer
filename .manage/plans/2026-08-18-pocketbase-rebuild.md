@@ -6,7 +6,7 @@ Last updated: 2026-08-18 America/New_York
 
 ## Goal
 
-Incrementally rebuild tekt.observer around pinned, unmodified PocketBase; a React/TypeScript document interface; existing Python observation workers; and deterministic JSON handoff bundles published with immutable rclone copies.
+Incrementally rebuild tekt.observer around an immutable JSON durable record, pinned unmodified PocketBase as the operational projection/API layer, a React/TypeScript document interface, existing Python observation workers, and deterministic JSON handoff bundles published with immutable rclone copies.
 
 ## Dependencies
 
@@ -20,6 +20,7 @@ Incrementally rebuild tekt.observer around pinned, unmodified PocketBase; a Reac
 - [x] Rewrite Arkitype intent and archive the superseded local-portfolio implementation plan.
 - [x] Pin PocketBase 0.39.11 and commit initial workspace-scoped collection migration.
 - [x] Add standard-REST Python client, deterministic bundles, hash/secret/stale-revision validation, unified CLI, local compose topology, and focused tests.
+- [x] Add a hash-chained immutable JSON event journal with fsynced writes, deterministic replay, count/time-based immutable snapshot compaction, atomic cache pointer, CLI controls, and tamper tests.
 - [ ] Validate migration and API rules against the pinned executable, including owner/editor/viewer/worker and cross-workspace cases.
 - [ ] Import current portfolio state, starter watcher specs, sources, feedback, operations, and artifacts with stable IDs and idempotent retries.
 - [ ] Add operation claim leases, cancellation, crash recovery, revision mutation discipline, and realtime progress.
@@ -29,9 +30,9 @@ Incrementally rebuild tekt.observer around pinned, unmodified PocketBase; a Reac
 
 ## Verification
 
-- Focused bundle/client tests: 4 passed.
+- Focused bundle/client/store tests: 8 passed.
 - Python compile check and `git diff --check`: passed.
-- Full `scripts/test.sh`: 703 passed, 30 skipped, with 2 pre-existing multiprocessing tests blocked by sandbox AF_UNIX permissions.
+- Full `scripts/test.sh`: 711 passed, 28 skipped.
 
 ## Next Step
 
@@ -41,4 +42,4 @@ Run the committed migration with the pinned executable and add executable API-ru
 
 - PocketBase is pre-1.0; upgrades require migration and API-rule regression testing.
 - The compose image is a packaging convenience, not the source of truth; production must verify the binary checksum and preserve data volumes.
-- Existing file artifacts remain authoritative for legacy workers during the incremental cutover.
+- The immutable store is implemented, but every PocketBase mutation path still needs to be routed through journal-first projection before the cutover is complete.
