@@ -129,7 +129,7 @@ fi
 unset JOB_AGENT_SMTP_PASSWORD
 
 IFS= read -r -d '' SETUP_PROMPT <<'EOF' || true
-Use the project skill $set-up for a guided first-track setup.
+Use the project skill $explore-start for a guided first-track setup.
 
 Contract:
 - Treat setup as a single guided onboarding flow, not a sequence the user has to discover.
@@ -140,8 +140,8 @@ Contract:
 - Then make profile/prefs_global.md ready. Infer only safe facts from the CV, then ask short questions for work mode, geography, seniority, contract type, compensation or practical constraints, authorization, dealbreakers, strong signals, and borderline signals. Write the reviewed answers.
 - Collect the minimum track brief before source discovery: user name, track display name and slug, broad search area, goals or role types, keep-only keywords, constraints or red flags, and geography or remote preferences.
 - After the minimum brief exists, propose a starter seed list, cadence defaults, track-wide terms, and native-filter posture instead of making the user invent them from scratch.
-- If the known source list is sparse or missing, treat invoking $discover-sources as the recommended default next step rather than a neutral menu choice. Discovery will exclude the user's current or most recent employer by default.
-- Keep the $discover-sources user-facing summary concise: recommended sources, dropped sources, URL corrections, caveats, recommended defaults to apply now, and only the truly necessary decisions.
+- If the known source list is sparse or missing, treat invoking $explore-discover-sources as the recommended default next step rather than a neutral menu choice. Discovery will exclude the user's current or most recent employer by default.
+- Keep the $explore-discover-sources user-facing summary concise: recommended sources, dropped sources, URL corrections, caveats, recommended defaults to apply now, and only the truly necessary decisions.
 - After discovery, continue automatically: present one recommended keep/drop/cadence/filter package, apply it unless the user objects, infer source-specific terms and native filters from profile and preferences, and auto-pick canaries where possible.
 - Use scripts/probe_career_source.py for source probing when possible instead of guessing from WebFetch alone.
 - Scaffold and validate the track. Setup aims for a **first-digest milestone**: a rendered digest from a valid scaffold that proves the track works. Do not let failed or complex secondary sources block this milestone.
@@ -155,14 +155,14 @@ Contract:
 - Remove repo-development drift from final responses. Generated profile/track artifacts are local and gitignored; suggest a commit message only if repository files were changed.
 EOF
 
-SETUP_USER_PROMPT="Start guided setup now. Use the project skill \$set-up and keep following the repo's first-track setup flow until the first local digest preview is shown."
+SETUP_USER_PROMPT="Start guided setup now. Use the project skill \$explore-start and keep following the repo's first-track setup flow until the first local digest preview is shown."
 
 IFS= read -r -d '' SETUP_FALLBACK_PROMPT <<'EOF' || true
-Use the project skill $set-up for a guided first-track setup in this repo.
+Use the project skill $explore-start for a guided first-track setup in this repo.
 
 Default behavior:
 - Propose recommended answers for missing profile and track preferences; let me override them.
-- If the source list is sparse, use $discover-sources as the recommended next step.
+- If the source list is sparse, use $explore-discover-sources as the recommended next step.
 - After discovery, apply the recommended keep/drop/cadence/filter defaults unless I object.
 - Continue automatically through canaries, probing, scaffolding, validation, and the first local digest preview.
 - Do not move on to email or scheduling before the first digest preview.

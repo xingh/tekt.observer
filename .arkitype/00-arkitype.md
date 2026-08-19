@@ -33,7 +33,7 @@ SITE_PROFILE:
   brand_tokens:
     colors: []
     fonts: []
-    logo_reference: docs/images/digest_email.png
+    logo_reference: .knowledge/images/digest_email.png
   content_domain:
     core_entities:
       - track
@@ -67,6 +67,6 @@ SITE_PROFILE:
     siblings: []
     mothership: https://github.com/jvdheyden/jobwatch
     cross_navigation_targets:
-      - docs/architecture.md
+      - .knowledge/architecture.md
       - shared/discovery_modes.md
 ```

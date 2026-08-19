@@ -1,4 +1,4 @@
-<img src="./docs/images/intelcraft-logo.png" alt="intelcraft" height="26" align="right"/>
+<img src="./.knowledge/images/intelcraft-logo.png" alt="intelcraft" height="26" align="right"/>
 
 # tekt.observer
 
@@ -8,7 +8,7 @@ Ask tekt.observer a question — *what's happening in AI?*, *what moved my portf
 
 No aggregator deciding what matters. No keyword alerts you learn to ignore.
 
-![tekt.observer — daily report page with stats strip, trend highlights, and top matches for the audience you asked for](docs/images/topic_watch-daily-report.png)
+![tekt.observer — daily report page with stats strip, trend highlights, and top matches for the audience you asked for](.knowledge/images/topic_watch-daily-report.png)
 
 ## Get started
 
@@ -16,14 +16,14 @@ No aggregator deciding what matters. No keyword alerts you learn to ignore.
 
 ```bash
 git clone git@github.com:xingh/tekt.observer.git && cd tekt.observer && \
-  claude "use the set-up skill in .agents/skills/set-up to bootstrap this repo and walk me through creating my first track"
+  claude "use the explore-start skill in .agents/skills/explore-start to bootstrap this repo and walk me through creating my first track"
 ```
 
-Swap `claude` for `codex` or `gemini` to use those coding agents instead. The `set-up` skill authors your profile, scaffolds a track, discovers and validates candidate sources, runs the first digest, and asks about scheduling and delivery.
+Swap `claude` for `codex` or `gemini` to use those coding agents instead. The `explore-start` skill authors your profile, scaffolds a track, discovers and validates candidate sources, runs the first digest, and asks about scheduling and delivery.
 
 **B — read the installation guide**
 
-📖 **[`docs/machine_setup.md`](./docs/machine_setup.md)** — bootstrap flow, per-agent notes, secrets handling.
+📖 **[`.knowledge/machine_setup.md`](./.knowledge/machine_setup.md)** — bootstrap flow, per-agent notes, secrets handling.
 
 **C — no agent or API keys: populate the starter workspace**
 
@@ -40,27 +40,27 @@ The shared portfolio dashboard opens immediately with clearly labeled sample sig
 
 Each item is a card with the destination page's OpenGraph image, a topic + content-type + audience badge row, and save / hide / click buttons. Cards are grouped by topic on the report and by publication date in the feed.
 
-![Social-style feed with OpenGraph thumbnails, grouped by topic, save/hide/click on every card](docs/images/topic_watch-feed.png)
+![Social-style feed with OpenGraph thumbnails, grouped by topic, save/hide/click on every card](.knowledge/images/topic_watch-feed.png)
 
 Under the hood it's a six-stage deterministic Python pipeline — **discover → enrich → classify → trends → rerank → synthesize → render** — with **no LLM calls** in the daily loop (agents are used where judgment helps: setting up a track and repairing sources). Three shipped tracks — `topic_watch`, `market_watch`, `job_watch` — run this pipeline end-to-end without any API keys.
 
 Those three are built-in watcher types inside tekt.observer, not separate products. Their canonical specs live under `.arkitype/watchers/`; generated runtime slugs and artifact paths are consistently `topic_watch`, `job_watch`, and `market_watch`.
 
-**📸 See more:** [`docs/screenshots.md`](./docs/screenshots.md) — daily report, feed, market-watch top-matches with why-bullets, backfill multitrack landing.
+**📸 See more:** [`.knowledge/screenshots.md`](./.knowledge/screenshots.md) — daily report, feed, market-watch top-matches with why-bullets, backfill multitrack landing.
 
 ## Read next
 
 | Doc | What's in it |
 |---|---|
-| 📖 [`docs/machine_setup.md`](./docs/machine_setup.md) | **Installation guide** — first-time setup, bootstrap flow, per-agent notes |
-| 📸 [`docs/screenshots.md`](./docs/screenshots.md) | Screenshot gallery for report, feed, trends, backfill multitrack landing |
-| 🧭 [`docs/capabilities.md`](./docs/capabilities.md) | What it can do today — capability matrix, iteration status, honest gaps |
-| 🔧 [`docs/tracks_pipeline.md`](./docs/tracks_pipeline.md) | The six-stage pipeline script by script, artifacts, backfill mode |
-| 🎬 [`docs/presentation-kit.md`](./docs/presentation-kit.md) | Slide outline + demo script for presenting tekt.observer |
-| 🏗️ [`docs/architecture.md`](./docs/architecture.md) | Component map + scheduled-run sequence + source-integration loop |
-| 🖥️ [`docs/local-portfolio.md`](./docs/local-portfolio.md) | Local dashboard, starter workflows, state files, APIs, and safety model |
+| 📖 [`.knowledge/machine_setup.md`](./.knowledge/machine_setup.md) | **Installation guide** — first-time setup, bootstrap flow, per-agent notes |
+| 📸 [`.knowledge/screenshots.md`](./.knowledge/screenshots.md) | Screenshot gallery for report, feed, trends, backfill multitrack landing |
+| 🧭 [`.knowledge/capabilities.md`](./.knowledge/capabilities.md) | What it can do today — capability matrix, iteration status, honest gaps |
+| 🔧 [`.knowledge/tracks_pipeline.md`](./.knowledge/tracks_pipeline.md) | The six-stage pipeline script by script, artifacts, backfill mode |
+| 🎬 [`.knowledge/presentation-kit.md`](./.knowledge/presentation-kit.md) | Slide outline + demo script for presenting tekt.observer |
+| 🏗️ [`.knowledge/architecture.md`](./.knowledge/architecture.md) | Component map + scheduled-run sequence + source-integration loop |
+| 🖥️ [`.knowledge/local-portfolio.md`](./.knowledge/local-portfolio.md) | Local dashboard, starter workflows, state files, APIs, and safety model |
 | 🗂️ [`shared/discovery_modes.md`](./shared/discovery_modes.md) | Generated catalog of all 60 discovery-mode adapters |
-| 🛣️ [`docs/roadmap.md`](./docs/roadmap.md) | What's queued next |
+| 🛣️ [`.knowledge/roadmap.md`](./.knowledge/roadmap.md) | What's queued next |
 | 🤝 [`CONTRIBUTING.md`](./CONTRIBUTING.md) | Fork-and-PR workflow |
 
 ---
@@ -77,7 +77,7 @@ Those three are built-in watcher types inside tekt.observer, not separate produc
 - **Deliver and schedule** — email, Telegram, or Logseq, daily/weekly/monthly, per track.
 - **Heal its own sources** — when a source breaks, an eval agent writes a ticket and a coding agent fixes the adapter.
 
-Full capability tour → [`docs/capabilities.md`](./docs/capabilities.md).
+Full capability tour → [`.knowledge/capabilities.md`](./.knowledge/capabilities.md).
 </details>
 
 <details>
@@ -148,7 +148,7 @@ Live-server routes:
 - `/track/<track>/sources` — sources + persona
 - `/raw/digests/<track>/<date>.json` — raw digest JSON
 
-Initialize explicit private portfolio files with `./.venv/bin/python scripts/portfolio_state.py init`. Without initialization, the three starters and any private tracks appear in an implicit **All Tracks** portfolio and no existing files are rewritten. Writes are loopback-only and require same-origin JSON plus the server CSRF token; static exports contain no controls. See [`docs/local-portfolio.md`](./docs/local-portfolio.md) for the state model and API examples.
+Initialize explicit private portfolio files with `./.venv/bin/python scripts/portfolio_state.py init`. Without initialization, the three starters and any private tracks appear in an implicit **All Tracks** portfolio and no existing files are rewritten. Writes are loopback-only and require same-origin JSON plus the server CSRF token; static exports contain no controls. See [`.knowledge/local-portfolio.md`](./.knowledge/local-portfolio.md) for the state model and API examples.
 
 **Audience switching** — audience list per watcher (from `.arkitype/watchers/*/taxonomy.json`):
 - topic_watch: `builders · operators · managers · architects · leaders`
@@ -161,7 +161,7 @@ Initialize explicit private portfolio files with `./.venv/bin/python scripts/por
 
 Every card in the report and feed carries **save**, **hide**, and **click** buttons. On the live server each click appends one JSON line to `artifacts/feedback/<track>/<audience>/events.jsonl`. On the next run, `track_rerank.py --with-feedback` turns those events into per-item boosts (`save +0.20`, `note +0.10`, `click +0.05`, `hide −0.35`) applied to the audience score — so the thing you saved today ranks higher tomorrow.
 
-Full detail: [`docs/tracks_pipeline.md#feedback-loop-i8`](./docs/tracks_pipeline.md#feedback-loop-i8).
+Full detail: [`.knowledge/tracks_pipeline.md#feedback-loop-i8`](./.knowledge/tracks_pipeline.md#feedback-loop-i8).
 </details>
 
 <details>
@@ -186,7 +186,7 @@ wait
 
 Historical windows apply server-side to HN Algolia sources (real per-date results for the whole history) and client-side to RSS/Atom via `pubDate` (most non-HN feeds only carry their latest window, so older dates naturally get thinner).
 
-Full walk-through: [`docs/tracks_pipeline.md#backfill-mode`](./docs/tracks_pipeline.md#backfill-mode).
+Full walk-through: [`.knowledge/tracks_pipeline.md#backfill-mode`](./.knowledge/tracks_pipeline.md#backfill-mode).
 </details>
 
 <details>
@@ -222,7 +222,7 @@ tekt.observer is the observation half of a larger toolkit. It extends the origin
 
 | Phase | What it means | In this repo |
 |---|---|---|
-| explore | understand a new source and generate a script to crawl it | `discover-sources` skill, source probing |
+| explore | understand a new source and generate a script to crawl it | `explore-discover-sources` skill, source probing |
 | seek | run that script against known sources | `scripts/discover_jobs.py`, provider adapters |
 | gather | schedule the fetching and collect it in one place | `scripts/feed_gather.py`, the scheduler |
 | organize | classify, categorize, annotate, relate, index | `scripts/<track>_classify.py`, `track_trends.py` |
@@ -237,7 +237,7 @@ Follow this when you want your **own** track: your sources, your profile, your s
 
 Setup is agent-assisted: a guided agent interviews you, scaffolds the track, finds and validates candidate sources, and runs your first digest. Scheduled automation supports Codex CLI, Claude Code CLI, and Gemini CLI.
 
-Full flow lives in [`docs/machine_setup.md`](./docs/machine_setup.md). Short version:
+Full flow lives in [`.knowledge/machine_setup.md`](./.knowledge/machine_setup.md). Short version:
 
 1. **Requirements:** Python 3; Codex CLI, Claude Code CLI, or Gemini CLI; agent logged in; on Linux with Codex, `bwrap` for sandboxing.
 2. **Bootstrap:** `bash scripts/bootstrap_machine.sh --agent {claude,codex,gemini}`.

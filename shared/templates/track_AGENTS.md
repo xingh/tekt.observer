@@ -40,8 +40,8 @@ Read these files in order before starting:
 
 If useful, also use:
 
-13. Use the project skill `find-jobs`.
-14. Use the project skill `rank-jobs`.
+13. Use the project skill `organize-filter-items`.
+14. Use the project skill `understand-prioritize-items`.
 15. `../../scripts/discover_jobs.py`
 
 ## Scope
@@ -88,11 +88,11 @@ For each run:
 4. During a normal scheduled run, treat the fresh artifact as the default discovery input for due-source coverage and candidate enumeration.
 5. Do not rerun `../../scripts/discover_jobs.py` yourself during a normal scheduled pass unless the artifact is missing, stale, inconsistent with the due-source set, or you were explicitly asked to debug discovery.
 6. Search only the due sources from `./sources.json`.
-7. Use the project skill `find-jobs` to collect plausible new roles and structured coverage notes.
+7. Use the project skill `organize-filter-items` to collect plausible new roles and structured coverage notes.
 8. If the fresh artifact is missing, stale, incomplete for the due-source set, or inconsistent with the track inputs, mark the affected sources as not checked in the coverage notes and note why.
 9. Treat a source as fully checked only if the coverage notes include status, listing pages scanned, search terms tried, result pages scanned, direct job pages opened, and limitations.
 10. Do not mark a source complete unless the discovery artifact shows the full source was enumerated and the full term set was applied.
-11. Use the project skill `rank-jobs` to score and prioritize them.
+11. Use the project skill `understand-prioritize-items` to score and prioritize them.
 12. Create or update today's structured digest artifact at `../../artifacts/digests/{track_slug}/YYYY-MM-DD.json` using `../../shared/digest_schema.md` as the source-of-truth schema.
 13. Leave source-state updates, markdown rendering, ranked-overview rebuilds, and seen-jobs updates to the runner. Do not edit `./source_state.json` or `./seen_jobs.json` yourself.
 

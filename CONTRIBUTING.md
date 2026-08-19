@@ -2,7 +2,7 @@
 
 Thanks for your interest in contributing. This repo is the upstream for [jvdheyden/jobwatch](https://github.com/jvdheyden/jobwatch/). Patches land via fork and pull request.
 
-If you haven't yet, skim [`docs/architecture.md`](./docs/architecture.md) — one diagram of how the agent skills, deterministic scripts, and on-disk artifacts fit together.
+If you haven't yet, skim [`.knowledge/architecture.md`](./.knowledge/architecture.md) — one diagram of how the agent skills, deterministic scripts, and on-disk artifacts fit together.
 
 ## Fork and bring up a working checkout
 
@@ -37,20 +37,20 @@ If you haven't yet, skim [`docs/architecture.md`](./docs/architecture.md) — on
 - Branch off `master`: `git checkout -b <short-topic-slug>`.
 - Use the repo-local Python venv: `./.venv/bin/python -m pytest ...`. If `./.venv` is missing, `bash scripts/bootstrap_venv.sh` rebuilds it.
 - Match the existing commit-message style — short imperative subject, optional body. `git log` is the canonical reference.
-- Keep diffs minimal and avoid drive-by changes; the `coding` skill at [`.agents/skills/coding/SKILL.md`](./.agents/skills/coding/SKILL.md) spells out the conventions Claude Code, Codex, and Gemini follow when working in this repo, and they apply equally to human contributors.
+- Keep diffs minimal and avoid drive-by changes; the `engineering` skill at [`.agents/skills/engineering/SKILL.md`](./.agents/skills/engineering/SKILL.md) spells out the conventions Claude Code, Codex, and Gemini follow when working in this repo, and they apply equally to human contributors.
 
 ## Where new code goes
 
 | Change | Start here |
 | --- | --- |
-| Add or modify a discovery source | [`docs/contributing/adding-sources.md`](./docs/contributing/adding-sources.md) — provider lives under `scripts/discover/sources/`, never directly in `scripts/discover_jobs.py` |
-| Edit an agent skill (`coding`, `existing-source-curation`, `find-jobs`, `rank-jobs`, `discover-sources`, `set-up`) | Edit the canonical file under `.agents/skills/<skill>/SKILL.md`, then run `bash scripts/sync_claude_skills.sh`. Never edit `.claude/skills/` directly. |
-| Touch the track-run pipeline | `scripts/run_track.sh`, `scripts/run_scheduled_jobs.sh`, and the post-processing helpers around them. See [`docs/architecture.md`](./docs/architecture.md) for the call graph. |
+| Add or modify a discovery source | [`.knowledge/contributing/adding-sources.md`](./.knowledge/contributing/adding-sources.md) — provider lives under `scripts/discover/sources/`, never directly in `scripts/discover_jobs.py` |
+| Edit an agent skill (`engineering`, `gather-curate-items`, `organize-filter-items`, `understand-prioritize-items`, `explore-discover-sources`, `explore-start`) | Edit the canonical file under `.agents/skills/<skill>/SKILL.md`, then run `bash scripts/sync_claude_skills.sh`. Never edit `.claude/skills/` directly. |
+| Touch the track-run pipeline | `scripts/run_track.sh`, `scripts/run_scheduled_jobs.sh`, and the post-processing helpers around them. See [`.knowledge/architecture.md`](./.knowledge/architecture.md) for the call graph. |
 | Add a new provider contract test | `tests/contract/` with fixtures under `tests/fixtures/sources/<discovery_mode>/`. |
 
 ## Docs placement
 
-- Keep human-facing documentation in `docs/`.
+- Keep human-facing documentation in `.knowledge/`.
 - Keep tracked reference material that agents or scripts read directly in `shared/`, including generated catalogs and schemas.
 
 ## Before you push
@@ -77,6 +77,5 @@ The following paths are gitignored and contain machine-local or personal data. T
 - `tracks/*` except `tracks/test_workflow/` (the only tracked example track)
 - `tracks/*/digests/`, `artifacts/`, `logs/`
 - `shared/seen_jobs.md`, `shared/ranked_jobs/*`, `ranked_overview.md`
-- `docs/plans/` (per-task agent handoff notes)
 
 If `git status` shows any of these, run `git check-ignore -v <path>` to confirm and unstage.

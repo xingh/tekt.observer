@@ -2,7 +2,7 @@
 """Install a repo-local Claude Code SessionStart hook that exports CLAUDE_SESSION_ID.
 
 The hook is merged into ``.claude/settings.local.json`` (per-user, per-checkout) so the
-``coding`` skill can read ``$CLAUDE_SESSION_ID`` when populating plan ``agent_id``. The
+``engineering`` skill can read ``$CLAUDE_SESSION_ID`` when populating plan ``agent_id``. The
 merge is idempotent and preserves every other key in the settings file.
 """
 from __future__ import annotations

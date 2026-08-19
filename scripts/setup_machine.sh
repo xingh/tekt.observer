@@ -843,23 +843,23 @@ if [[ "$AGENT_PROVIDER_VALUE" == "claude" ]]; then
   else
     echo "Claude SessionStart hook install failed: $claude_hook_status" >&2
   fi
-  if claude_gate_status="$("$CLAUDE_HOOK_PYTHON" "$SCRIPT_DIR/hooks/install_claude_coding_gate_hook.py" --root "$ROOT" 2>&1)"; then
+  if claude_gate_status="$("$CLAUDE_HOOK_PYTHON" "$SCRIPT_DIR/hooks/install_claude_engineering_gate_hook.py" --root "$ROOT" 2>&1)"; then
     if [[ "$QUIET_MODE" -eq 0 ]]; then
-      echo "Claude coding-gate hook: $claude_gate_status ($ROOT/.claude/settings.local.json)"
+      echo "Claude engineering-gate hook: $claude_gate_status ($ROOT/.claude/settings.local.json)"
     fi
   else
-    echo "Claude coding-gate hook install failed: $claude_gate_status" >&2
+    echo "Claude engineering-gate hook install failed: $claude_gate_status" >&2
   fi
 fi
 
 if [[ "$AGENT_PROVIDER_VALUE" == "gemini" ]]; then
   GEMINI_HOOK_PYTHON="${JOB_AGENT_PYTHON:-python3}"
-  if gemini_gate_status="$("$GEMINI_HOOK_PYTHON" "$SCRIPT_DIR/hooks/install_gemini_coding_gate_hook.py" --root "$ROOT" 2>&1)"; then
+  if gemini_gate_status="$("$GEMINI_HOOK_PYTHON" "$SCRIPT_DIR/hooks/install_gemini_engineering_gate_hook.py" --root "$ROOT" 2>&1)"; then
     if [[ "$QUIET_MODE" -eq 0 ]]; then
-      echo "Gemini coding-gate hook: $gemini_gate_status ($ROOT/.gemini/settings.json)"
+      echo "Gemini engineering-gate hook: $gemini_gate_status ($ROOT/.gemini/settings.json)"
     fi
   else
-    echo "Gemini coding-gate hook install failed: $gemini_gate_status" >&2
+    echo "Gemini engineering-gate hook install failed: $gemini_gate_status" >&2
   fi
 fi
 

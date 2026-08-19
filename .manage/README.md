@@ -1,6 +1,6 @@
 # .manage
 
-Work-management layer for this repository. This folder holds plans, projects, processes, routines, and roadmap — the operational state of the work. It is deliberately separate from `.arkitype/`, which holds only regeneration inputs. Nothing in `.manage/` is required to rebuild the site; everything in it is required to know what we are doing and why.
+Work-management layer for this repository. This folder holds plans, projects, processes, routines, and roadmap — the operational state of the work. It is deliberately separate from `.arkitype/`, which holds regeneration inputs, and `.knowledge/`, which holds durable project documentation. Nothing in `.manage/` is required to rebuild the site; everything in it is required to know what we are doing and why.
 
 The same schema is used in every repository in the constellation. Only the contents differ.
 
@@ -17,6 +17,7 @@ Begin flat. Create these six markdown files and nothing else:
   4.routines.md
   5.roadmap.md
   6.knowledge.md
+  plans/             (detailed plan documents linked from 1.plans.md or projects)
 ```
 
 Each file opens with a YAML frontmatter block and then plain markdown sections, one per item:
@@ -33,7 +34,7 @@ Item convention inside every file: a `##` heading per item, followed by a small 
 
 What goes where:
 
-- **1.plans.md** — forward-looking intent with a horizon: what we intend to do and roughly when. A plan graduates into a project when work starts.
+- **1.plans.md** — forward-looking intent with a horizon: what we intend to do and roughly when. Longer plan documents live in `.manage/plans/` and are linked from here. A plan graduates into a project when work starts.
 - **2.projects.md** — bounded efforts with a definition of done. One `##` section per project.
 - **3.processes.md** — repeatable procedures: how a thing is done when it needs doing. No schedule.
 - **4.routines.md** — processes bound to a cadence: what runs daily, weekly, monthly, and per release.
@@ -63,7 +64,7 @@ Move the whole item file (or folder), set `status: done` in its frontmatter, and
 
 ## Rules
 
-1. Flat until it hurts. The promotion rule is the only way structure is added; no empty folders, no folders created "for later."
+1. Flat until it hurts. The promotion rule is the only way structure is added, except for the established `.manage/plans/` collection; no empty folders or speculative folders.
 2. One home per item. An item lives in exactly one file; the roadmap references, it never duplicates.
 3. Same schema everywhere. Every constellation repo uses these six categories with these names and numbers. If a repo needs a seventh category, that is a constellation-level decision — record it here in every repo or not at all.
 4. Agents read the index first. Any agent working in this repo reads this README, then the frontmatter of each top-level file or `00-index.md`, before acting. Status fields are the source of truth for what is active.

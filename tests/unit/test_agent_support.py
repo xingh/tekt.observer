@@ -15,7 +15,15 @@ def test_agent_imports_exist_for_repo_agents(repo_root: Path) -> None:
     assert agents_files
     for agents_path in agents_files:
         claude_path = agents_path.with_name("CLAUDE.md")
-        assert claude_path.read_text(encoding="utf-8") == "@AGENTS.md\n"
+        expected_claude = "@AGENTS.md\n"
+        if agents_path == repo_root / "AGENTS.md":
+            expected_claude += (
+                "@.arkitype/00-arkitype.md\n"
+                "@.arkitype/03-software.md\n"
+                "@.knowledge/README.md\n"
+                "@.manage/README.md\n"
+            )
+        assert claude_path.read_text(encoding="utf-8") == expected_claude
         gemini_path = agents_path.with_name("GEMINI.md")
         assert gemini_path.read_text(encoding="utf-8") == "@AGENTS.md\n"
 
