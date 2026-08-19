@@ -1,0 +1,27 @@
+services:
+  pocketbase:
+    image: ghcr.io/muchobien/pocketbase:0.39.11
+    command: ["serve", "--http=0.0.0.0:8090"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${TEKT_OBSERVER_PORT:-8090}:8090"
+    volumes:
+      - pocketbase_data:/pb_data
+      - ../pocketbase/pb_migrations:/pb_migrations:ro
+
+  worker:
+    image: python:3.12-slim
+    command: ["python", "scripts/tekt_observer.py", "worker", "--poll-seconds", "5"]
+    restart: unless-stopped
+    working_dir: /workspace
+    environment:
+      TEKT_OBSERVER_POCKETBASE_URL: http://pocketbase:8090
+    volumes:
+      - ..:/workspace:ro
+      - worker_artifacts:/workspace/artifacts
+    depends_on:
+      - pocketbase
+
+volumes:
+  pocketbase_data:
+  worker_artifacts:

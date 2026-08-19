@@ -1,0 +1,44 @@
+# tekt.observer PocketBase Rebuild
+
+Status: in_progress
+Owner: Codex; agent_id: 01a017a7-56d7-70d2-b10b-a806a3aeac3c
+Last updated: 2026-08-18 America/New_York
+
+## Goal
+
+Incrementally rebuild tekt.observer around pinned, unmodified PocketBase; a React/TypeScript document interface; existing Python observation workers; and deterministic JSON handoff bundles published with immutable rclone copies.
+
+## Dependencies
+
+- Crawl4AI integration supplies repeatable browser extraction.
+- browser-use integration supplies reconnaissance and repair for interactive sources.
+- multi-agent CLI platform supplies setup, interpretation, ranking, synthesis, and repair boundaries.
+- The delivered local portfolio establishes behavior to preserve until PocketBase parity.
+
+## Milestones
+
+- [x] Rewrite Arkitype intent and archive the superseded local-portfolio implementation plan.
+- [x] Pin PocketBase 0.39.11 and commit initial workspace-scoped collection migration.
+- [x] Add standard-REST Python client, deterministic bundles, hash/secret/stale-revision validation, unified CLI, local compose topology, and focused tests.
+- [ ] Validate migration and API rules against the pinned executable, including owner/editor/viewer/worker and cross-workspace cases.
+- [ ] Import current portfolio state, starter watcher specs, sources, feedback, operations, and artifacts with stable IDs and idempotent retries.
+- [ ] Add operation claim leases, cancellation, crash recovery, revision mutation discipline, and realtime progress.
+- [ ] Build the React/Vite/shadcn frontend and browser-level workflows.
+- [ ] Cut workers over to PocketBase, then retire the legacy viewer and redundant shell entrypoints after parity.
+- [ ] Complete hosted deployment, backup/restore, immutable rclone round-trip, and local/hosted acceptance.
+
+## Verification
+
+- Focused bundle/client tests: 4 passed.
+- Python compile check and `git diff --check`: passed.
+- Full `scripts/test.sh`: 703 passed, 30 skipped, with 2 pre-existing multiprocessing tests blocked by sandbox AF_UNIX permissions.
+
+## Next Step
+
+Run the committed migration with the pinned executable and add executable API-rule integration tests before treating the authorization model as complete.
+
+## Risks
+
+- PocketBase is pre-1.0; upgrades require migration and API-rule regression testing.
+- The compose image is a packaging convenience, not the source of truth; production must verify the binary checksum and preserve data volumes.
+- Existing file artifacts remain authoritative for legacy workers during the incremental cutover.

@@ -1,6 +1,22 @@
 # Architecture Overview
 
-## Local portfolio management (I9–I14)
+## PocketBase rebuild boundary
+
+PocketBase is becoming the operational authority for workspace-scoped records, authentication, authorization, REST, realtime, and queued operations. Python workers retain deterministic discovery and artifact generation. A React client will talk directly to PocketBase. Deterministic JSON bundles are the permanent handoff contract and publish through immutable rclone copies. The committed migration, REST adapter, exchange serializer, and unified CLI are the first implemented slice; the legacy local portfolio below remains a compatibility surface until frontend and worker parity.
+
+```mermaid
+flowchart LR
+  UI[React / TypeScript client] -->|REST + realtime| PB[(PocketBase)]
+  Worker[Python worker] -->|claim + progress + records| PB
+  Worker --> Artifacts[(JSON discovery + digest artifacts)]
+  PB --> Export[Deterministic exchange bundle]
+  Artifacts --> Export
+  Export -->|rclone copy --immutable| Remote[(Configured handoff remote)]
+```
+
+See [`pocketbase.md`](./pocketbase.md) and [`json-handoff.md`](./json-handoff.md).
+
+## Legacy local portfolio management (I9–I14)
 
 The loopback viewer is also a server-rendered local portfolio application. `portfolio_state.py` validates and atomically persists private interests, portfolios, track metadata, and taxonomy overrides. Missing metadata is projected in memory. `serve_html.py` adapts immutable pipeline artifacts into unified `<track>:<item_key>` records and exposes `/api/v1`; `portfolio_operations.py` runs bounded pollable subprocesses with one active operation per track. Non-loopback bindings and static output are read-only. Three tracked starter workflow definitions make `topic_watch`, `market_watch`, and `job_watch` visible on a fresh checkout; `run_starter_workflows.sh` seeds a viewable offline workspace by default or appends their live runs into one workspace with `--live`. See [`local-portfolio.md`](./local-portfolio.md) for the operating guide and API surface.
 
