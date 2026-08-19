@@ -36,6 +36,15 @@ Incrementally rebuild tekt.observer around an immutable JSON durable record, pin
 - Python compile check and `git diff --check`: passed.
 - Full `scripts/test.sh`: 715 passed, 28 skipped, including frontend build and component tests.
 
+## Six-iteration product pass
+
+- [x] Iteration 1: first-class Active, New, Saved, and Dismissed inbox views with reversible curation.
+- [ ] Iteration 2: source inventory and watcher health detail.
+- [ ] Iteration 3: validated immutable bundle import/fork.
+- [ ] Iteration 4: journaled local run operations.
+- [ ] Iteration 5: digest reading and highlighted-item navigation.
+- [ ] Iteration 6: onboarding, accessibility, keyboard, and acceptance polish.
+
 ## Next Step
 
 Run the committed migration with the pinned executable and add executable API-rule integration tests before treating the authorization model as complete.
