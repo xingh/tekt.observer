@@ -13,6 +13,7 @@ This skill is for source discovery, not track scaffolding, job discovery, rankin
 
 - Read `.arkitype/00-arkitype.md` for product scope and `.arkitype/03-software.md` for source and pipeline contracts.
 - Read the relevant source-discovery process in `.manage/3.processes.md` and durable provider findings in `.manage/6.knowledge.md` before proposing a new integration pattern.
+- If this work owns a task or plan document, follow `.manage/README.md` and move it to `.archive/<YYYY>/<name>.completed.md` when complete.
 
 ## Precondition
 

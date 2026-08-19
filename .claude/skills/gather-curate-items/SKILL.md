@@ -16,6 +16,7 @@ This skill is narrow in scope to one known employer or official source on an exi
 
 - Read `.arkitype/03-software.md` for source configuration and integration contracts.
 - Read the applicable procedure in `.manage/3.processes.md` and provider findings in `.manage/6.knowledge.md` before changing shared source behavior.
+- If this work owns a task or plan document, follow `.manage/README.md` and move it to `.archive/<YYYY>/<name>.completed.md` when complete.
 
 ## Input
 

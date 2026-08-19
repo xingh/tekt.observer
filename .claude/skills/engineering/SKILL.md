@@ -94,6 +94,7 @@ Progress tracking rules:
 - Before ending, record files changed, verification, next step, unresolved risks, and whether `scripts/test.sh` passed.
 - If resuming work, read `.manage/README.md` and the relevant active project first instead of reconstructing state from chat.
 - When work completes, mark the project `done` and update `.manage/5.roadmap.md` if it references the project.
+- Move a completed task or plan document to `.archive/<YYYY>/<original-name>.completed.md`, update inbound links, and remove its active `.manage/` entry. Do not leave completed plan files in `.manage/plans/`.
 - Record durable technical decisions or findings in `.manage/6.knowledge.md`; do not bury them in transient handoff prose.
 
 ## Skill mirroring

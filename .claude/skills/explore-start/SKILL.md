@@ -14,6 +14,7 @@ Use this skill to scaffold a new track over the shared job-agent workflow.
 
 - Read `.arkitype/00-arkitype.md` for product scope, `.arkitype/03-software.md` for track contracts, and `.arkitype/watchers/` for built-in watcher patterns.
 - Read setup and source procedures in `.manage/3.processes.md` and durable decisions in `.manage/6.knowledge.md` before inventing new configuration conventions.
+- If this work owns a task or plan document, follow `.manage/README.md` and move it to `.archive/<YYYY>/<name>.completed.md` when complete.
 
 Default assumption:
 - Set-up includes source normalization, preference-derived terms/filters, canary collection, targeted probing, and quality triage for newly added or materially changed sources.

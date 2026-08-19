@@ -16,6 +16,7 @@ This skill is for discovery and extraction, not final ranking.
 
 - Read `.arkitype/03-software.md` for artifact and pipeline contracts and the current watcher spec under `.arkitype/watchers/<track>/` when the track is built in.
 - Follow the organize-stage procedure in `.manage/3.processes.md`; consult `.manage/6.knowledge.md` for durable filtering decisions when relevant.
+- If this work owns a task or plan document, follow `.manage/README.md` and move it to `.archive/<YYYY>/<name>.completed.md` when complete.
 
 ## Input
 

@@ -16,6 +16,7 @@ This skill is for evaluation and prioritization, not search.
 
 - Read `.arkitype/03-software.md` for ranking inputs and artifact contracts and the applicable watcher taxonomy under `.arkitype/watchers/<track>/`.
 - Follow the understand-stage procedure in `.manage/3.processes.md`; consult `.manage/6.knowledge.md` for durable scoring decisions when relevant.
+- If this work owns a task or plan document, follow `.manage/README.md` and move it to `.archive/<YYYY>/<name>.completed.md` when complete.
 
 ## Input
 

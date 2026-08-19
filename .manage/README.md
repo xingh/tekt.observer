@@ -54,13 +54,13 @@ The promotion is invisible to a reader who starts at the index: the name is iden
 
 ## Archiving
 
-Create `archive/` only when the first item retires. Archived items keep their source path under a date prefix, so provenance and un-archiving are both mechanical:
+When a task or detailed plan is complete, move it out of `.manage/` into the repository-level `.archive/<YYYY>/` folder and rename it with a `.completed.md` suffix:
 
 ```
-.manage/archive/2026/07/2.projects/site-launch.md
+.archive/2026/2026-08-18-site-launch.completed.md
 ```
 
-Move the whole item file (or folder), set `status: done` in its frontmatter, and delete its section or link from the live file. Nothing in `archive/` is ever edited afterward.
+Use the completion year for `<YYYY>`. Preserve the original date and descriptive stem when one exists. Set the document status to `complete` or `done`, update inbound links, and remove its active section or link from `.manage/`. Archived files are historical records; correct them only to repair a broken reference or factual error.
 
 ## Rules
 
@@ -69,3 +69,4 @@ Move the whole item file (or folder), set `status: done` in its frontmatter, and
 3. Same schema everywhere. Every constellation repo uses these six categories with these names and numbers. If a repo needs a seventh category, that is a constellation-level decision — record it here in every repo or not at all.
 4. Agents read the index first. Any agent working in this repo reads this README, then the frontmatter of each top-level file or `00-index.md`, before acting. Status fields are the source of truth for what is active.
 5. Degrade loudly. If something doesn't fit the six categories, put it in the nearest one under an `## unsorted` heading rather than inventing a new location silently.
+6. Archive completion. Completed task and plan documents do not remain active under `.manage/`; move them to `.archive/<YYYY>/<name>.completed.md`.
