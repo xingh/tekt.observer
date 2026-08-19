@@ -22,4 +22,4 @@ Verification:
 - Claude skill mirror check passed
 - focused agent, gate, and machine-setup tests passed
 - legacy skill-name and obsolete documentation-path audits passed
-- full `scripts/test.sh` result recorded in the final task handoff
+- full `scripts/test.sh`: 643 passed, 28 skipped

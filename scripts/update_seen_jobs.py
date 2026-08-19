@@ -16,9 +16,12 @@ from typing import Any
 from source_config import SourceConfigError, write_json_atomic
 
 
-ROOT = Path(os.environ.get("JOB_AGENT_ROOT", Path(__file__).resolve().parents[1]))
-
 NORMALIZE_RE = re.compile(r"[^a-z0-9]+")
+
+
+def repo_root() -> Path:
+    """Resolve the runtime root when work starts, not when the module imports."""
+    return Path(os.environ.get("JOB_AGENT_ROOT", Path(__file__).resolve().parents[1]))
 
 
 def normalize_text(value: str) -> str:
@@ -81,6 +84,7 @@ def extract_new_roles(artifact: dict[str, Any], run_date: str) -> list[dict[str,
 
 def main() -> int:
     args = build_parser().parse_args()
+    root = repo_root()
     try:
         date.fromisoformat(args.date)
     except ValueError:
@@ -90,9 +94,9 @@ def main() -> int:
     artifact_path = (
         Path(args.artifact)
         if args.artifact
-        else ROOT / "artifacts" / "digests" / args.track / f"{args.date}.json"
+        else root / "artifacts" / "digests" / args.track / f"{args.date}.json"
     )
-    seen_path = ROOT / "tracks" / args.track / "seen_jobs.json"
+    seen_path = root / "tracks" / args.track / "seen_jobs.json"
 
     if not artifact_path.exists():
         print(f"No digest artifact at {artifact_path}; skipping seen-jobs update")

@@ -164,6 +164,16 @@ SOFTWARE:
     - ranked_overview carries highest observed fit_score and count of times_seen
     - source integration queue prioritizes higher integration.priority and prevents repeated same-day attempts unless --force
     - deterministic source validator blocks integration on missing core fields, off-domain URLs, empty artifacts, duplicate URL defects, or missing required canary
+  quality_assurance:
+    harness: scripts/test.sh
+    discovery: whole tests/ tree; no manually maintained test-file allowlist
+    compilation: one compileall pass over scripts/
+    test_value_rules:
+      - keep tests for externally observable behavior, safety boundaries, regressions, and integration contracts
+      - combine overlapping cases with parametrization when the behavior and failure mode are the same
+      - remove exact duplicates, implementation-detail assertions, and prose-only assertions unless a parser or harness consumes the text
+      - prefer one consumer-level contract over repeated assertions at several layers
+      - a leaner suite must not reduce discovery coverage or omit existing test modules
   auth_and_authorization:
     application_auth: none
     secrets_policy:
