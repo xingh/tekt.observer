@@ -3,7 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from app_server import patch_item, seed_store, workspace_payload
+from app_server import create_digest, create_export, patch_item, patch_watcher, seed_store, workspace_payload
+from exchange_bundle import read_bundle
 from immutable_json_store import ImmutableJsonStore, StoreError
 
 
@@ -46,3 +47,18 @@ def test_item_curation_rejects_unknown_status_and_item(tmp_path: Path):
         patch_item(store, "missing", {"status": "favorite"})
     with pytest.raises(KeyError):
         patch_item(store, "missing", {"status": "saved"})
+
+
+def test_watcher_toggle_digest_and_export_are_durable(tmp_path: Path):
+    store = ImmutableJsonStore(tmp_path / "state")
+    seed_store(store, _specs(tmp_path / "specs"))
+    watcher = patch_watcher(store, "topic_watch", {"enabled": False})
+    digest = create_digest(store)
+    export, path = create_export(store)
+    assert watcher["status"] == "paused"
+    assert digest["itemIds"]
+    assert export["workspaceRevision"] == 1
+    assert read_bundle(path)["data"]["digests"][0]["id"] == digest["id"]
+    payload = workspace_payload(store)
+    assert payload["watchers"][0]["enabled"] is False
+    assert payload["exports"][0]["filename"].endswith(".json")

@@ -22,4 +22,6 @@ export type Signal = {
 };
 
 export type Operation = { id: string; label: string; status: "queued" | "running" | "complete" | "failed"; progress: number; updatedAt: string };
-export type WorkspaceState = { workspace: { id: string; name: string; revision: number }; watchers: Watcher[]; items: Signal[]; operations: Operation[] };
+export type Digest = { id: string; title: string; summary: string; createdAt: string; itemIds: string[]; status: "ready" };
+export type ExportRecord = { id: string; filename: string; createdAt: string; workspaceRevision: number; sha256: string };
+export type WorkspaceState = { workspace: { id: string; name: string; revision: number }; watchers: Watcher[]; items: Signal[]; operations: Operation[]; digests: Digest[]; exports: ExportRecord[] };

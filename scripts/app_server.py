@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -13,10 +14,13 @@ import re
 from typing import Any
 from urllib.parse import unquote, urlparse
 
+from exchange_bundle import build_bundle, write_bundle
 from immutable_json_store import ImmutableJsonStore, StoreError
 
 ROOT = Path(__file__).resolve().parents[1]
 ITEM_PATH = re.compile(r"^/api/v1/items/([^/]+)$")
+WATCHER_PATH = re.compile(r"^/api/v1/watchers/([^/]+)$")
+EXPORT_PATH = re.compile(r"^/api/v1/exports/([A-Za-z0-9._-]+)$")
 MAX_BODY = 64 * 1024
 
 
@@ -65,6 +69,8 @@ def workspace_payload(store: ImmutableJsonStore) -> dict[str, Any]:
         "watchers": sorted(state["watchers"].values(), key=lambda row: row["slug"]),
         "items": sorted(state["items"].values(), key=lambda row: row.get("observedAt", ""), reverse=True),
         "operations": sorted(state["operations"].values(), key=lambda row: row.get("updatedAt", ""), reverse=True),
+        "digests": sorted(state["digests"].values(), key=lambda row: row.get("createdAt", ""), reverse=True),
+        "exports": sorted(state["exports"].values(), key=lambda row: row.get("createdAt", ""), reverse=True),
     }
 
 
@@ -81,6 +87,52 @@ def patch_item(store: ImmutableJsonStore, item_id: str, payload: dict[str, Any])
     if workspace:
         store.append("workspaces", "local", "put", {**workspace, "revision": int(workspace.get("revision", 0)) + 1})
     return updated
+
+
+def patch_watcher(store: ImmutableJsonStore, watcher_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    if set(payload) != {"enabled"} or not isinstance(payload["enabled"], bool):
+        raise StoreError("enabled must be a boolean")
+    state = store.read()
+    existing = state["watchers"].get(watcher_id)
+    if existing is None:
+        raise KeyError(watcher_id)
+    updated = {**existing, "enabled": payload["enabled"], "status": "healthy" if payload["enabled"] else "paused"}
+    store.append("watchers", watcher_id, "put", updated)
+    return updated
+
+
+def create_digest(store: ImmutableJsonStore) -> dict[str, Any]:
+    state = store.read()
+    now = dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z")
+    digest_id = f"digest-{len(state['digests']) + 1:04d}"
+    visible = [row for row in state["items"].values() if row.get("status") != "dismissed"]
+    top = sorted(visible, key=lambda row: (-int(row.get("score", 0)), row.get("title", "")))[:5]
+    digest = {
+        "id": digest_id, "title": f"Observation brief · {now[:10]}", "createdAt": now,
+        "summary": f"{len(visible)} active signals across {len(state['watchers'])} watchers, with {len(top)} highlighted below.",
+        "itemIds": [row["id"] for row in top], "status": "ready",
+    }
+    store.append("digests", digest_id, "put", digest)
+    return digest
+
+
+def create_export(store: ImmutableJsonStore) -> tuple[dict[str, Any], Path]:
+    state = store.read()
+    workspace = state["workspaces"].get("local") or next(iter(state["workspaces"].values()))
+    now = dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z")
+    data = {
+        "workspace": workspace,
+        "watchers": list(state["watchers"].values()), "sources": list(state["sources"].values()),
+        "runs": list(state["runs"].values()), "items": list(state["items"].values()),
+        "feedback": list(state["feedback"].values()), "digests": list(state["digests"].values()), "provenance": [],
+    }
+    bundle = build_bundle(workspace_id=workspace["id"], workspace_revision=int(workspace.get("revision", 0)), producer="tekt.observer.local", created_at=now, data=data)
+    filename = f"{bundle['manifest']['bundle_id']}.tekt-observer.json"
+    path = store.root / "exports" / filename
+    write_bundle(path, bundle)
+    record = {"id": bundle["manifest"]["bundle_id"], "filename": filename, "createdAt": now, "workspaceRevision": workspace.get("revision", 0), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+    store.append("exports", record["id"], "put", record)
+    return record, path
 
 
 class AppHandler(SimpleHTTPRequestHandler):
@@ -107,14 +159,31 @@ class AppHandler(SimpleHTTPRequestHandler):
             except StoreError as exc:
                 self._json(HTTPStatus.INTERNAL_SERVER_ERROR, {"error": str(exc)})
             return
+        export_match = EXPORT_PATH.match(urlparse(self.path).path)
+        if export_match:
+            path = self.store.root / "exports" / export_match.group(1)
+            if not path.is_file():
+                self._json(HTTPStatus.NOT_FOUND, {"error": "export not found"})
+                return
+            body = path.read_bytes()
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Disposition", f'attachment; filename="{path.name}"')
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.end_headers()
+            self.wfile.write(body)
+            return
         path = urlparse(self.path).path
         if path != "/" and not (Path(self.directory) / path.lstrip("/")).exists():
             self.path = "/index.html"
         super().do_GET()
 
     def do_PATCH(self) -> None:
-        match = ITEM_PATH.match(urlparse(self.path).path)
-        if not match:
+        path = urlparse(self.path).path
+        item_match = ITEM_PATH.match(path)
+        watcher_match = WATCHER_PATH.match(path)
+        if not item_match and not watcher_match:
             self._json(HTTPStatus.NOT_FOUND, {"error": "not found"})
             return
         try:
@@ -124,11 +193,24 @@ class AppHandler(SimpleHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length))
             if not isinstance(payload, dict):
                 raise StoreError("request body must be an object")
-            updated = patch_item(self.store, unquote(match.group(1)), payload)
+            updated = patch_item(self.store, unquote(item_match.group(1)), payload) if item_match else patch_watcher(self.store, unquote(watcher_match.group(1)), payload)
             self._json(HTTPStatus.OK, updated)
         except KeyError:
             self._json(HTTPStatus.NOT_FOUND, {"error": "item not found"})
         except (StoreError, json.JSONDecodeError) as exc:
+            self._json(HTTPStatus.BAD_REQUEST, {"error": str(exc)})
+
+    def do_POST(self) -> None:
+        path = urlparse(self.path).path
+        try:
+            if path == "/api/v1/digests":
+                self._json(HTTPStatus.CREATED, create_digest(self.store))
+            elif path == "/api/v1/exports":
+                record, _ = create_export(self.store)
+                self._json(HTTPStatus.CREATED, {**record, "downloadUrl": f"/api/v1/exports/{record['filename']}"})
+            else:
+                self._json(HTTPStatus.NOT_FOUND, {"error": "not found"})
+        except StoreError as exc:
             self._json(HTTPStatus.BAD_REQUEST, {"error": str(exc)})
 
     def log_message(self, format_: str, *args: Any) -> None:

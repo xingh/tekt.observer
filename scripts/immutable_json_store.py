@@ -16,7 +16,7 @@ from typing import Any, Callable, Iterator, Mapping
 STORE_SCHEMA_VERSION = 1
 EVENT_RE = re.compile(r"^(\d{20})-([0-9a-f]{64})\.json$")
 SNAPSHOT_RE = re.compile(r"^(\d{20})-([0-9a-f]{64})\.json$")
-DEFAULT_COLLECTIONS = ("workspaces", "memberships", "watchers", "sources", "runs", "items", "feedback", "operations", "exports")
+DEFAULT_COLLECTIONS = ("workspaces", "memberships", "watchers", "sources", "runs", "items", "feedback", "operations", "exports", "digests")
 
 
 class StoreError(ValueError):
@@ -188,6 +188,8 @@ class ImmutableJsonStore:
         sequence, snapshot = self._latest_snapshot()
         state = self._empty_state() if snapshot is None else snapshot["state"]
         state = json.loads(json.dumps(state))
+        for collection in DEFAULT_COLLECTIONS:
+            state.setdefault(collection, {})
         for event in self._events_after(sequence):
             self._apply(state, event)
         return state

@@ -26,4 +26,6 @@ export const demoState: WorkspaceState = {
   operations: [
     { id: "starter-run", label: "Starter watchers initialized", status: "complete", progress: 100, updatedAt: new Date().toISOString() },
   ],
+  digests: [],
+  exports: [],
 };

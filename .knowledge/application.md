@@ -2,7 +2,7 @@
 
 Run `./tekt.observer up` and open `http://127.0.0.1:8091`. On a fresh checkout the launcher installs and builds frontend dependencies, seeds the three canonical watchers, and serves the React application and JSON API from one loopback origin.
 
-The first screen is a unified signal inbox with nine realistic starter items. Search focuses with `/`; Escape closes dialogs. Watcher filters, responsive navigation, light/dark themes, watcher health, operations, signal scores, and provenance are available immediately.
+The first screen is a unified signal inbox with nine realistic starter items. Search focuses with `/`; Escape closes dialogs. Watcher filters, responsive navigation, light/dark themes, watcher health and pause controls, operations, signal scores, and provenance are available immediately. The Digests screen creates persisted briefs from the strongest active signals. The Exports screen creates and downloads deterministic, hash-verified handoff bundles.
 
 Save and Dismiss call `PATCH /api/v1/items/<id>`. The server validates the mutation, appends and fsyncs the immutable item event, increments the workspace revision through another journal event, and only then acknowledges the request. Reloading reconstructs the same state from the latest snapshot plus later events.
 
