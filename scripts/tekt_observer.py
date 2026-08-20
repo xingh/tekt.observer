@@ -54,7 +54,10 @@ def ensure_frontend() -> None:
 
 def run_local_app(host: str, port: int) -> None:
     ensure_frontend()
-    subprocess.run([sys.executable, str(ROOT / "scripts" / "app_server.py"), "--host", host, "--port", str(port)], cwd=ROOT, check=True)
+    try:
+        subprocess.run([sys.executable, str(ROOT / "scripts" / "app_server.py"), "--host", host, "--port", str(port)], cwd=ROOT, check=True)
+    except KeyboardInterrupt:
+        return
 
 
 def _record_payload(record: dict[str, Any]) -> dict[str, Any]:

@@ -4,8 +4,8 @@ import threading
 
 import pytest
 
-from app_server import create_digest, create_export, ingest_run_artifacts, patch_item, patch_watcher, seed_store, start_live_run, workspace_payload
-from exchange_bundle import read_bundle
+from app_server import create_digest, create_export, ingest_run_artifacts, patch_item, patch_watcher, seed_store, start_live_run, validate_import_bundle, workspace_payload
+from exchange_bundle import BundleError, read_bundle
 from immutable_json_store import ImmutableJsonStore, StoreError
 
 
@@ -64,6 +64,19 @@ def test_watcher_toggle_digest_and_export_are_durable(tmp_path: Path):
     assert payload["watchers"][0]["enabled"] is False
     assert payload["sources"][0]["name"] == "one"
     assert payload["exports"][0]["filename"].endswith(".json")
+
+
+def test_import_validation_reports_identity_and_rejects_tampering(tmp_path: Path):
+    store = ImmutableJsonStore(tmp_path / "state")
+    seed_store(store, _specs(tmp_path / "specs"))
+    _, path = create_export(store)
+    bundle = read_bundle(path)
+    result = validate_import_bundle(bundle)
+    assert result["valid"] is True
+    assert result["counts"]["watchers"] == 1
+    bundle["data"]["watchers"][0]["name"] = "tampered"
+    with pytest.raises(BundleError, match="hash mismatch"):
+        validate_import_bundle(bundle)
 
 
 def test_live_artifacts_replace_samples_and_preserve_curation_on_retry(tmp_path: Path):

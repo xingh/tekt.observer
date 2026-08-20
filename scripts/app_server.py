@@ -16,7 +16,7 @@ import threading
 from typing import Any
 from urllib.parse import unquote, urlparse
 
-from exchange_bundle import build_bundle, write_bundle
+from exchange_bundle import BundleError, build_bundle, validate_bundle, write_bundle
 from immutable_json_store import ImmutableJsonStore, StoreError
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,6 +24,7 @@ ITEM_PATH = re.compile(r"^/api/v1/items/([^/]+)$")
 WATCHER_PATH = re.compile(r"^/api/v1/watchers/([^/]+)$")
 EXPORT_PATH = re.compile(r"^/api/v1/exports/([A-Za-z0-9._-]+)$")
 MAX_BODY = 64 * 1024
+MAX_IMPORT_BODY = 20 * 1024 * 1024
 RUN_LOCK = threading.Lock()
 
 
@@ -237,6 +238,20 @@ def create_export(store: ImmutableJsonStore) -> tuple[dict[str, Any], Path]:
     return record, path
 
 
+def validate_import_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
+    validate_bundle(bundle)
+    manifest = bundle["manifest"]
+    data = bundle["data"]
+    return {
+        "valid": True,
+        "bundleId": manifest["bundle_id"],
+        "workspaceId": manifest["workspace_id"],
+        "workspaceRevision": manifest["workspace_revision"],
+        "schemaVersion": manifest["schema_version"],
+        "counts": {name: len(value) if isinstance(value, list) else 1 for name, value in data.items()},
+    }
+
+
 def start_live_run(store: ImmutableJsonStore, scratch: Path = ROOT / "tests" / "tmp" / "starter-workflows") -> dict[str, Any]:
     state = store.read()
     if any(row.get("status") in {"queued", "running"} and row.get("kind") == "live_tracks" for row in state["operations"].values()):
@@ -344,9 +359,17 @@ class AppHandler(SimpleHTTPRequestHandler):
                 self._json(HTTPStatus.CREATED, result)
             elif path == "/api/v1/runs":
                 self._json(HTTPStatus.ACCEPTED, start_live_run(self.store))
+            elif path == "/api/v1/imports/validate":
+                length = int(self.headers.get("Content-Length", "0"))
+                if length <= 0 or length > MAX_IMPORT_BODY:
+                    raise StoreError("invalid import size")
+                payload = json.loads(self.rfile.read(length))
+                if not isinstance(payload, dict):
+                    raise StoreError("bundle must be an object")
+                self._json(HTTPStatus.OK, validate_import_bundle(payload))
             else:
                 self._json(HTTPStatus.NOT_FOUND, {"error": "not found"})
-        except StoreError as exc:
+        except (BundleError, StoreError, json.JSONDecodeError) as exc:
             self._json(HTTPStatus.BAD_REQUEST, {"error": str(exc)})
 
     def log_message(self, format_: str, *args: Any) -> None:
