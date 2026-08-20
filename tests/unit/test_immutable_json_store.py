@@ -46,6 +46,18 @@ def test_count_threshold_compacts_and_keeps_old_files(tmp_path: Path):
     assert store.read()["watchers"]["topic_watch"]["enabled"] is True
 
 
+def test_batch_append_keeps_one_fsynced_hash_chained_event_per_change(tmp_path: Path):
+    store = ImmutableJsonStore(tmp_path, compact_every=100)
+    events = store.append_many([
+        ("items", "one", "put", {"title": "First"}),
+        ("items", "two", "put", {"title": "Second"}),
+        ("items", "one", "delete", None),
+    ])
+    assert [event["sequence"] for event in events] == [1, 2, 3]
+    assert len(list((tmp_path / "events").iterdir())) == 3
+    assert store.read()["items"] == {"two": {"title": "Second"}}
+
+
 def test_time_threshold_and_forced_flush(tmp_path: Path):
     clock = Clock()
     store = ImmutableJsonStore(tmp_path, compact_every=100, compact_interval_seconds=60, clock=clock)

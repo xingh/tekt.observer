@@ -123,6 +123,7 @@ def ingest_run_artifacts(store: ImmutableJsonStore, scratch: Path, date: str | N
         raise StoreError(f"organized artifacts not found: {organized_root}")
     state = store.read()
     imported = 0
+    changes: list[tuple[str, str, str, dict[str, Any] | None]] = []
     tracks: dict[str, int] = {}
     resolved_date = date
     for track_dir in sorted(organized_root.iterdir()):
@@ -170,27 +171,28 @@ def ingest_run_artifacts(store: ImmutableJsonStore, scratch: Path, date: str | N
                 "provenance": [f"Live run · {artifact.get('date')}", f"Source · {row.get('source_id', 'unknown')}", rationale],
                 "sample": False,
             }
-            store.append("items", item_id, "put", item)
+            changes.append(("items", item_id, "put", item))
             imported += 1
             track_count += 1
         tracks[track] = track_count
         run_id = f"{track}:{artifact.get('date')}"
-        store.append("runs", run_id, "put", {"id": run_id, "watcher": track, "date": artifact.get("date"), "status": "complete", "itemCount": track_count, "artifact": str(candidates[-1])})
+        changes.append(("runs", run_id, "put", {"id": run_id, "watcher": track, "date": artifact.get("date"), "status": "complete", "itemCount": track_count, "artifact": str(candidates[-1])}))
         if digest_summary or digest_item_ids:
             digest_id = f"pipeline:{track}:{artifact.get('date')}"
-            store.append("digests", digest_id, "put", {"id": digest_id, "watcher": track, "title": f"{track.replace('_', ' ').title()} · {artifact.get('date')}", "createdAt": artifact.get("generated_at") or f"{artifact.get('date')}T00:00:00Z", "summary": digest_summary or f"{track_count} signals imported.", "itemIds": digest_item_ids, "status": "ready"})
+            changes.append(("digests", digest_id, "put", {"id": digest_id, "watcher": track, "title": f"{track.replace('_', ' ').title()} · {artifact.get('date')}", "createdAt": artifact.get("generated_at") or f"{artifact.get('date')}T00:00:00Z", "summary": digest_summary or f"{track_count} signals imported.", "itemIds": digest_item_ids, "status": "ready"}))
     if not tracks:
         raise StoreError("no organized track artifacts found")
     for item_id, row in state["items"].items():
         if row.get("sample"):
-            store.append("items", item_id, "delete")
+            changes.append(("items", item_id, "delete", None))
     workspace = state["workspaces"].get("local")
     if workspace:
-        store.append("workspaces", "local", "put", {**workspace, "revision": int(workspace.get("revision", 0)) + 1})
+        changes.append(("workspaces", "local", "put", {**workspace, "revision": int(workspace.get("revision", 0)) + 1}))
     now = dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z")
     operation_id = f"live-import:{resolved_date or now[:10]}"
     operation = {"id": operation_id, "label": f"Imported live tracks for {resolved_date}", "status": "complete", "progress": 100, "updatedAt": now, "itemCount": imported}
-    store.append("operations", operation_id, "put", operation)
+    changes.append(("operations", operation_id, "put", operation))
+    store.append_many(changes)
     store.compact_if_due(force=True)
     return {"date": resolved_date, "tracks": tracks, "itemCount": imported, "operation": operation}
 
@@ -319,6 +321,13 @@ class AppHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args: Any, directory: str, store: ImmutableJsonStore, **kwargs: Any) -> None:
         self.store = store
         super().__init__(*args, directory=directory, **kwargs)
+
+    def end_headers(self) -> None:
+        path = urlparse(self.path).path
+        if not path.startswith("/api/") and (path == "/" or path.endswith(".html")):
+            self.send_header("Cache-Control", "no-store, max-age=0")
+            self.send_header("Pragma", "no-cache")
+        super().end_headers()
 
     def _json(self, status: HTTPStatus, value: Any) -> None:
         body = (json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode()

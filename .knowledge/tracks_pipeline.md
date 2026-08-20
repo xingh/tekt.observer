@@ -36,7 +36,8 @@ each stage conditionally.
 
 | Stage | Generic (any track) | Track-specific |
 |---|---|---|
-| Discover / gather | `scripts/feed_gather.py` (RSS / Atom / HN Algolia, `--registry`) | `scripts/discover_jobs.py` (jobwatch), `scripts/topic_watch_discover.py` (local HTML fixture) |
+| Discover / gather | `scripts/feed_gather.py` (bounded concurrent RSS / Atom / HN Algolia fetches, deterministic registry-order output, `--registry`) | `scripts/discover_jobs.py` (career tracks), `scripts/topic_watch_discover.py` (local HTML fixture) |
+| Enrich previews | `scripts/feed_enrich.py` (bounded concurrent OpenGraph metadata fetches with deterministic cache projection) | — |
 | Enrich | `scripts/feed_enrich.py` (per-URL OpenGraph / Twitter / canonical, cached) | — |
 | Classify | — | `scripts/topic_watch_classify.py`, `scripts/market_watch_classify.py`, `scripts/career_watch_classify.py` |
 | Trends | `scripts/track_trends.py` (topic/source/audience counts, velocity, cross-source URLs, keyword cloud) | — |
@@ -89,7 +90,7 @@ JSON:
 
 ### market_watch
 
-- **Discover:** `scripts/feed_gather.py` with `shared/schemas/market_watch_source_registry.json` (16 sources spanning market news, central banks, the SEC, the US Federal Register, and focused HN queries including AI public companies and regulation)
+- **Discover:** `scripts/feed_gather.py` with `shared/schemas/market_watch_source_registry.json` (10 sources spanning market news, central banks, the SEC, the US Federal Register, and two focused HN queries)
 - **Enrich:** `scripts/feed_enrich.py`
 - **Classify:** `scripts/market_watch_classify.py` — asset-class + event-type keywords, watchlist matching for portfolio alerts
 - **Trends:** `scripts/track_trends.py`
@@ -98,7 +99,7 @@ JSON:
 
 ### career_watch
 
-- **Discover:** `scripts/feed_gather.py` with `shared/schemas/career_watch_source_registry.json` (13 sources: HN Jobs, ai-jobs.net, We Work Remotely, and focused queries for engineering, product/design, architecture, governance, automation, education, DevRel, and customer-facing AI roles). The ATS adapters under `scripts/discover/sources/` remain available for private employer-specific tracks.
+- **Discover:** `scripts/feed_gather.py` with `shared/schemas/career_watch_source_registry.json` (5 sources: HN Jobs, ai-jobs.net, We Work Remotely, and two focused HN queries). The ATS adapters under `scripts/discover/sources/` remain available for private employer-specific tracks.
 - **Enrich:** `scripts/feed_enrich.py`
 - **Classify:** `scripts/career_watch_classify.py` — role_type + seniority audience + remote-friendliness from keyword sets
 - **Trends:** `scripts/track_trends.py`

@@ -195,30 +195,40 @@ class ImmutableJsonStore:
         return state
 
     def append(self, collection: str, record_id: str, operation: str, record: Mapping[str, Any] | None = None) -> dict[str, Any]:
+        return self.append_many([(collection, record_id, operation, record)])[0]
+
+    def append_many(self, changes: list[tuple[str, str, str, Mapping[str, Any] | None]]) -> list[dict[str, Any]]:
+        if not changes:
+            return []
         with self._locked():
             files = self._files(self.events_dir, EVENT_RE)
             sequence = files[-1][0] + 1 if files else 1
             previous_hash = files[-1][1] if files else None
-            event: dict[str, Any] = {
-                "schema_version": STORE_SCHEMA_VERSION,
-                "sequence": sequence,
-                "recorded_at": _timestamp(self.clock()),
-                "previous_hash": previous_hash,
-                "collection": collection,
-                "record_id": record_id,
-                "operation": operation,
-            }
-            if operation == "put":
-                if record is None:
-                    raise StoreError("put requires a record")
-                event["record"] = dict(record)
-            elif operation != "delete":
-                raise StoreError(f"unsupported event operation: {operation!r}")
-            payload_hash = digest_bytes(canonical_bytes(event))
-            path = self.events_dir / f"{sequence:020d}-{payload_hash}.json"
-            _write_immutable(path, event)
+            events = []
+            for collection, record_id, operation, record in changes:
+                event: dict[str, Any] = {
+                    "schema_version": STORE_SCHEMA_VERSION,
+                    "sequence": sequence,
+                    "recorded_at": _timestamp(self.clock()),
+                    "previous_hash": previous_hash,
+                    "collection": collection,
+                    "record_id": record_id,
+                    "operation": operation,
+                }
+                if operation == "put":
+                    if record is None:
+                        raise StoreError("put requires a record")
+                    event["record"] = dict(record)
+                elif operation != "delete":
+                    raise StoreError(f"unsupported event operation: {operation!r}")
+                payload_hash = digest_bytes(canonical_bytes(event))
+                path = self.events_dir / f"{sequence:020d}-{payload_hash}.json"
+                _write_immutable(path, event)
+                events.append(event)
+                previous_hash = payload_hash
+                sequence += 1
             self._compact_if_due_locked()
-            return event
+            return events
 
     def _compaction_due(self, latest_sequence: int, snapshot: Mapping[str, Any] | None) -> bool:
         snapshot_sequence = int(snapshot.get("sequence", 0)) if snapshot else 0

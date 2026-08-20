@@ -13,3 +13,5 @@ After a live pipeline run, connect its organized artifacts to the app with `./te
 Save and Dismiss call `PATCH /api/v1/items/<id>`. The server validates the mutation, appends and fsyncs the immutable item event, increments the workspace revision through another journal event, and only then acknowledges the request. Reloading reconstructs the same state from the latest snapshot plus later events.
 
 The server deliberately binds only to loopback. Hosted collaboration will use the PocketBase projection and authentication boundary; do not expose this local server directly to a network.
+
+The local server marks the HTML application shell `no-store` while allowing Vite's content-hashed assets to retain their normal static behavior. A normal browser refresh therefore discovers a newly built asset hash instead of reopening a stale interface shell.

@@ -8,6 +8,8 @@ Compaction creates a new immutable full-state snapshot. By default this happens 
 
 Compaction does not delete journal segments or earlier snapshots. Retention/pruning must be a separately designed archival operation with an externally verified backup; it is not automatic.
 
+Multi-record pipeline ingestion uses `append_many` to hold the writer lock and scan the existing chain once. Every change still receives its own sequence, previous-event hash, immutable JSON file, file fsync, and directory fsync. This removes repeated directory scans without weakening event-level durability.
+
 Configuration:
 
 - `TEKT_OBSERVER_STORE` — root directory, default `state/`

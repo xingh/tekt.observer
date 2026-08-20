@@ -14,12 +14,12 @@ OG images on its listings.
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 import re
 import socket
 import ssl
 import sys
-import time
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.error import URLError, HTTPError
@@ -112,12 +112,28 @@ def enrich_url(url: str) -> dict:
     }
 
 
+def enrich_discovery(discovery: dict, cache: dict[str, dict], max_urls: int, workers: int = 6) -> int:
+    candidates = [candidate for source in discovery.get("sources", []) for candidate in source.get("candidates", [])]
+    pending = list(dict.fromkeys(candidate.get("url") or "" for candidate in candidates if candidate.get("url") and candidate.get("url") not in cache))[:max_urls]
+    if pending:
+        with ThreadPoolExecutor(max_workers=max(1, min(workers, len(pending))), thread_name_prefix="enrich") as executor:
+            for index, (url, enriched) in enumerate(zip(pending, executor.map(enrich_url, pending)), start=1):
+                cache[url] = enriched
+                print(f"[enrich] ({index}/{len(pending)}) {url}", file=sys.stderr)
+    for candidate in candidates:
+        url = candidate.get("url") or ""
+        if url:
+            candidate["enrichment"] = cache.get(url, {"error": "budget_exhausted"})
+    return len(pending)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", default=".", help="Repo-shaped root")
     ap.add_argument("--track", default="topic_watch")
     ap.add_argument("--date", required=True)
     ap.add_argument("--max-urls", type=int, default=MAX_URLS)
+    ap.add_argument("--workers", type=int, default=6, help="Maximum concurrent metadata fetches")
     ap.add_argument("--refetch", action="store_true", help="Ignore cache and re-fetch every URL")
     args = ap.parse_args()
     root = Path(args.root).resolve()
@@ -133,22 +149,7 @@ def main() -> None:
         except json.JSONDecodeError:
             cache = {}
     discovery = json.loads(disc_path.read_text())
-    fetched = 0
-    for source in discovery.get("sources", []):
-        for cand in source.get("candidates", []):
-            url = cand.get("url") or ""
-            if not url:
-                continue
-            enriched = cache.get(url)
-            if enriched is None and fetched < args.max_urls:
-                enriched = enrich_url(url)
-                cache[url] = enriched
-                fetched += 1
-                print(f"[enrich] ({fetched}/{args.max_urls}) {url}", file=sys.stderr)
-                time.sleep(0.15)  # be nice
-            if enriched is None:
-                enriched = {"error": "budget_exhausted"}
-            cand["enrichment"] = enriched
+    fetched = enrich_discovery(discovery, cache, args.max_urls, workers=args.workers)
     cache_path.write_text(json.dumps(cache, indent=2) + "\n")
     disc_path.write_text(json.dumps(discovery, indent=2) + "\n")
     latest = disc_path.parent / "latest.json"

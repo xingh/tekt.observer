@@ -13,6 +13,7 @@ only. Degrades per-source: if a source fails, its entry lands with status
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 import re
 import socket
@@ -233,12 +234,13 @@ def _to_candidates(items: list[dict], source: dict) -> list[dict]:
     return out
 
 
-def gather_all(registry: dict, window: tuple[int, int] | None = None) -> list[dict]:
-    per_source = []
-    for source in registry.get("sources", []):
+def gather_all(registry: dict, window: tuple[int, int] | None = None, workers: int = 6) -> list[dict]:
+    sources = registry.get("sources", [])
+
+    def gather(source: dict) -> dict:
         items, limitations, status = _gather_source(source, window=window)
         cands = _to_candidates(items, source)
-        per_source.append({
+        result = {
             "source": source["name"],
             "source_url": source["url"],
             "discovery_mode": source["kind"],
@@ -256,10 +258,15 @@ def gather_all(registry: dict, window: tuple[int, int] | None = None) -> list[di
             "candidates": cands,
             "source_id": source["id"],
             "filters": {},
-        })
+        }
         # progress line to stderr so live runs surface where the time went
         print(f"[gather] {source['id']}: {status} ({len(cands)} items)", file=sys.stderr)
-    return per_source
+        return result
+
+    if not sources:
+        return []
+    with ThreadPoolExecutor(max_workers=max(1, min(workers, len(sources))), thread_name_prefix="feed") as executor:
+        return list(executor.map(gather, sources))
 
 
 def main() -> None:
@@ -269,6 +276,7 @@ def main() -> None:
     ap.add_argument("--date", required=True, help="YYYY-MM-DD")
     default_registry = str(Path(__file__).resolve().parents[1] / "shared" / "schemas" / "topic_watch_source_registry.json")
     ap.add_argument("--registry", default=default_registry)
+    ap.add_argument("--workers", type=int, default=6, help="Maximum concurrent source fetches")
     ap.add_argument("--for-date", default="",
                     help="Fetch only entries whose pubDate falls in this UTC day (YYYY-MM-DD). "
                          "For hn_algolia sources the window is applied server-side; for rss/atom "
@@ -278,7 +286,7 @@ def main() -> None:
     registry_path = Path(args.registry).resolve()
     registry = json.loads(registry_path.read_text())
     window = _date_window(args.for_date) if args.for_date else None
-    per_source = gather_all(registry, window=window)
+    per_source = gather_all(registry, window=window, workers=args.workers)
     artifact = {
         "schema_version": 1,
         "track": args.track,
