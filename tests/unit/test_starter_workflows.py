@@ -29,7 +29,8 @@ def test_ai_market_regulation_watchlist_and_registries(repo_root):
     taxonomy = json.loads((repo_root / "shared/schemas/market_watch_taxonomy.json").read_text())
     assert _classify_event_type("New chip export control for AI accelerators", "ai_regulation", taxonomy) == "export_control"
 
-    expected = {"topic_watch": 10, "market_watch": 16, "job_watch": 13}
+    expected = {"topic_watch": 8, "market_watch": 10, "job_watch": 5}
     for track, count in expected.items():
         registry = json.loads((repo_root / f"shared/schemas/{track}_source_registry.json").read_text())
         assert len(registry["sources"]) == count
+        assert sum(source["kind"] == "hn_algolia" for source in registry["sources"]) <= 2

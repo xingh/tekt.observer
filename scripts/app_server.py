@@ -32,6 +32,29 @@ def _read_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _readable_context(track: str, row: dict[str, Any]) -> str:
+    topic = str(row.get("topic") or "general").replace("_", " ")
+    if track == "job_watch":
+        role = str(row.get("role_type") or topic).replace("_", " ")
+        seniority = str(row.get("seniority") or "unspecified seniority").replace("_", " ")
+        location = "Remote-friendly" if row.get("is_remote_friendly") else "Location flexibility was not confirmed"
+        return f"{seniority.title()} opportunity in {role}. {location}."
+    if track == "market_watch":
+        event = str(row.get("event_type") or row.get("content_type") or "market development").replace("_", " ")
+        watchlist = row.get("watchlist_matches") or []
+        relevance = f" Watchlist match: {', '.join(watchlist)}." if watchlist else ""
+        return f"{event.title()} with potential relevance to {topic}.{relevance}"
+    audience = ", ".join(str(value).replace("_", " ") for value in row.get("audiences", []))
+    suffix = f" for {audience}" if audience else ""
+    return f"A {str(row.get('content_type') or 'report').replace('_', ' ')} about {topic}{suffix}."
+
+
+def _useful_description(value: Any) -> str:
+    text = str(value or "").strip()
+    machine_markers = ("_hits=", "content_type_inferred=", "watchlist_hits=", "remote=")
+    return "" if any(marker in text for marker in machine_markers) else text
+
+
 def seed_store(store: ImmutableJsonStore, specs_root: Path = ROOT / ".arkitype" / "watchers") -> None:
     state = store.read()
     changed = False
@@ -62,6 +85,11 @@ def seed_store(store: ImmutableJsonStore, specs_root: Path = ROOT / ".arkitype" 
                     "url": source.get("url", ""), "discoveryMode": source.get("discovery_mode", "unknown"),
                     "cadence": source.get("cadence_group", "every_run"), "status": "ready",
                 })
+                changed = True
+        configured_source_ids = {f"{definition['slug']}:{source['id']}" for source in source_rows}
+        for source_id, existing_source in state["sources"].items():
+            if existing_source.get("watcher") == definition["slug"] and source_id not in configured_source_ids:
+                store.append("sources", source_id, "delete")
                 changed = True
         has_live_items = any(row.get("watcher") == definition["slug"] and not row.get("sample", False) for row in state["items"].values())
         for index, sample in enumerate(_read_json(watcher_dir / "samples.json")):
@@ -129,7 +157,7 @@ def ingest_run_artifacts(store: ImmutableJsonStore, scratch: Path, date: str | N
             metadata = enrichment.get(row.get("url", ""), {})
             item = {
                 "id": item_id, "watcher": track, "title": row.get("title", "Untitled signal"),
-                "description": metadata.get("og_description") or row.get("description") or rationale, "url": row.get("url", ""),
+                "description": _useful_description(metadata.get("og_description")) or _useful_description(row.get("description")) or _readable_context(track, row), "url": row.get("url", ""),
                 "image": metadata.get("og_image", ""), "siteName": metadata.get("og_site_name") or row.get("source_id", ""),
                 "author": metadata.get("author", ""),
                 "topic": row.get("topic") or row.get("role_type") or row.get("asset_class") or "general",

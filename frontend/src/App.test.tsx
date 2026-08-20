@@ -11,4 +11,7 @@ test("shows a useful starter inbox when the API is offline", async () => {
   expect(screen.getByRole("heading", { name: "Your inbox" })).toBeInTheDocument();
   expect(await screen.findByText("Senior AI Platform Engineer")).toBeInTheDocument();
   expect(screen.getAllByText("AI Markets & Regulation").length).toBeGreaterThan(0);
+  expect(screen.getByText(/Highest-priority items appear first/)).toBeInTheDocument();
+  expect(screen.getByLabelText("Save Senior AI Platform Engineer")).toBeInTheDocument();
+  expect(screen.getByLabelText("Dismiss Senior AI Platform Engineer")).toBeInTheDocument();
 });

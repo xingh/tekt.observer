@@ -21,42 +21,6 @@
       ]
     },
     {
-      "id": "hn_algolia_prompt_engineer",
-      "name": "Hacker News (prompt engineer)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=prompt%20engineer&hitsPerPage=20",
-      "topic_hints": [
-        "prompt_engineer"
-      ]
-    },
-    {
-      "id": "hn_algolia_ai_instructor",
-      "name": "Hacker News (AI instructor / trainer)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=AI%20instructor%20trainer&hitsPerPage=20",
-      "topic_hints": [
-        "ai_instructor"
-      ]
-    },
-    {
-      "id": "hn_algolia_ml_engineer",
-      "name": "Hacker News (ML engineer)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=ML%20engineer%20hiring&hitsPerPage=20",
-      "topic_hints": [
-        "ml_engineer"
-      ]
-    },
-    {
-      "id": "hn_algolia_devrel",
-      "name": "Hacker News (AI DevRel / Developer Advocate)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=developer%20advocate%20AI&hitsPerPage=20",
-      "topic_hints": [
-        "ai_devrel"
-      ]
-    },
-    {
       "id": "ai_jobs_net",
       "name": "ai-jobs.net",
       "kind": "rss",
@@ -76,43 +40,6 @@
         "ai_engineer",
         "ml_engineer",
         "ai_augmented_generalist"
-      ]
-    },
-    {
-      "id": "hn_algolia_ai_product",
-      "name": "Hacker News (AI product management and design)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=AI%20product%20manager%20designer%20hiring&hitsPerPage=20",
-      "topic_hints": [
-        "ai_pm",
-        "ai_product_designer"
-      ]
-    },
-    {
-      "id": "hn_algolia_ai_architect",
-      "name": "Hacker News (AI solutions architect)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=AI%20solutions%20architect%20hiring&hitsPerPage=20",
-      "topic_hints": [
-        "ai_solutions_architect"
-      ]
-    },
-    {
-      "id": "hn_algolia_ai_governance_jobs",
-      "name": "Hacker News (AI governance and risk jobs)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=AI%20governance%20risk%20hiring&hitsPerPage=20",
-      "topic_hints": [
-        "ai_governance_risk"
-      ]
-    },
-    {
-      "id": "hn_algolia_ai_automation_jobs",
-      "name": "Hacker News (AI operations and automation)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=AI%20automation%20operations%20hiring&hitsPerPage=20",
-      "topic_hints": [
-        "ai_operations_automation"
       ]
     },
     {

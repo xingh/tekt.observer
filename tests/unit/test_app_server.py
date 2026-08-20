@@ -31,6 +31,15 @@ def test_seed_is_idempotent_and_workspace_is_immediately_useful(tmp_path: Path):
     assert (tmp_path / "state" / "CURRENT.json").exists()
 
 
+def test_seed_removes_sources_no_longer_in_the_watcher_spec(tmp_path: Path):
+    store = ImmutableJsonStore(tmp_path / "state", compact_every=100)
+    specs = _specs(tmp_path / "specs")
+    seed_store(store, specs)
+    store.append("sources", "topic_watch:retired", "put", {"id": "topic_watch:retired", "watcher": "topic_watch", "name": "Retired"})
+    seed_store(store, specs)
+    assert [source["id"] for source in workspace_payload(store)["sources"]] == ["topic_watch:one"]
+
+
 def test_item_curation_is_journaled_and_increments_revision(tmp_path: Path):
     store = ImmutableJsonStore(tmp_path / "state")
     seed_store(store, _specs(tmp_path / "specs"))

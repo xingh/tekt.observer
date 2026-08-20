@@ -69,62 +69,6 @@
       ]
     },
     {
-      "id": "hn_algolia_earnings",
-      "name": "Hacker News (earnings)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=earnings&hitsPerPage=15",
-      "topic_hints": [
-        "public_equities"
-      ]
-    },
-    {
-      "id": "hn_algolia_funding",
-      "name": "Hacker News (funding round)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=funding%20round&hitsPerPage=15",
-      "topic_hints": [
-        "private_equity"
-      ]
-    },
-    {
-      "id": "hn_algolia_ipo",
-      "name": "Hacker News (IPO)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=IPO&hitsPerPage=15",
-      "topic_hints": [
-        "public_equities",
-        "private_equity"
-      ]
-    },
-    {
-      "id": "hn_algolia_rate_hike",
-      "name": "Hacker News (rate hike)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=rate%20hike&hitsPerPage=15",
-      "topic_hints": [
-        "fixed_income_macro"
-      ]
-    },
-    {
-      "id": "hn_algolia_acquisition",
-      "name": "Hacker News (acquisition)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=acquisition&hitsPerPage=15",
-      "topic_hints": [
-        "private_equity",
-        "public_equities"
-      ]
-    },
-    {
-      "id": "hn_algolia_central_bank",
-      "name": "Hacker News (central bank)",
-      "kind": "hn_algolia",
-      "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story&query=central%20bank&hitsPerPage=15",
-      "topic_hints": [
-        "fixed_income_macro"
-      ]
-    },
-    {
       "id": "federal_register_ai_rss",
       "name": "US Federal Register (artificial intelligence)",
       "kind": "rss",
