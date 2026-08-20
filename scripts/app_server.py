@@ -30,10 +30,11 @@ def _read_json(path: Path) -> Any:
 
 def seed_store(store: ImmutableJsonStore, specs_root: Path = ROOT / ".arkitype" / "watchers") -> None:
     state = store.read()
-    if state["workspaces"]:
-        return
+    changed = False
     now = dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z")
-    store.append("workspaces", "local", "put", {"id": "local", "name": "My observation workspace", "revision": 1})
+    if not state["workspaces"]:
+        store.append("workspaces", "local", "put", {"id": "local", "name": "My observation workspace", "revision": 1})
+        changed = True
     for watcher_dir in sorted(specs_root.iterdir()):
         if not watcher_dir.is_dir() or not (watcher_dir / "watcher.json").exists():
             continue
@@ -46,19 +47,104 @@ def seed_store(store: ImmutableJsonStore, specs_root: Path = ROOT / ".arkitype" 
             "description": definition.get("description", ""), "enabled": definition.get("status") == "active",
             "status": "healthy", "sourceCount": len(source_rows),
         }
-        store.append("watchers", watcher["id"], "put", watcher)
+        if watcher["id"] not in state["watchers"]:
+            store.append("watchers", watcher["id"], "put", watcher)
+            changed = True
+        for source in source_rows:
+            source_id = f"{definition['slug']}:{source['id']}"
+            if source_id not in state["sources"]:
+                store.append("sources", source_id, "put", {
+                    "id": source_id, "watcher": definition["slug"], "name": source.get("name", source["id"]),
+                    "url": source.get("url", ""), "discoveryMode": source.get("discovery_mode", "unknown"),
+                    "cadence": source.get("cadence_group", "every_run"), "status": "ready",
+                })
+                changed = True
+        has_live_items = any(row.get("watcher") == definition["slug"] and not row.get("sample", False) for row in state["items"].values())
         for index, sample in enumerate(_read_json(watcher_dir / "samples.json")):
             item_id = f"{definition['slug']}:{sample['item_key']}"
+            if item_id in state["items"] or has_live_items:
+                continue
             item = {
                 "id": item_id, "watcher": definition["slug"], "title": sample["title"],
                 "description": sample.get("description", ""), "url": sample.get("url", ""),
                 "topic": sample.get("topic", "general"), "score": max(72, 94 - index * 5),
                 "status": "new", "observedAt": now,
                 "provenance": ["Starter watcher specification", "Normalized by tekt.observer", "Sample content — replace with a live run"],
+                "sample": True,
             }
             store.append("items", item_id, "put", item)
-    store.append("operations", "starter-run", "put", {"id": "starter-run", "label": "Starter watchers initialized", "status": "complete", "progress": 100, "updatedAt": now})
+            changed = True
+    if "starter-run" not in state["operations"]:
+        store.append("operations", "starter-run", "put", {"id": "starter-run", "label": "Starter watchers initialized", "status": "complete", "progress": 100, "updatedAt": now})
+        changed = True
+    if changed:
+        store.compact_if_due(force=True)
+
+
+def ingest_run_artifacts(store: ImmutableJsonStore, scratch: Path, date: str | None = None) -> dict[str, Any]:
+    organized_root = scratch / "artifacts" / "organized"
+    if not organized_root.is_dir():
+        raise StoreError(f"organized artifacts not found: {organized_root}")
+    state = store.read()
+    imported = 0
+    tracks: dict[str, int] = {}
+    resolved_date = date
+    for track_dir in sorted(organized_root.iterdir()):
+        if not track_dir.is_dir():
+            continue
+        candidates = sorted(track_dir.glob("*.json"))
+        if date:
+            candidates = [track_dir / f"{date}.json"] if (track_dir / f"{date}.json").exists() else []
+        if not candidates:
+            continue
+        artifact = _read_json(candidates[-1])
+        track = artifact.get("track", track_dir.name)
+        resolved_date = artifact.get("date", resolved_date)
+        score_by_id: dict[str, float] = {}
+        digest_path = scratch / "artifacts" / "digests" / track / f"{artifact.get('date')}.json"
+        if digest_path.exists():
+            digest = _read_json(digest_path)
+            for run in digest.get("runs", []):
+                for row in run.get("top_matches", []):
+                    if row.get("job_key"):
+                        score_by_id[row["job_key"]] = min(100, float(row.get("fit_score") or 0) * 10)
+        track_count = 0
+        for row in artifact.get("items", []):
+            item_key = row.get("item_key")
+            if not item_key:
+                continue
+            item_id = f"{track}:{item_key}"
+            existing = state["items"].get(item_id, {})
+            rationale = row.get("rationale") or "Classified by the deterministic observation pipeline."
+            item = {
+                "id": item_id, "watcher": track, "title": row.get("title", "Untitled signal"),
+                "description": row.get("description") or rationale, "url": row.get("url", ""),
+                "topic": row.get("topic") or row.get("role_type") or row.get("asset_class") or "general",
+                "score": round(score_by_id.get(item_key, max(40, float(row.get("confidence") or 0.5) * 100))),
+                "status": existing.get("status", "new"), "observedAt": artifact.get("generated_at") or f"{artifact.get('date')}T00:00:00Z",
+                "provenance": [f"Live run · {artifact.get('date')}", f"Source · {row.get('source_id', 'unknown')}", rationale],
+                "sample": False,
+            }
+            store.append("items", item_id, "put", item)
+            imported += 1
+            track_count += 1
+        tracks[track] = track_count
+        run_id = f"{track}:{artifact.get('date')}"
+        store.append("runs", run_id, "put", {"id": run_id, "watcher": track, "date": artifact.get("date"), "status": "complete", "itemCount": track_count, "artifact": str(candidates[-1])})
+    if not tracks:
+        raise StoreError("no organized track artifacts found")
+    for item_id, row in state["items"].items():
+        if row.get("sample"):
+            store.append("items", item_id, "delete")
+    workspace = state["workspaces"].get("local")
+    if workspace:
+        store.append("workspaces", "local", "put", {**workspace, "revision": int(workspace.get("revision", 0)) + 1})
+    now = dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z")
+    operation_id = f"live-import:{resolved_date or now[:10]}"
+    operation = {"id": operation_id, "label": f"Imported live tracks for {resolved_date}", "status": "complete", "progress": 100, "updatedAt": now, "itemCount": imported}
+    store.append("operations", operation_id, "put", operation)
     store.compact_if_due(force=True)
+    return {"date": resolved_date, "tracks": tracks, "itemCount": imported, "operation": operation}
 
 
 def workspace_payload(store: ImmutableJsonStore) -> dict[str, Any]:
@@ -67,6 +153,7 @@ def workspace_payload(store: ImmutableJsonStore) -> dict[str, Any]:
     return {
         "workspace": workspace,
         "watchers": sorted(state["watchers"].values(), key=lambda row: row["slug"]),
+        "sources": sorted(state["sources"].values(), key=lambda row: (row.get("watcher", ""), row.get("name", ""))),
         "items": sorted(state["items"].values(), key=lambda row: row.get("observedAt", ""), reverse=True),
         "operations": sorted(state["operations"].values(), key=lambda row: row.get("updatedAt", ""), reverse=True),
         "digests": sorted(state["digests"].values(), key=lambda row: row.get("createdAt", ""), reverse=True),
@@ -208,6 +295,9 @@ class AppHandler(SimpleHTTPRequestHandler):
             elif path == "/api/v1/exports":
                 record, _ = create_export(self.store)
                 self._json(HTTPStatus.CREATED, {**record, "downloadUrl": f"/api/v1/exports/{record['filename']}"})
+            elif path == "/api/v1/runs/ingest":
+                result = ingest_run_artifacts(self.store, ROOT / "tests" / "tmp" / "starter-workflows")
+                self._json(HTTPStatus.CREATED, result)
             else:
                 self._json(HTTPStatus.NOT_FOUND, {"error": "not found"})
         except StoreError as exc:

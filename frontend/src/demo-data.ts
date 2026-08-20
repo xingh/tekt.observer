@@ -7,6 +7,11 @@ export const demoState: WorkspaceState = {
     { id: "job_watch", slug: "job_watch", name: "AI-enabled Professions", description: "Technical and business professions being reshaped by applied AI.", enabled: true, status: "healthy", sourceCount: 12 },
     { id: "market_watch", slug: "market_watch", name: "AI Markets & Regulation", description: "Public companies, semiconductors, cloud platforms, regulation, and policy.", enabled: true, status: "attention", sourceCount: 9 },
   ],
+  sources: [
+    { id: "topic_watch:starter", watcher: "topic_watch", name: "Enterprise AI sources", url: "", discoveryMode: "feed", cadence: "every_run", status: "ready" },
+    { id: "job_watch:starter", watcher: "job_watch", name: "Official career sources", url: "", discoveryMode: "api", cadence: "every_run", status: "ready" },
+    { id: "market_watch:starter", watcher: "market_watch", name: "Market and policy sources", url: "", discoveryMode: "feed", cadence: "every_run", status: "ready" },
+  ],
   items: [
     ["topic_watch", "enterprise-adoption", "Measuring enterprise AI adoption beyond pilot counts", "Deployment depth, active use, workflow change, and measurable value are replacing pilot counts as the useful adoption signal.", "enterprise adoption", 94],
     ["topic_watch", "customer-operations", "Redesigning customer-support workflows around AI", "Agent assist, escalation design, quality controls, and customer outcomes form a practical operating system for support teams.", "customer operations", 89],

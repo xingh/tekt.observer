@@ -34,12 +34,12 @@ Incrementally rebuild tekt.observer around an immutable JSON durable record, pin
 
 - Focused bundle/client/store tests: 8 passed.
 - Python compile check and `git diff --check`: passed.
-- Full `scripts/test.sh`: 715 passed, 28 skipped, including frontend build and component tests.
+- Full `scripts/test.sh`: 716 passed, 28 skipped, including frontend build and component tests.
 
 ## Six-iteration product pass
 
 - [x] Iteration 1: first-class Active, New, Saved, and Dismissed inbox views with reversible curation.
-- [ ] Iteration 2: source inventory and watcher health detail.
+- [x] Iteration 2: source inventory, watcher health detail, and live artifact ingestion into the immutable app workspace.
 - [ ] Iteration 3: validated immutable bundle import/fork.
 - [ ] Iteration 4: journaled local run operations.
 - [ ] Iteration 5: digest reading and highlighted-item navigation.

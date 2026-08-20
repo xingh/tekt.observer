@@ -22,3 +22,4 @@ async function mutate(path: string, method: "POST" | "PATCH", body?: unknown) {
 export const updateWatcher = (id: string, enabled: boolean) => mutate(`/api/v1/watchers/${encodeURIComponent(id)}`, "PATCH", { enabled });
 export const createDigest = () => mutate("/api/v1/digests", "POST");
 export const createExport = () => mutate("/api/v1/exports", "POST") as Promise<{ downloadUrl: string }>;
+export const ingestLatestRun = () => mutate("/api/v1/runs/ingest", "POST");

@@ -38,11 +38,15 @@ def file_store_from_env() -> ImmutableJsonStore:
 
 
 def ensure_frontend() -> None:
-    if (ROOT / "frontend" / "dist" / "index.html").exists():
+    frontend = ROOT / "frontend"
+    built = frontend / "dist" / "index.html"
+    inputs = [frontend / "package.json", frontend / "package-lock.json", frontend / "vite.config.ts"]
+    inputs.extend((frontend / "src").rglob("*"))
+    needs_build = not built.exists() or any(path.is_file() and path.stat().st_mtime > built.stat().st_mtime for path in inputs)
+    if not needs_build:
         return
     if not shutil.which("npm"):
         raise OSError("npm is required for the first frontend build")
-    frontend = ROOT / "frontend"
     if not (frontend / "node_modules").exists():
         subprocess.run(["npm", "install"], cwd=frontend, check=True)
     subprocess.run(["npm", "run", "build"], cwd=frontend, check=True)
@@ -182,6 +186,9 @@ def parser() -> argparse.ArgumentParser:
     app = sub.add_parser("app")
     app.add_argument("--host", default="127.0.0.1")
     app.add_argument("--port", type=int, default=8091)
+    ingest = sub.add_parser("ingest")
+    ingest.add_argument("--scratch", type=Path, default=ROOT / "tests" / "tmp" / "starter-workflows")
+    ingest.add_argument("--date")
     store = sub.add_parser("store")
     store_sub = store.add_subparsers(dest="store_command", required=True)
     put = store_sub.add_parser("put")
@@ -231,6 +238,10 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "app":
             run_local_app(args.host, args.port)
+            return 0
+        if args.command == "ingest":
+            from app_server import ingest_run_artifacts
+            print(json.dumps(ingest_run_artifacts(file_store_from_env(), args.scratch, args.date), sort_keys=True))
             return 0
         client = client_from_env()
         if args.command == "worker":

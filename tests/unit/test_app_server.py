@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from app_server import create_digest, create_export, patch_item, patch_watcher, seed_store, workspace_payload
+from app_server import create_digest, create_export, ingest_run_artifacts, patch_item, patch_watcher, seed_store, workspace_payload
 from exchange_bundle import read_bundle
 from immutable_json_store import ImmutableJsonStore, StoreError
 
@@ -37,7 +37,7 @@ def test_item_curation_is_journaled_and_increments_revision(tmp_path: Path):
     updated = patch_item(store, item_id, {"status": "saved"})
     assert updated["status"] == "saved"
     assert workspace_payload(store)["workspace"]["revision"] == 2
-    assert len(list((tmp_path / "state" / "events").iterdir())) == 6
+    assert len(list((tmp_path / "state" / "events").iterdir())) == 7
 
 
 def test_item_curation_rejects_unknown_status_and_item(tmp_path: Path):
@@ -61,4 +61,26 @@ def test_watcher_toggle_digest_and_export_are_durable(tmp_path: Path):
     assert read_bundle(path)["data"]["digests"][0]["id"] == digest["id"]
     payload = workspace_payload(store)
     assert payload["watchers"][0]["enabled"] is False
+    assert payload["sources"][0]["name"] == "one"
     assert payload["exports"][0]["filename"].endswith(".json")
+
+
+def test_live_artifacts_replace_samples_and_preserve_curation_on_retry(tmp_path: Path):
+    store = ImmutableJsonStore(tmp_path / "state")
+    seed_store(store, _specs(tmp_path / "specs"))
+    scratch = tmp_path / "scratch"
+    organized = scratch / "artifacts" / "organized" / "topic_watch"
+    digests = scratch / "artifacts" / "digests" / "topic_watch"
+    organized.mkdir(parents=True)
+    digests.mkdir(parents=True)
+    artifact = {"track": "topic_watch", "date": "2026-08-19", "generated_at": "2026-08-19T12:00:00Z", "items": [{"item_key": "live-one", "source_id": "one", "title": "Live item", "url": "https://example.com/live", "topic": "AI", "confidence": 0.6, "rationale": "matched AI"}]}
+    (organized / "2026-08-19.json").write_text(json.dumps(artifact))
+    (digests / "2026-08-19.json").write_text(json.dumps({"runs": [{"top_matches": [{"job_key": "live-one", "fit_score": 9}]}]}))
+    result = ingest_run_artifacts(store, scratch)
+    payload = workspace_payload(store)
+    assert result["itemCount"] == 1
+    assert [item["title"] for item in payload["items"]] == ["Live item"]
+    assert payload["items"][0]["score"] == 90
+    patch_item(store, "topic_watch:live-one", {"status": "saved"})
+    ingest_run_artifacts(store, scratch)
+    assert workspace_payload(store)["items"][0]["status"] == "saved"
