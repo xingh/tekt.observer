@@ -44,7 +44,7 @@ Job postings pulled from HN Jobs, HN Algolia role queries, ai-jobs.net,
 and We Work Remotely. Each card shows the role_type, inferred seniority
 audience, and remote-friendliness.
 
-![job_watch feed — Y Combinator postings and prompt-engineer signals](./images/job_watch-feed.png)
+![career_watch feed — Y Combinator postings and prompt-engineer signals](./images/career_watch-feed.png)
 
 ## Backfill — one folder, three tracks, one folder per day
 

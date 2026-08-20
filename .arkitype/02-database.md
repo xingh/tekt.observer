@@ -25,7 +25,7 @@ DATABASE:
     watchers: workspace + immutable slug + structured definition
     sources: watcher source registry, configuration, and health
     runs: lifecycle, summary, and provenance
-    items: normalized content, score, ranking detail, and provenance
+    items: normalized content, score, score version/dimensions, evidence, concerns, eligibility/visibility decision, rejection reason, and provenance
     feedback: user curation and agent context
     operations: queued worker commands, claims, retries, cancellation, progress, and result
     exports: bundle revision, hashes, status, and publication destination
@@ -36,6 +36,10 @@ DATABASE:
     worker: trusted service credential; operation claim and result writes only
   isolation: API rules deny anonymous hosted access and cross-workspace access
   revisions: every portable workspace mutation increments workspaces.revision
+  relevance:
+    storage_policy: collected items remain durable even when rejected or below the visible threshold
+    default_visibility: current candidate-set 75th percentile and above
+    historical_integrity: rescoring appends a new versioned decision; it does not rewrite prior decisions
   exchange_bundle:
     schema_version: 1
     encoding: canonical UTF-8 JSON with sorted keys and one trailing newline

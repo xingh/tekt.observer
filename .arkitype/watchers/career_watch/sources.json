@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "note": "No-key job feeds for the job_watch track focused on AI-enabled professions. Kinds: rss, atom, hn_algolia.",
+  "note": "No-key job feeds for the career_watch track focused on AI-enabled professions. Kinds: rss, atom, hn_algolia.",
   "sources": [
     {
       "id": "hnrss_jobs",

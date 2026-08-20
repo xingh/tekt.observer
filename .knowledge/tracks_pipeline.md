@@ -38,10 +38,10 @@ each stage conditionally.
 |---|---|---|
 | Discover / gather | `scripts/feed_gather.py` (RSS / Atom / HN Algolia, `--registry`) | `scripts/discover_jobs.py` (jobwatch), `scripts/topic_watch_discover.py` (local HTML fixture) |
 | Enrich | `scripts/feed_enrich.py` (per-URL OpenGraph / Twitter / canonical, cached) | — |
-| Classify | — | `scripts/topic_watch_classify.py`, `scripts/market_watch_classify.py`, `scripts/job_watch_classify.py` |
+| Classify | — | `scripts/topic_watch_classify.py`, `scripts/market_watch_classify.py`, `scripts/career_watch_classify.py` |
 | Trends | `scripts/track_trends.py` (topic/source/audience counts, velocity, cross-source URLs, keyword cloud) | — |
 | Rerank per audience (I6) | `scripts/track_rerank.py` (reads `<track>_taxonomy.json` audiences; supports `--with-feedback` from I8) | — |
-| Synthesize digest — persona | — | `scripts/topic_watch_synthesize_digest.py`, `scripts/market_watch_synthesize_digest.py`, `scripts/job_watch_synthesize_digest.py`. jobwatch's own `test_workflow` track uses the provider LLM agent instead. |
+| Synthesize digest — persona | — | `scripts/topic_watch_synthesize_digest.py`, `scripts/market_watch_synthesize_digest.py`, `scripts/career_watch_synthesize_digest.py`. jobwatch's own `test_workflow` track uses the provider LLM agent instead. |
 | Synthesize digest — per audience (I7) | `scripts/synthesize_audience_digests.py` (one digest JSON + markdown per audience declared in `<track>_taxonomy.json`) | — |
 | Render (markdown) | `scripts/render_digest.py` | — |
 | Render (HTML site) | `scripts/render_html.py` (static) and `scripts/serve_html.py` (live) — shared `scripts/html_viewer.py` | — |
@@ -96,13 +96,13 @@ JSON:
 - **Synthesize:** `scripts/market_watch_synthesize_digest.py` — `is_portfolio_alert` → `top_matches`
 - **Render:** shared
 
-### job_watch
+### career_watch
 
-- **Discover:** `scripts/feed_gather.py` with `shared/schemas/job_watch_source_registry.json` (13 sources: HN Jobs, ai-jobs.net, We Work Remotely, and focused queries for engineering, product/design, architecture, governance, automation, education, DevRel, and customer-facing AI roles). The ATS adapters under `scripts/discover/sources/` remain available for private employer-specific tracks.
+- **Discover:** `scripts/feed_gather.py` with `shared/schemas/career_watch_source_registry.json` (13 sources: HN Jobs, ai-jobs.net, We Work Remotely, and focused queries for engineering, product/design, architecture, governance, automation, education, DevRel, and customer-facing AI roles). The ATS adapters under `scripts/discover/sources/` remain available for private employer-specific tracks.
 - **Enrich:** `scripts/feed_enrich.py`
-- **Classify:** `scripts/job_watch_classify.py` — role_type + seniority audience + remote-friendliness from keyword sets
+- **Classify:** `scripts/career_watch_classify.py` — role_type + seniority audience + remote-friendliness from keyword sets
 - **Trends:** `scripts/track_trends.py`
-- **Synthesize:** `scripts/job_watch_synthesize_digest.py`, plus the generic per-audience digests
+- **Synthesize:** `scripts/career_watch_synthesize_digest.py`, plus the generic per-audience digests
 - **Render:** shared
 
 ### Where each track stands
@@ -155,7 +155,7 @@ bash scripts/backfill.sh --track topic_watch --dates '2026-08-10 2026-08-11 2026
 DATES=$(for i in $(seq 3 -1 0); do date -u -d "$i days ago" +%F; done)
 bash scripts/backfill.sh --track topic_watch    --dates "$DATES" &
 bash scripts/backfill.sh --track market_watch --dates "$DATES" &
-bash scripts/backfill.sh --track job_watch    --dates "$DATES" &
+bash scripts/backfill.sh --track career_watch    --dates "$DATES" &
 wait
 ```
 
@@ -202,7 +202,7 @@ publishable folder with one directory per day per track:
 
 ```bash
 ./.venv/bin/python scripts/render_multitrack_site.py \
-  --track topic_watch --track market_watch --track job_watch \
+  --track topic_watch --track market_watch --track career_watch \
   --out /path/to/output/
 ```
 

@@ -10,9 +10,9 @@ A fresh checkout includes three starter workflow definitions and their keyless s
 | --- | --- | --- | --- |
 | `topic_watch` | How is AI changing business workflows, operating models, governance, and customer operations? | `managers` | 10 AI publications, research feeds, and focused HN queries |
 | `market_watch` | What changed for AI-related public companies or the rules governing them? | `investors` | 16 market, regulator, financial-news, and focused HN feeds |
-| `job_watch` | Which technical and business professions are being reshaped by applied AI? | `senior_ic` | 13 job feeds and profession-specific HN queries |
+| `career_watch` | Which technical and business professions are being reshaped by applied AI? | `senior_ic` | 13 job feeds and profession-specific HN queries |
 
-These built-ins are generated from `.arkitype/watchers/{topic_watch,job_watch,market_watch}/`. Edit the specs and run `./.venv/bin/python scripts/generate_watchers.py`; do not edit their generated track metadata or shared schemas directly.
+These built-ins are generated from `.arkitype/watchers/{topic_watch,career_watch,market_watch}/`. Edit the specs and run `./.venv/bin/python scripts/generate_watchers.py`; do not edit their generated track metadata or shared schemas directly.
 
 Populate one shared workspace and start the viewer:
 

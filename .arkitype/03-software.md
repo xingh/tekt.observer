@@ -22,6 +22,11 @@ SOFTWARE:
   frontend_contract:
     views: [onboarding, workspace navigation, unified inbox, watcher health, source health, item provenance, digests, operations, members, import-export]
     state: PocketBase SDK plus TanStack Query
+    relevance: top-quartile default with user-controlled score bounds and an explicit audit path for hidden items
+  watcher_context:
+    shared_career_context_consumers: [career_watch]
+    planned_shared_context_consumers: [network_watch]
+    scoring: versioned per-watcher rubrics with evidence, concerns, dimensions, and visibility decisions
   transition:
     preserve: [existing Python workers, JSON artifacts, watcher slugs, current pipeline behavior]
     retire_after_parity: [Python http.server UI, redundant shell entrypoints]

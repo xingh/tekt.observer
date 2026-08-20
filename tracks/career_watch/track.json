@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "id": "career_watch",
+  "display_name": "Careerwatch · Career opportunities & intelligence",
+  "description": "Roles, professional shifts, company signals, skills, and news that can change a person's career decisions.",
+  "status": "active",
+  "interest_ids": [],
+  "default_audience": "senior_ic",
+  "interest_topic_mappings": {},
+  "generated_from": ".arkitype/watchers/career_watch/watcher.json"
+}

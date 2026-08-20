@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source": ".arkitype/watchers/job_watch/taxonomy.json",
+  "source": ".arkitype/watchers/career_watch/taxonomy.json",
   "role_types": [
     {
       "id": "ai_engineer",
@@ -212,5 +212,5 @@
     "remote-first",
     "remote-friendly"
   ],
-  "generated_from": ".arkitype/watchers/job_watch/taxonomy.json"
+  "generated_from": ".arkitype/watchers/career_watch/taxonomy.json"
 }

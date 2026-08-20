@@ -82,7 +82,7 @@ Mapped onto the code: `discover/gather` → `enrich` → `classify` → `trends`
 |---|---|---|---|
 | **`topic_watch`** | How is AI changing business use and operating practice? | 10 (AI publications and research feeds plus enterprise-adoption, workflow, and governance queries) | builders · operators · managers · architects · leaders |
 | **`market_watch`** | What changed for AI public companies or AI regulation? | 16 (market and regulator feeds plus company, semiconductor, and regulation queries) | investors · portfolio_managers · allocators · gps · lps |
-| **`job_watch`** | Which professions are being reshaped by applied AI? | 13 (job feeds plus engineering, product, architecture, governance, automation, and customer-role queries) | individual_contributor · senior_ic · tech_lead · manager · instructor |
+| **`career_watch`** | Which professions are being reshaped by applied AI? | 13 (job feeds plus engineering, product, architecture, governance, automation, and customer-role queries) | individual_contributor · senior_ic · tech_lead · manager · instructor |
 
 Each built-in watcher has one canonical spec directory under
 `.arkitype/watchers/<slug>/`. The generator projects its identity, brief,
@@ -94,7 +94,7 @@ directory contract without registering its slug in Python.
 
 The original arkitype iteration plan established I0–I8. Where the code stands:
 
-| | topic_watch | market_watch | job_watch |
+| | topic_watch | market_watch | career_watch |
 |---|---|---|---|
 | I0 scaffold | ✅ | ✅ | ✅ |
 | I1 taxonomy + classifier | ✅ | ✅ | ✅ |
@@ -125,8 +125,8 @@ Two things this table is saying that are easy to miss:
   dedupe rate, classifier agreement rate, "precision lift vs the I6 baseline",
   feedback weight drift — is currently unmeasured. I8's own success criterion
   cannot be evaluated. This is the biggest single hole.
-- **job_watch is the laggard.** The ATS adapters are written and wired, but
-  `tracks/job_watch/sources.json` registers a single HN feed, so the curated
+- **career_watch is the laggard.** The ATS adapters are written and wired, but
+  `tracks/career_watch/sources.json` registers a single HN feed, so the curated
   employer list I3 calls for does not exist yet. I5's JD-reading LLM classifier
   has not been started.
 - **market_watch substitutes sources.** The spec named Reuters and SEC EDGAR;

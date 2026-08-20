@@ -37,7 +37,7 @@ def test_count_threshold_compacts_and_keeps_old_files(tmp_path: Path):
     store = ImmutableJsonStore(tmp_path, compact_every=2)
     store.append("watchers", "topic_watch", "put", {"enabled": True})
     assert not (tmp_path / "CURRENT.json").exists()
-    store.append("watchers", "job_watch", "put", {"enabled": True})
+    store.append("watchers", "career_watch", "put", {"enabled": True})
     snapshots = list((tmp_path / "snapshots").iterdir())
     assert len(snapshots) == 1
     assert len(list((tmp_path / "events").iterdir())) == 2

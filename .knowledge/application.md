@@ -2,7 +2,7 @@
 
 Run `./tekt.observer up` and open `http://127.0.0.1:8091`. On a fresh checkout the launcher installs and builds frontend dependencies, seeds the three canonical watchers, and serves the React application and JSON API from one loopback origin.
 
-The first screen is a unified signal inbox with nine realistic starter items. Search focuses with `/`; Escape closes dialogs. Watcher filters, responsive navigation, light/dark themes, watcher health and pause controls, operations, signal scores, and provenance are available immediately. The Digests screen creates persisted briefs from the strongest active signals. The Exports screen creates and downloads deterministic, hash-verified handoff bundles.
+The first screen is a unified signal inbox with nine realistic starter items. Search focuses with `/`; Escape closes dialogs. Watcher filters, responsive navigation, light/dark themes, watcher health and pause controls, operations, signal scores, and provenance are available immediately. The default score floor is the current result set's 75th percentile, keeping review near the top quarter; Minimum and Maximum sliders, Top 25%, and Show all controls change the visible range without deleting stored records. The Digests screen creates persisted briefs from the strongest active signals. The Exports screen creates and downloads deterministic, hash-verified handoff bundles.
 
 The inbox supports both a compact document list and the OpenGraph card grid carried forward from the original HTML digests. The grid uses cached preview images, descriptions, site names, and authors produced by `feed_enrich.py`; records without images get a neutral source fallback instead of a broken placeholder. The selected layout is remembered on the device.
 

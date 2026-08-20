@@ -1,7 +1,7 @@
 import json
 
 from topic_watch_classify import _classify_topic
-from job_watch_classify import classify_candidates as classify_jobs
+from career_watch_classify import classify_candidates as classify_jobs
 from market_watch_classify import DEFAULT_WATCHLIST, _classify_event_type, _watchlist_hits
 
 
@@ -12,7 +12,7 @@ def test_business_topic_starter_classification():
 
 
 def test_ai_enabled_profession_starter_classification(repo_root):
-    taxonomy = json.loads((repo_root / "shared/schemas/job_watch_taxonomy.json").read_text())
+    taxonomy = json.loads((repo_root / "shared/schemas/career_watch_taxonomy.json").read_text())
     discovery = {"sources": [{"source_id": "starter", "candidates": [{
         "title": "AI Governance and Model Risk Lead",
         "description": "Own responsible AI compliance and model risk controls.",
@@ -29,7 +29,7 @@ def test_ai_market_regulation_watchlist_and_registries(repo_root):
     taxonomy = json.loads((repo_root / "shared/schemas/market_watch_taxonomy.json").read_text())
     assert _classify_event_type("New chip export control for AI accelerators", "ai_regulation", taxonomy) == "export_control"
 
-    expected = {"topic_watch": 8, "market_watch": 10, "job_watch": 5}
+    expected = {"topic_watch": 8, "market_watch": 10, "career_watch": 5}
     for track, count in expected.items():
         registry = json.loads((repo_root / f"shared/schemas/{track}_source_registry.json").read_text())
         assert len(registry["sources"]) == count

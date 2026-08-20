@@ -136,7 +136,7 @@ def seed_local(client: PocketBaseClient) -> str:
     else:
         workspace = client.create_record("workspaces", {"name": "Local workspace", "slug": "local", "revision": 1, "definition": {"mode": "local"}})
     existing = {row["slug"] for row in client.list_records("watchers", filter_=f'workspace="{workspace["id"]}"')}
-    for slug in ("topic_watch", "job_watch", "market_watch"):
+    for slug in ("topic_watch", "career_watch", "market_watch"):
         if slug not in existing:
             definition = json.loads((ROOT / ".arkitype" / "watchers" / slug / "watcher.json").read_text())
             client.create_record("watchers", {"workspace": workspace["id"], "slug": slug, "name": definition.get("name", slug.replace("_", " ").title()), "enabled": True, "definition": definition})

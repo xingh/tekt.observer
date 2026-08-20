@@ -34,7 +34,7 @@ def _read_json(path: Path) -> Any:
 
 def _readable_context(track: str, row: dict[str, Any]) -> str:
     topic = str(row.get("topic") or "general").replace("_", " ")
-    if track == "job_watch":
+    if track == "career_watch":
         role = str(row.get("role_type") or topic).replace("_", " ")
         seniority = str(row.get("seniority") or "unspecified seniority").replace("_", " ")
         location = "Remote-friendly" if row.get("is_remote_friendly") else "Location flexibility was not confirmed"
@@ -74,7 +74,11 @@ def seed_store(store: ImmutableJsonStore, specs_root: Path = ROOT / ".arkitype" 
             "description": definition.get("description", ""), "enabled": definition.get("status") == "active",
             "status": "healthy", "sourceCount": len(source_rows),
         }
-        if watcher["id"] not in state["watchers"]:
+        existing_watcher = state["watchers"].get(watcher["id"])
+        if existing_watcher:
+            enabled = existing_watcher.get("enabled", watcher["enabled"])
+            watcher = {**watcher, "enabled": enabled, "status": "healthy" if enabled else "paused"}
+        if existing_watcher != watcher:
             store.append("watchers", watcher["id"], "put", watcher)
             changed = True
         for source in source_rows:

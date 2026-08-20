@@ -40,6 +40,20 @@ def test_seed_removes_sources_no_longer_in_the_watcher_spec(tmp_path: Path):
     assert [source["id"] for source in workspace_payload(store)["sources"]] == ["topic_watch:one"]
 
 
+def test_seed_refreshes_watcher_copy_without_losing_pause_state(tmp_path: Path):
+    store = ImmutableJsonStore(tmp_path / "state", compact_every=100)
+    specs = _specs(tmp_path / "specs")
+    seed_store(store, specs)
+    patch_watcher(store, "topic_watch", {"enabled": False})
+    definition = json.loads((specs / "topic_watch" / "watcher.json").read_text())
+    definition["display_name"] = "Topicwatch · Better name"
+    (specs / "topic_watch" / "watcher.json").write_text(json.dumps(definition))
+    seed_store(store, specs)
+    watcher = workspace_payload(store)["watchers"][0]
+    assert watcher["name"] == "Better name"
+    assert watcher["enabled"] is False
+
+
 def test_item_curation_is_journaled_and_increments_revision(tmp_path: Path):
     store = ImmutableJsonStore(tmp_path / "state")
     seed_store(store, _specs(tmp_path / "specs"))

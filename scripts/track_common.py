@@ -1,7 +1,7 @@
 """Small helpers shared across track pipeline scripts.
 
 Kept intentionally minimal: only things used by two or more of
-topic_watch_/market_watch_/job_watch_ classifiers and synthesizers, plus
+topic_watch_/market_watch_/career_watch_ classifiers and synthesizers, plus
 synthesize_audience_digests.py. Anything track-specific stays in the
 per-track module.
 """

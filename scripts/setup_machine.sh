@@ -85,7 +85,7 @@ ensure_secrets_file() {
     touch "$path"
     chmod 0600 "$path"
     {
-      echo "# Jobwatch external secrets file."
+      echo "# Careerwatch external secrets file."
       echo "# Use export KEY=value to store secrets here."
     } > "$path"
   fi

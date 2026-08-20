@@ -56,9 +56,9 @@ tracks/*
 !tracks/market_watch/
 !tracks/market_watch/prefs.md
 !tracks/market_watch/track.json
-!tracks/job_watch/
-!tracks/job_watch/prefs.md
-!tracks/job_watch/track.json
+!tracks/career_watch/
+!tracks/career_watch/prefs.md
+!tracks/career_watch/track.json
 tracks/*/digests/
 
 # Generated artifacts and digests

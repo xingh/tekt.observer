@@ -14,8 +14,14 @@ SITE_PROFILE:
     - rank, curate, and synthesize signals with deterministic pipelines and bounded agent work
     - collaborate inside a hosted workspace with owner, editor, and viewer roles
     - exchange immutable, verifiable JSON bundles between people and agents
-  canonical_watchers: [topic_watch, job_watch, market_watch]
+  canonical_watchers: [topic_watch, career_watch, market_watch]
+  backlog_watchers: [network_watch]
   core_entities: [workspace, membership, watcher, source, run, item, feedback, operation, export]
+  relevance:
+    durable_collection: store eligible and rejected items with decision provenance
+    default_review_surface: highest-scoring 20–30 percent
+    controls: user-adjustable minimum and maximum score
+    learning_inputs: [save, dismiss, source yield, fetch health, duplicate rate, ranking evaluation]
   authority:
     durable: immutable hash-chained JSON events and compacted JSON snapshots
     operational_projection: PocketBase

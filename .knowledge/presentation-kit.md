@@ -126,7 +126,7 @@ in fenced ```mermaid blocks — copy the diagrams straight across.
   everything in order; this ranks it for a specific reader.
 - **"Why deterministic classification instead of an LLM?"** Free, reproducible,
   and it's the baseline an LLM classifier has to beat. The LLM classifier is a
-  declared iteration (I5) that has not landed for job_watch.
+  declared iteration (I5) that has not landed for career_watch.
 - **"Does it work for X?"** Adding a track is a documented seven-step recipe in
   `tracks_pipeline.md`; reranking, per-audience digests, and feedback come free
   once the taxonomy declares audiences.
@@ -136,7 +136,7 @@ in fenced ```mermaid blocks — copy the diagrams straight across.
 ## Claims to avoid
 
 - Don't say the classifiers are AI-powered. They are keyword/regex today.
-- Don't present I5 or the job_watch employer list as shipped.
+- Don't present I5 or the career_watch employer list as shipped.
 - Don't quote precision, recall, or "lift" numbers — none are measured yet
   (see the measurement gap).
 - Don't imply Reuters or SEC EDGAR are wired into market_watch.

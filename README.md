@@ -21,7 +21,7 @@ bash scripts/bootstrap_venv.sh --no-chromium
 # open http://127.0.0.1:8091
 ```
 
-The first launch installs/builds the React frontend when needed, initializes an immutable local JSON journal, and opens a useful workspace with nine realistic signals across `topic_watch`, `job_watch`, and `market_watch`. Save and dismiss actions are journaled and fsynced before the API acknowledges them; automatic snapshots keep replay fast without overwriting history. Node.js 20+ and npm are required for the first frontend build.
+The first launch installs/builds the React frontend when needed, initializes an immutable local JSON journal, and opens a useful workspace with nine realistic signals across `topic_watch`, `career_watch`, and `market_watch`. Save and dismiss actions are journaled and fsynced before the API acknowledges them; automatic snapshots keep replay fast without overwriting history. Node.js 20+ and npm are required for the first frontend build.
 
 **A — agent-driven custom watcher setup**
 
@@ -45,7 +45,7 @@ bash scripts/run_starter_workflows.sh --serve             # seed 3 workflows, th
 # open http://127.0.0.1:8765/
 ```
 
-The shared portfolio dashboard opens immediately with clearly labeled sample signals for three tracked starter workflows: **Topicwatch · AI in Business**, **Marketwatch · AI Markets & Regulation**, and **Jobwatch · AI-enabled Professions**. When you are ready for current data, rerun with `--live`; that uses the keyless source registries and replaces the sample workspace with a real fetch, classification, ranking, and digest run.
+The shared portfolio dashboard opens immediately with clearly labeled sample signals for three tracked starter workflows: **Topicwatch · AI in Business**, **Marketwatch · AI Markets & Regulation**, and **Careerwatch · AI-enabled Professions**. When you are ready for current data, rerun with `--live`; that uses the keyless source registries and replaces the sample workspace with a real fetch, classification, ranking, and digest run.
 
 ## What every run looks like
 
@@ -53,9 +53,9 @@ Each item is a card with the destination page's OpenGraph image, a topic + conte
 
 ![Social-style feed with OpenGraph thumbnails, grouped by topic, save/hide/click on every card](.knowledge/images/topic_watch-feed.png)
 
-Under the hood it's a six-stage deterministic Python pipeline — **discover → enrich → classify → trends → rerank → synthesize → render** — with **no LLM calls** in the daily loop (agents are used where judgment helps: setting up a track and repairing sources). Three shipped tracks — `topic_watch`, `market_watch`, `job_watch` — run this pipeline end-to-end without any API keys.
+Under the hood it's a six-stage deterministic Python pipeline — **discover → enrich → classify → trends → rerank → synthesize → render** — with **no LLM calls** in the daily loop (agents are used where judgment helps: setting up a track and repairing sources). Three shipped tracks — `topic_watch`, `market_watch`, `career_watch` — run this pipeline end-to-end without any API keys.
 
-Those three are built-in watcher types inside tekt.observer, not separate products. Their canonical specs live under `.arkitype/watchers/`; generated runtime slugs and artifact paths are consistently `topic_watch`, `job_watch`, and `market_watch`.
+Those three are built-in watcher types inside tekt.observer, not separate products. Their canonical specs live under `.arkitype/watchers/`; generated runtime slugs and artifact paths are consistently `topic_watch`, `career_watch`, and `market_watch`.
 
 **📸 See more:** [`.knowledge/screenshots.md`](./.knowledge/screenshots.md) — daily report, feed, market-watch top-matches with why-bullets, backfill multitrack landing.
 
@@ -106,7 +106,7 @@ bash scripts/run_starter_workflows.sh --live --serve
 # Or run one workflow into its own scratch workspace
 bash scripts/run_pipeline.sh --track topic_watch    --live
 bash scripts/run_pipeline.sh --track market_watch --live
-bash scripts/run_pipeline.sh --track job_watch    --live
+bash scripts/run_pipeline.sh --track career_watch    --live
 
 # Deterministic no-network fixture validation remains available separately
 bash scripts/test_track_workflow.sh
@@ -116,7 +116,7 @@ Each run writes into `tests/tmp/<track>/`, mirroring `scripts/test_track_workflo
 
 - **`topic_watch`** — Topicwatch for enterprise adoption, workflow productivity, governance, and customer operations
 - **`market_watch`** — Marketwatch for AI-exposed public companies, semiconductors, regulation, and policy
-- **`job_watch`** — Jobwatch for technical and business professions building, governing, selling, teaching, or operationalizing AI
+- **`career_watch`** — Careerwatch for technical and business professions building, governing, selling, teaching, or operationalizing AI
 </details>
 
 <details>
@@ -164,7 +164,7 @@ Initialize explicit private portfolio files with `./.venv/bin/python scripts/por
 **Audience switching** — audience list per watcher (from `.arkitype/watchers/*/taxonomy.json`):
 - topic_watch: `builders · operators · managers · architects · leaders`
 - market_watch: `investors · portfolio_managers · allocators · gps · lps`
-- job_watch: `individual_contributor · senior_ic · tech_lead · manager · instructor`
+- career_watch: `individual_contributor · senior_ic · tech_lead · manager · instructor`
 </details>
 
 <details>
@@ -186,12 +186,12 @@ Full detail: [`.knowledge/tracks_pipeline.md#feedback-loop-i8`](./.knowledge/tra
 DATES=$(for i in $(seq 13 -1 0); do date -u -d "$i days ago" +%F; done)   # last 14 UTC days
 bash scripts/backfill.sh --track topic_watch    --dates "$DATES" &
 bash scripts/backfill.sh --track market_watch --dates "$DATES" &
-bash scripts/backfill.sh --track job_watch    --dates "$DATES" &
+bash scripts/backfill.sh --track career_watch    --dates "$DATES" &
 wait
 
 # 2) render one publishable folder with 3 tracks × N days
 ./.venv/bin/python scripts/render_multitrack_site.py \
-  --track topic_watch --track market_watch --track job_watch \
+  --track topic_watch --track market_watch --track career_watch \
   --out /path/to/output/
 ```
 

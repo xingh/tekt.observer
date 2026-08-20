@@ -1,4 +1,4 @@
-"""Deterministic classifier for the job_watch track.
+"""Deterministic classifier for the career_watch track.
 
 Reads a discovery artifact and classifies each candidate job posting by:
 - role_type (ai_engineer / prompt_engineer / ml_engineer / ai_researcher /
@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from portfolio_state import resolved_classifier_taxonomy  # noqa: E402
 from track_common import item_key, iso_utc_now, substring_match  # noqa: E402
 
-DEFAULT_TAXONOMY = Path(__file__).resolve().parents[1] / "shared" / "schemas" / "job_watch_taxonomy.json"
+DEFAULT_TAXONOMY = Path(__file__).resolve().parents[1] / "shared" / "schemas" / "career_watch_taxonomy.json"
 
 
 COMPANY_HINT_RE = re.compile(r"^(?P<co>[A-Z][\w &.-]{1,40}?)\s*(?:\||:| is |,)")
@@ -113,7 +113,7 @@ def classify_candidates(discovery: dict, taxonomy: dict, date: str) -> dict:
             })
     return {
         "schema_version": 1,
-        "track": "job_watch",
+        "track": "career_watch",
         "date": date,
         "generated_at": iso_utc_now(),
         "items": items,
@@ -123,7 +123,7 @@ def classify_candidates(discovery: dict, taxonomy: dict, date: str) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", default=".")
-    ap.add_argument("--track", default="job_watch")
+    ap.add_argument("--track", default="career_watch")
     ap.add_argument("--date", required=True)
     ap.add_argument("--taxonomy", default=str(DEFAULT_TAXONOMY))
     args = ap.parse_args()

@@ -6,7 +6,7 @@ from generate_watchers import check_outputs, discover_specs, rendered_outputs, w
 
 def test_committed_watcher_outputs_are_generated_from_specs(repo_root):
     specs = discover_specs(repo_root)
-    assert {spec.slug for spec in specs} == {"topic_watch", "job_watch", "market_watch"}
+    assert {spec.slug for spec in specs} == {"topic_watch", "career_watch", "market_watch"}
     assert check_outputs(repo_root, rendered_outputs(repo_root, specs))
     assert all(spec.metadata["id"] == spec.slug for spec in specs)
     for spec in specs:

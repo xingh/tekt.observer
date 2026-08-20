@@ -1,6 +1,6 @@
-"""Deterministic digest synthesizer for the job_watch track.
+"""Deterministic digest synthesizer for the career_watch track.
 
-Reads artifacts/organized/job_watch/<date>.json and produces the structured
+Reads artifacts/organized/career_watch/<date>.json and produces the structured
 digest with top_matches ranked by confidence (best AI-enabled fits at top)
 and other_new_roles for the remainder, grouped conceptually by role_type.
 """
@@ -81,7 +81,7 @@ def synthesize(organized: dict, discovery: dict, date: str, max_top: int, disc_r
         "executive_summary": _summary(items, remote),
         "recommended_actions": [
             f"Review the top {len(top)} AI-enabled posting(s) surfaced today.",
-            "Per-audience (seniority) variants live under artifacts/digests/job_watch/<audience>/.",
+            "Per-audience (seniority) variants live under artifacts/digests/career_watch/<audience>/.",
         ],
         "top_matches": [_to_top_match(i) for i in top],
         "other_new_roles": [_to_other(i) for i in rest],
@@ -95,7 +95,7 @@ def synthesize(organized: dict, discovery: dict, date: str, max_top: int, disc_r
     }
     return {
         "schema_version": 1,
-        "track": "job_watch",
+        "track": "career_watch",
         "date": date,
         "runs": [run],
     }
@@ -104,7 +104,7 @@ def synthesize(organized: dict, discovery: dict, date: str, max_top: int, disc_r
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", default=".")
-    ap.add_argument("--track", default="job_watch")
+    ap.add_argument("--track", default="career_watch")
     ap.add_argument("--date", required=True)
     ap.add_argument("--max-top", type=int, default=8)
     args = ap.parse_args()
