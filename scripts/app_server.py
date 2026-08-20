@@ -11,6 +11,8 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import re
+import subprocess
+import threading
 from typing import Any
 from urllib.parse import unquote, urlparse
 
@@ -22,6 +24,7 @@ ITEM_PATH = re.compile(r"^/api/v1/items/([^/]+)$")
 WATCHER_PATH = re.compile(r"^/api/v1/watchers/([^/]+)$")
 EXPORT_PATH = re.compile(r"^/api/v1/exports/([A-Za-z0-9._-]+)$")
 MAX_BODY = 64 * 1024
+RUN_LOCK = threading.Lock()
 
 
 def _read_json(path: Path) -> Any:
@@ -227,6 +230,35 @@ def create_export(store: ImmutableJsonStore) -> tuple[dict[str, Any], Path]:
     return record, path
 
 
+def start_live_run(store: ImmutableJsonStore, scratch: Path = ROOT / "tests" / "tmp" / "starter-workflows") -> dict[str, Any]:
+    state = store.read()
+    if any(row.get("status") in {"queued", "running"} and row.get("kind") == "live_tracks" for row in state["operations"].values()):
+        raise StoreError("a live track run is already active")
+    now = dt.datetime.now(dt.timezone.utc)
+    operation_id = f"live-run:{now.strftime('%Y%m%dT%H%M%S')}"
+    operation = {"id": operation_id, "kind": "live_tracks", "label": "Run all live watchers", "status": "queued", "progress": 0, "updatedAt": now.isoformat().replace("+00:00", "Z")}
+    store.append("operations", operation_id, "put", operation)
+
+    def run() -> None:
+        with RUN_LOCK:
+            running = {**operation, "status": "running", "progress": 10, "updatedAt": dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z")}
+            store.append("operations", operation_id, "put", running)
+            log_path = store.root / "run-logs" / f"{operation_id.replace(':', '-')}.log"
+            log_path.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                with log_path.open("wb") as log:
+                    subprocess.run(["bash", str(ROOT / "scripts" / "run_starter_workflows.sh"), "--live", "--scratch", str(scratch)], cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, check=True)
+                result = ingest_run_artifacts(store, scratch)
+                complete = {**running, "status": "complete", "progress": 100, "itemCount": result["itemCount"], "updatedAt": dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z"), "log": str(log_path)}
+                store.append("operations", operation_id, "put", complete)
+            except Exception as exc:
+                failed = {**running, "status": "failed", "progress": 100, "error": str(exc), "updatedAt": dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z"), "log": str(log_path)}
+                store.append("operations", operation_id, "put", failed)
+
+    threading.Thread(target=run, name=operation_id, daemon=True).start()
+    return operation
+
+
 class AppHandler(SimpleHTTPRequestHandler):
     server_version = "tekt.observer"
 
@@ -303,6 +335,8 @@ class AppHandler(SimpleHTTPRequestHandler):
             elif path == "/api/v1/runs/ingest":
                 result = ingest_run_artifacts(self.store, ROOT / "tests" / "tmp" / "starter-workflows")
                 self._json(HTTPStatus.CREATED, result)
+            elif path == "/api/v1/runs":
+                self._json(HTTPStatus.ACCEPTED, start_live_run(self.store))
             else:
                 self._json(HTTPStatus.NOT_FOUND, {"error": "not found"})
         except StoreError as exc:

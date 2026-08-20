@@ -8,6 +8,8 @@ The inbox supports both a compact document list and the OpenGraph card grid carr
 
 After a live pipeline run, connect its organized artifacts to the app with `./tekt.observer ingest --scratch tests/tmp/starter-workflows`. The importer journals normalized live items, run records, scores, and provenance; removes starter samples; preserves Save/Dismiss status across repeat imports; increments the workspace revision; and compacts a new snapshot. The Inbox's **Load latest run** action performs the same import for the standard starter-workflow location.
 
+**Run watchers** starts all three canonical live pipelines as a journaled background operation. The UI polls only while an operation is queued or running, shows progress in Operations, rejects duplicate active runs, captures a local log, and imports the finished artifacts automatically.
+
 Save and Dismiss call `PATCH /api/v1/items/<id>`. The server validates the mutation, appends and fsyncs the immutable item event, increments the workspace revision through another journal event, and only then acknowledges the request. Reloading reconstructs the same state from the latest snapshot plus later events.
 
 The server deliberately binds only to loopback. Hosted collaboration will use the PocketBase projection and authentication boundary; do not expose this local server directly to a network.

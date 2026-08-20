@@ -41,9 +41,9 @@ Incrementally rebuild tekt.observer around an immutable JSON durable record, pin
 - [x] Iteration 1: first-class Active, New, Saved, and Dismissed inbox views with reversible curation.
 - [x] Iteration 2: source inventory, watcher health detail, and live artifact ingestion into the immutable app workspace.
 - [x] Iteration 3: restore OpenGraph-enriched list/grid card views from the original HTML digests.
-- [ ] Iteration 4: validated immutable bundle import/fork.
+- [x] Iteration 4: journaled background live runs with duplicate prevention, progress polling, logs, and automatic ingestion.
 - [ ] Iteration 5: digest reading and highlighted-item navigation.
-- [ ] Iteration 6: journaled runs plus onboarding, accessibility, keyboard, and acceptance polish.
+- [ ] Iteration 6: onboarding, accessibility, keyboard, import validation, and acceptance polish.
 
 ## Next Step
 

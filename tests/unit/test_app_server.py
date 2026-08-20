@@ -1,9 +1,10 @@
 import json
 from pathlib import Path
+import threading
 
 import pytest
 
-from app_server import create_digest, create_export, ingest_run_artifacts, patch_item, patch_watcher, seed_store, workspace_payload
+from app_server import create_digest, create_export, ingest_run_artifacts, patch_item, patch_watcher, seed_store, start_live_run, workspace_payload
 from exchange_bundle import read_bundle
 from immutable_json_store import ImmutableJsonStore, StoreError
 
@@ -89,3 +90,19 @@ def test_live_artifacts_replace_samples_and_preserve_curation_on_retry(tmp_path:
     patch_item(store, "topic_watch:live-one", {"status": "saved"})
     ingest_run_artifacts(store, scratch)
     assert workspace_payload(store)["items"][0]["status"] == "saved"
+
+
+def test_live_run_is_journaled_and_rejects_duplicate_active_run(tmp_path: Path, monkeypatch):
+    store = ImmutableJsonStore(tmp_path / "state")
+    seed_store(store, _specs(tmp_path / "specs"))
+    started = threading.Event()
+    release = threading.Event()
+    def fake_run(*args, **kwargs):
+        started.set(); release.wait(2)
+    monkeypatch.setattr("app_server.subprocess.run", fake_run)
+    operation = start_live_run(store, tmp_path / "scratch")
+    assert started.wait(1)
+    assert workspace_payload(store)["operations"][0]["status"] == "running"
+    with pytest.raises(StoreError, match="already active"):
+        start_live_run(store, tmp_path / "scratch")
+    release.set()
