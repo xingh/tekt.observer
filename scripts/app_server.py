@@ -106,13 +106,17 @@ def ingest_run_artifacts(store: ImmutableJsonStore, scratch: Path, date: str | N
         enrichment_path = scratch / "artifacts" / "enrichment" / track / "urls.json"
         enrichment = _read_json(enrichment_path) if enrichment_path.exists() else {}
         score_by_id: dict[str, float] = {}
+        digest_summary = ""
+        digest_item_ids: list[str] = []
         digest_path = scratch / "artifacts" / "digests" / track / f"{artifact.get('date')}.json"
         if digest_path.exists():
             digest = _read_json(digest_path)
             for run in digest.get("runs", []):
+                digest_summary = run.get("executive_summary") or digest_summary
                 for row in run.get("top_matches", []):
                     if row.get("job_key"):
                         score_by_id[row["job_key"]] = min(100, float(row.get("fit_score") or 0) * 10)
+                        digest_item_ids.append(f"{track}:{row['job_key']}")
         track_count = 0
         for row in artifact.get("items", []):
             item_key = row.get("item_key")
@@ -139,6 +143,9 @@ def ingest_run_artifacts(store: ImmutableJsonStore, scratch: Path, date: str | N
         tracks[track] = track_count
         run_id = f"{track}:{artifact.get('date')}"
         store.append("runs", run_id, "put", {"id": run_id, "watcher": track, "date": artifact.get("date"), "status": "complete", "itemCount": track_count, "artifact": str(candidates[-1])})
+        if digest_summary or digest_item_ids:
+            digest_id = f"pipeline:{track}:{artifact.get('date')}"
+            store.append("digests", digest_id, "put", {"id": digest_id, "watcher": track, "title": f"{track.replace('_', ' ').title()} · {artifact.get('date')}", "createdAt": artifact.get("generated_at") or f"{artifact.get('date')}T00:00:00Z", "summary": digest_summary or f"{track_count} signals imported.", "itemIds": digest_item_ids, "status": "ready"})
     if not tracks:
         raise StoreError("no organized track artifacts found")
     for item_id, row in state["items"].items():

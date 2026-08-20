@@ -87,6 +87,7 @@ def test_live_artifacts_replace_samples_and_preserve_curation_on_retry(tmp_path:
     assert payload["items"][0]["score"] == 90
     assert payload["items"][0]["image"] == "https://example.com/image.jpg"
     assert payload["items"][0]["description"] == "OpenGraph summary"
+    assert payload["digests"][0]["itemIds"] == ["topic_watch:live-one"]
     patch_item(store, "topic_watch:live-one", {"status": "saved"})
     ingest_run_artifacts(store, scratch)
     assert workspace_payload(store)["items"][0]["status"] == "saved"
