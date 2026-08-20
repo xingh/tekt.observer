@@ -19,6 +19,9 @@ export type Signal = {
   status: "new" | "saved" | "dismissed";
   observedAt: string;
   provenance: string[];
+  image?: string;
+  siteName?: string;
+  author?: string;
 };
 
 export type Source = { id: string; watcher: string; name: string; url: string; discoveryMode: string; cadence: string; status: "ready" | "attention" | "failed" };

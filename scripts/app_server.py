@@ -100,6 +100,8 @@ def ingest_run_artifacts(store: ImmutableJsonStore, scratch: Path, date: str | N
         artifact = _read_json(candidates[-1])
         track = artifact.get("track", track_dir.name)
         resolved_date = artifact.get("date", resolved_date)
+        enrichment_path = scratch / "artifacts" / "enrichment" / track / "urls.json"
+        enrichment = _read_json(enrichment_path) if enrichment_path.exists() else {}
         score_by_id: dict[str, float] = {}
         digest_path = scratch / "artifacts" / "digests" / track / f"{artifact.get('date')}.json"
         if digest_path.exists():
@@ -116,9 +118,12 @@ def ingest_run_artifacts(store: ImmutableJsonStore, scratch: Path, date: str | N
             item_id = f"{track}:{item_key}"
             existing = state["items"].get(item_id, {})
             rationale = row.get("rationale") or "Classified by the deterministic observation pipeline."
+            metadata = enrichment.get(row.get("url", ""), {})
             item = {
                 "id": item_id, "watcher": track, "title": row.get("title", "Untitled signal"),
-                "description": row.get("description") or rationale, "url": row.get("url", ""),
+                "description": metadata.get("og_description") or row.get("description") or rationale, "url": row.get("url", ""),
+                "image": metadata.get("og_image", ""), "siteName": metadata.get("og_site_name") or row.get("source_id", ""),
+                "author": metadata.get("author", ""),
                 "topic": row.get("topic") or row.get("role_type") or row.get("asset_class") or "general",
                 "score": round(score_by_id.get(item_key, max(40, float(row.get("confidence") or 0.5) * 100))),
                 "status": existing.get("status", "new"), "observedAt": artifact.get("generated_at") or f"{artifact.get('date')}T00:00:00Z",

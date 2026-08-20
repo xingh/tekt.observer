@@ -76,11 +76,16 @@ def test_live_artifacts_replace_samples_and_preserve_curation_on_retry(tmp_path:
     artifact = {"track": "topic_watch", "date": "2026-08-19", "generated_at": "2026-08-19T12:00:00Z", "items": [{"item_key": "live-one", "source_id": "one", "title": "Live item", "url": "https://example.com/live", "topic": "AI", "confidence": 0.6, "rationale": "matched AI"}]}
     (organized / "2026-08-19.json").write_text(json.dumps(artifact))
     (digests / "2026-08-19.json").write_text(json.dumps({"runs": [{"top_matches": [{"job_key": "live-one", "fit_score": 9}]}]}))
+    enrichment = scratch / "artifacts" / "enrichment" / "topic_watch"
+    enrichment.mkdir(parents=True)
+    (enrichment / "urls.json").write_text(json.dumps({"https://example.com/live": {"og_image": "https://example.com/image.jpg", "og_description": "OpenGraph summary", "og_site_name": "Example"}}))
     result = ingest_run_artifacts(store, scratch)
     payload = workspace_payload(store)
     assert result["itemCount"] == 1
     assert [item["title"] for item in payload["items"]] == ["Live item"]
     assert payload["items"][0]["score"] == 90
+    assert payload["items"][0]["image"] == "https://example.com/image.jpg"
+    assert payload["items"][0]["description"] == "OpenGraph summary"
     patch_item(store, "topic_watch:live-one", {"status": "saved"})
     ingest_run_artifacts(store, scratch)
     assert workspace_payload(store)["items"][0]["status"] == "saved"
