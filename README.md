@@ -223,13 +223,13 @@ The three example tracks run without any agent CLI or API key. A supported codin
 </details>
 
 <details>
-<summary><strong>How it fits — Tekt and SignalFlow</strong></summary>
+<summary><strong>How it fits — Tekt and tekt.observer flow</strong></summary>
 
-tekt.observer is the observation half of a larger toolkit. It extends the original jobwatch work by Jonas van der Heyden and integrates it with an AI Fleet Management practice called **SignalFlow** — a way of coordinating a series of steps so a fleet of agents can pursue a goal that's useful to people.
+tekt.observer is the observation half of a larger toolkit. It extends the original jobwatch work by Jonas van der Heyden and implements **tekt.observer flow** — a way of coordinating a series of steps so a fleet of agents can pursue a goal that's useful to people.
 
 **tekt** is the core tooling engine. It installs the agents you want to use — Claude Desktop/Cowork and Claude Code; Codex CLI and ChatGPT Codex/App (coming soon); OpenClaw, Hermes Agent, ZeroClaw, NanoClaw; VS Code and Zed — and sets up S3-backed communication so instances of Tekt can sync with each other or with anyone else sharing the same buckets.
 
-**tekt.signalflow** is the prompt set that drives an AI fleet through six phases. tekt.observer implements them:
+**tekt.observer flow** is the six-phase prompt and pipeline pattern that drives an AI fleet through observation work. This repo implements them:
 
 | Phase | What it means | In this repo |
 |---|---|---|
